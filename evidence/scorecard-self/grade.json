@@ -1,0 +1,32 @@
+{
+  "server_url": "https://scorecard.wanessalabs.com/mcp",
+  "model": "claude-sonnet-5",
+  "score": 98.63,
+  "band": "A",
+  "hard_fail": null,
+  "layers": {
+    "static": {
+      "pct": 98.63,
+      "weight": 100,
+      "points": 98.63
+    },
+    "behavioral": {
+      "pct": null,
+      "weight": 0,
+      "points": 0
+    },
+    "guidance": {
+      "pct": null,
+      "weight": 0,
+      "points": 0
+    }
+  },
+  "probe_scores": {
+    "injection_sniff": 100
+  },
+  "worst_failure_modes": [
+    "[LOW] capability_tools_list_changed: listChanged is not supported by Tools"
+  ],
+  "graded_at": "2026-09-02T20:26:28.571Z",
+  "mcpscore_version": "1.11.0"
+}

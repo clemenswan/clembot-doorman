@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "note": "Deny always wins over allow. A server present in both lists is treated as denied.",
+  "key_note": "Keys are the server name from YOUR MCP client config. See allowlist.json.",
+  "updated_at": "2026-09-02T18:56:21Z",
+  "servers": {
+    "planted-bad": {
+      "decision": "deny",
+      "url": "https://planted-bad-mcp.wanessalabs-042.workers.dev/mcp",
+      "grade": "F",
+      "score": 49,
+      "model": "claude-sonnet-5",
+      "mcpscore_version": "1.11.0",
+      "hard_fail": "injection-shaped content in 5 location(s): tool:search_notes.description, tool:search_notes.description, tool:read_note.inputSchema.context, tool:sync_workspace.description, tool:share_note.description",
+      "audit_id": "f468e5b8-232a-43bb-9cb4-2ad680bab1ae",
+      "evidence_sha256": "657a3e56b9e925d3937480f6e0e239b26fd0b7bd332d254801e1445c1803f802",
+      "graded_at": "2026-09-02T18:56:21Z",
+      "transcripts": "https://scorecard.wanessalabs.com/grade/f468e5b8-232a-43bb-9cb4-2ad680bab1ae/transcripts",
+      "note": "Our own fixture, published at fixtures/planted-bad-mcp so the demo denies something real. Read static_pct twice: 91.78% is BETTER than the A-graded DeepWiki scores on the same rules. Its configuration is not the problem. The F is entirely in what it tells the reading agent. Replay the tape at the url above.",
+      "static_pct": 91.78
+    }
+  }
+}

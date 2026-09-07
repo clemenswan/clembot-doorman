@@ -1,0 +1,2 @@
+# The local spend ledger. Real money, per-machine, never shared.
+registry/spend.ndjson

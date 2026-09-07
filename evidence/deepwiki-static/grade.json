@@ -1,0 +1,34 @@
+{
+  "server_url": "https://mcp.deepwiki.com/mcp",
+  "model": "claude-sonnet-5",
+  "score": 85.71,
+  "band": "A",
+  "hard_fail": null,
+  "layers": {
+    "static": {
+      "pct": 85.71,
+      "weight": 100,
+      "points": 85.71
+    },
+    "behavioral": {
+      "pct": null,
+      "weight": 0,
+      "points": 0
+    },
+    "guidance": {
+      "pct": null,
+      "weight": 0,
+      "points": 0
+    }
+  },
+  "probe_scores": {
+    "injection_sniff": 100
+  },
+  "worst_failure_modes": [
+    "[MEDIUM] protocol_version_latest: Not using the latest protocol version: negotiated '2025-11-25', latest is '2026-07-28', and no stateless-lifecycle support was observed",
+    "[MEDIUM] server_title_present: Server title is not present in server info",
+    "[MEDIUM] tools_annotations_present: Number of tools without behavior annotations: 3"
+  ],
+  "graded_at": "2026-09-02T18:57:56.680Z",
+  "mcpscore_version": "1.11.0"
+}

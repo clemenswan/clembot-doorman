@@ -1,0 +1,5 @@
+{
+  "mcpServers": {
+    "scorecard": { "type": "http", "url": "https://scorecard.example.test/mcp" }
+  }
+}

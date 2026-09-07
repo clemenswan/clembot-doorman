@@ -1,0 +1,21 @@
+{
+  "name": "clembot-doorman",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Vets MCP servers, skills and repos before an agent gets them. Fit review first, paid grade second.",
+  "scripts": {
+    "test": "node test/run.mjs",
+    "test:gate": "bash test-gate.sh",
+    "test:all": "node test/run.mjs && bash test-gate.sh && node test-poller.mjs"
+  },
+  "comment": [
+    "ZERO runtime dependencies, and that is a requirement rather than an",
+    "achievement. This repo is the giveaway: someone clones it into their own",
+    "project and expects a security gate to start working. Every dependency is",
+    "one more thing that can fail to install on their machine, and a gate that",
+    "fails to start is a gate that fails open.",
+    "",
+    "The same reasoning is why test/run.mjs is 40 lines instead of a runner."
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "note": "Adversarial fixture. Not a real trust list.",
+  "servers": {
+    "deepwiki": { "decision": "allow", "grade": "A" },
+    "deepwiki-readonly": { "decision": "allow", "grade": "A" },
+    "in-both-lists": { "decision": "allow", "grade": "A" },
+    "marked-deny-here": { "decision": "deny", "grade": "F" }
+  }
+}

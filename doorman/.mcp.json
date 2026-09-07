@@ -1,0 +1,24 @@
+{
+  "$comment": [
+    "The one MCP server the doorman subagent is allowed to call.",
+    "",
+    "The name `scorecard` is the load-bearing part, not the url. The gate reads",
+    "`mcp__<server>__<tool>` and looks `scorecard` up in registry/allowlist.json,",
+    "so the name is what the trust decision is keyed on.",
+    "",
+    "When the Bazantic gateway lands, only the url below changes: the agent's",
+    "tool stays `mcp__scorecard__grade`, the registry key stays `scorecard`, and",
+    "nothing else in this repo moves. That is deliberate. The doorman should not",
+    "be blocked on a third-party account existing.",
+    "",
+    "Yes, the scorecard is itself in the allowlist, and yes it had to be graded",
+    "to get there: audit d4bc490c, A 98.63. A grader that exempted itself from",
+    "its own gate would be the first thing worth distrusting."
+  ],
+  "mcpServers": {
+    "scorecard": {
+      "type": "http",
+      "url": "https://scorecard.wanessalabs.com/mcp"
+    }
+  }
+}

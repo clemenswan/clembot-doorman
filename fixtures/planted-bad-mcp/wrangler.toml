@@ -1,0 +1,10 @@
+name = "planted-bad-mcp"
+main = "src/index.js"
+
+# Pinned to what wrangler 4.95.0 supports, same constraint as the scorecard.
+# Raising this REQUIRES upgrading wrangler first.
+compatibility_date = "2026-06-01"
+
+# No bindings. None. This fixture has no D1, no KV, no R2, no secrets and no
+# outbound fetch, and the absence is the safety argument: a deliberately
+# hostile server that is publicly reachable must have nothing to reach.

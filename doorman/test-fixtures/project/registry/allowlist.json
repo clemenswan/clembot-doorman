@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "servers": {
+    "scorecard": { "decision": "allow", "url": "https://scorecard.example.test/mcp", "grade": "A" }
+  }
+}

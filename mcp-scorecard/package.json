@@ -1,0 +1,27 @@
+{
+  "name": "mcp-scorecard",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Grades MCP servers by actually using them. Cloudflare Worker + D1 + a laptop probe runner.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "migrate:local": "wrangler d1 migrations apply mcp-scorecard --local",
+    "migrate:remote": "wrangler d1 migrations apply mcp-scorecard --remote",
+    "test": "vitest run --reporter=dot",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
+    "runner": "node runner/run.mjs",
+    "build:shared": "esbuild src/shared.ts --bundle --format=esm --platform=neutral --outfile=runner/lib.mjs",
+    "pretest": "npm run build:shared"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250109.0",
+    "@readme/openapi-parser": "^8.0.2",
+    "@types/node": "^26.4.1",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "wrangler": "4.95.0"
+  }
+}

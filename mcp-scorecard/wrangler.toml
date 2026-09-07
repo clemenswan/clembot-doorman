@@ -1,0 +1,55 @@
+name = "mcp-scorecard"
+main = "src/index.ts"
+# Pinned to what wrangler 4.95.0 supports. Raising this REQUIRES upgrading
+# wrangler first, or the local runtime refuses to start.
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Free tier only. No Durable Objects declared anywhere in this file by design:
+# the demo site polls /api/ledger, it does not stream.
+
+# A stable hostname. The account-scoped workers.dev url reads as temporary and
+# gets baked into a Bazantic import, every drafted recipe, and every registry
+# entry. The OpenAPI `servers` block is derived from the request origin, so it
+# follows this automatically rather than needing its own constant.
+[[routes]]
+pattern = "scorecard.wanessalabs.com"
+custom_domain = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "mcp-scorecard"
+database_id = "15f7eec8-dfa0-46a5-9d66-8349363c28ab"
+migrations_dir = "migrations"
+
+[vars]
+# Pinned model. The grade is model-relative and this string is printed on the
+# badge. Changing it invalidates comparison with every prior audit.
+PROBE_MODEL = "claude-sonnet-5"
+PROBE_TEMPERATURE = "0"
+PROBE_RUNS = "3"
+
+# ── x402 ─────────────────────────────────────────────────────────────────
+#
+# OFF by default, and the default is load-bearing: the live demo posts to
+# /grade from a browser and there is no settlement path yet, so switching
+# this on without a facilitator would 402 every visitor with no way to pay.
+#
+# Turning it on with PAY_TO or PAY_ASSET unset does NOT fall through to the
+# free path. It refuses with 503 and names what is missing, because an agent
+# that paid a placeholder address would lose real money.
+#
+# PAY_ASSET_DECIMALS is only used to report a decimal price on GET /price.
+# Unset, that field comes back null rather than guessing 6: dividing by the
+# wrong power of ten is how a client authorises a thousand times the amount.
+# PAYMENTS_REQUIRED  = "1"
+# PAY_TO             = "0x..."           # recipient. No default, ever.
+# PAY_ASSET          = "0x..."           # token contract. No default, ever.
+# PAY_NETWORK        = "eip155:84532"    # CAIP-2. Base Sepolia by default.
+# PAY_AMOUNT_ATOMIC  = "10000"           # 0.01 USDC at 6 decimals
+# PAY_ASSET_NAME     = "USDC"
+# PAY_ASSET_DECIMALS = "6"
+
+# Secrets (set with `wrangler secret put`, never in this file):
+#   ANTHROPIC_API_KEY  - behavioural probes
+#   RUNNER_TOKEN       - shared secret the laptop runner presents to claim work

@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "note": "Adversarial fixture. in-both-lists appears here AND in the allowlist.",
+  "servers": {
+    "in-both-lists": { "decision": "deny", "grade": "F", "hard_fail": "injection-shaped content" }
+  }
+}

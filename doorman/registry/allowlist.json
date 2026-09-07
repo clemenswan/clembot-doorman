@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "note": "Synced from the scorecard. The gate reads THIS FILE, never the network.",
+  "key_note": "Keys are the server name from YOUR MCP client config, because that is all the gate can see in an mcp__<server>__<tool> call. The poller keys its output by hostname instead and says so, since a URL cannot tell you what someone named the server locally. Mapping one to the other is a deliberate human step.",
+  "partial_audit_note": "Every entry below is a partial audit: the static layer plus the scan-only injection sniff. The four model-driven probes need an ANTHROPIC_API_KEY that has not been supplied, so the behavioural layer is null and the weights renormalise. These are real grades over a real but incomplete measurement, and each one says so.",
+  "updated_at": "2026-09-02T20:25:37Z",
+  "servers": {
+    "deepwiki": {
+      "decision": "allow",
+      "url": "https://mcp.deepwiki.com/mcp",
+      "grade": "A",
+      "score": 85.71,
+      "static_pct": 85.71,
+      "model": "claude-sonnet-5",
+      "mcpscore_version": "1.11.0",
+      "audit_id": "9fbb3558-8b6e-475b-9b6f-161b32bbb7a1",
+      "evidence_sha256": "80d9027f92bbcefbad02ebc2b1494e958159c92c11a56994695b5e73dbfc32d1",
+      "graded_at": "2026-09-02T18:56:16Z",
+      "transcripts": "https://scorecard.wanessalabs.com/grade/9fbb3558-8b6e-475b-9b6f-161b32bbb7a1/transcripts",
+      "note": "Third-party server. Injection scan clean across three tools."
+    },
+    "scorecard": {
+      "decision": "allow",
+      "url": "https://scorecard.wanessalabs.com/mcp",
+      "grade": "A",
+      "score": 98.63,
+      "static_pct": 98.63,
+      "model": "claude-sonnet-5",
+      "mcpscore_version": "1.11.0",
+      "audit_id": "d4bc490c-5e51-4fb7-be67-6ef6f5a0a0ea",
+      "evidence_sha256": "b4e0c3a11594263d05a965d49eb5b3c1c5c9ce0d54d7aa28216a4fd5956308c2",
+      "graded_at": "2026-09-02T20:25:37Z",
+      "transcripts": "https://scorecard.wanessalabs.com/grade/d4bc490c-5e51-4fb7-be67-6ef6f5a0a0ea/transcripts",
+      "note": "This is us. The doorman subagent's only tool lives here, and the gate matches mcp__.* with no exemptions, so the grader had to pass its own gate to be callable. It was graded by itself: one clean tool, injection scan clean, 72 of 73 static rules. The one rule it still fails is capability_tools_list_changed, and it fails deliberately: we do not emit those notifications and will not claim a capability we do not have to buy back a point."
+    }
+  }
+}

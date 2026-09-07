@@ -1,0 +1,22 @@
+{
+  "_comment": [
+    "The on-camera candidate: a real, live, well-behaved MCP server whose job",
+    "Clembot ALREADY does. WebZum hosts generated web content, and it grades A",
+    "on configuration, so nothing about it is a security story. That is the",
+    "point: the doorman declines because the system does not need it, not",
+    "because it is bad.",
+    "",
+    "Chosen against the REAL roster, not invented. Clembot has url-unfurler and",
+    "feed-fetcher, and three more agents holding WebFetch, so the overlap list",
+    "writes itself from names Clemens actually runs."
+  ],
+  "candidate": "https://mcp.exa.ai/mcp",
+  "needed_for": "fetch a web page and give me the readable text",
+  "expect": {
+    "verdict": "redundant",
+    "overlap_names": ["url-unfurler", "feed-fetcher", "Market Analyst", "SEO Specialist", "Content Writer"],
+    "cost_usdc": 0,
+    "scorecard_called": false
+  },
+  "how_to_run": "DOORMAN_INVENTORY_ROOT=C:/Users/cwan0/Documents/marketing-bootstrap node scripts/vet.mjs https://mcp.exa.ai/mcp --needed-for 'fetch a web page and give me the readable text'"
+}
