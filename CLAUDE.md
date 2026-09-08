@@ -170,13 +170,18 @@ These are not preferences. Breaking one silently makes the product dishonest.
 
 ## Testing
 
+**End-to-end proof lives in `RUNBOOK.md`**, not here. This section is the
+unit and smoke suites; the runbook is the four ordered tests that prove a
+grade can travel from a paid call to a completed audit, three of which cost
+nothing.
+
 `mcpscore` must be on `PATH`. It is a Python console script, so a fresh
 worktree usually needs `pip install mcpscore` and the interpreter's `Scripts/`
 (or `bin/`) directory exported, or the runner exits with `spawn mcpscore ENOENT`
 before it grades anything.
 
 ```bash
-cd mcp-scorecard && npm test              # 210 unit
+cd mcp-scorecard && npm test              # 228 unit
 node test/smoke-grade.mjs                 # grades a live public server
 node test/smoke-api.mjs                   # 75 assertions, needs wrangler dev
 node test/smoke-x402.mjs                  # 20, needs wrangler dev with PAYMENTS_REQUIRED

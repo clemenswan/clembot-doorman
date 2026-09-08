@@ -166,6 +166,7 @@ good.
 | Scorecard API | https://scorecard.wanessalabs.com |
 | OpenAPI spec | https://scorecard.wanessalabs.com/openapi.json (3.1.0) |
 | Same spec as 3.0.3 | https://scorecard.wanessalabs.com/openapi-3.0.json |
+| End-to-end runbook | [`RUNBOOK.md`](RUNBOOK.md) |
 | Example badge | https://scorecard.wanessalabs.com/badge/https%3A%2F%2Fmcp.deepwiki.com%2Fmcp.svg |
 
 Two real production audits, both queued through the API, claimed by a laptop
@@ -316,6 +317,10 @@ talk it into using.
 ---
 
 ## Running it
+
+> Proving the whole chain works, rather than one piece of it, is
+> **`RUNBOOK.md`**: four ordered tests, three of them free, with the
+> observed output of each.
 
 ```bash
 # The service
