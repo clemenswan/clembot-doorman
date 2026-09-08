@@ -8,7 +8,7 @@ Source of truth for scope: `clembot-doorman-project.md`. Current state: `roadmap
 | Path | What it is |
 |---|---|
 | `mcp-scorecard/` | The grading service. Worker + D1 + local probe runner. |
-| `doorman/` | The client giveaway. Hook, subagent, registry, poller. Extract to a public repo before launch. |
+| `doorman/` | The client giveaway. Hook, subagent, registry, poller. Public since 2026-09-07 at github.com/clemenswan/clembot-doorman, as part of the whole-project snapshot. |
 | `fixtures/planted-bad-mcp/` | The hostile server the demo grades F. Deployed, inert, no bindings. |
 | `doorman/recipes/` | Usage recipes drafted from real audits. NOT the Bazantic prize recipes. |
 | `site/` | clembot-doorman.wanessalabs.com. Static, Direct Upload. |

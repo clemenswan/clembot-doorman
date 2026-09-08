@@ -200,6 +200,25 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
       sticky-header collision that measurement showed never happened. Worst
       anchor already landed 35px clear.
 
+## Done (2026-09-07, session 10)
+
+- [x] **Nav cut from eleven links to six.** `The finding / Demo / Architecture /
+      Bazantic / Verify / Judges`. Nothing deleted: the six removed sections live
+      in a jump row inside `#architecture`, verified live as out-of-nav AND
+      present-in-jump-row separately.
+- [x] **New `#architecture` section** with a five-tier diagram: gate, doorman,
+      gateway, scorecard, probe runner, each with a labelled connector. HTML not
+      SVG, because a 900px viewBox at 390px renders 12px labels at 5px. The
+      Bazantic tier is dashed and tagged "specified, not deployed".
+- [x] **Bazantic section rewritten on the published spec**, with the real install
+      sequence and `--source hosted` called out. Marked not yet run.
+- [x] **`README.md` gains a Bazantic section**: the eight-field Recipe format,
+      the async problem stated rather than hidden, `bazantic.yaml` marked
+      unusable.
+- [x] **The repo is public.** github.com/clemenswan/clembot-doorman, 145 files,
+      snapshot not history graft. `clembot-doorman-project.md` held back.
+- [x] **Deployed and verified.** `60a25dbd`, Production, source `e088dca`.
+
 ## Not done, and honest about it
 
 - [ ] **The four model-driven probes have never run against a live model.** No
@@ -222,6 +241,12 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
 - [ ] **Bazantic: no account, no gateway.** This is the one item that needs a
       human, and it is the only thing between the project and all three prizes.
       The API it wraps is deployed, documented and self-graded.
+      **Update 2026-09-07:** the recipe format is no longer unknown. It is
+      published and recorded in `README.md` under Bazantic, along with the
+      install sequence. A Recipe is ONE task published as a single MCP tool,
+      not a multi-API flow, which changes the third prize plan.
+      `bazantic.yaml` is preview-only and cannot be used. **The account is
+      now the only blocker.**
       **Correction:** an earlier version of this line said `doorman/recipes/` is
       empty. It has not been for some time: three real recipes are in there,
       each drafted by the scorecard from a named audit id, plus a README. The

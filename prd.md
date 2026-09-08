@@ -1,7 +1,7 @@
 ---
 project: clembot-doorman
 cluster: agency
-status: active-build
+status: active
 blocked: false
 updated: 2026-09-01
 ---

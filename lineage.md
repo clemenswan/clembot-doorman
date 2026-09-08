@@ -1,10 +1,95 @@
 ---
 project: clembot-doorman
 cluster: agency
-updated: 2026-09-05
+updated: 2026-09-07
 ---
 
 # Lineage
+
+## 2026-09-07 - Session 10, a nav that stopped scaling, and the repo going public
+
+### The nav had eleven links and every check said it was fine
+
+Eleven top-level links fit on a desktop and read as a wall. The fix is not
+subtle, but the interesting part is where the six removed links went: into a
+jump row inside the new architecture section. Every one of them is a detail OF
+the architecture, so the flat nav had been asserting that eleven things were
+peers when six of them were children.
+
+Nothing was deleted and nothing became unreachable. A live check asserts both
+halves separately: each of the six is **out of the nav** AND **present in the
+jump row**, and the six that stayed are still in the nav. Asserting only the
+first half would pass a page that lost them entirely.
+
+### The diagram is HTML on purpose
+
+An SVG with a 900px viewBox scaled into a 390px phone renders a 12px label at
+5px, and this diagram is almost entirely labels. A single stacked column
+reflows instead of shrinking, so text stays at its real size at every width.
+The Bazantic tier is dashed and tagged "specified, not deployed", so the one
+layer that does not exist cannot be mistaken for the four that do.
+
+### Reading the Bazantic docs corrected two of our own claims
+
+The site said "Integration planned" and `doorman/recipes/README.md` called a
+Bazantic Recipe "a multi-API flow definition". Both wrong.
+
+> A Recipe is ONE task published as a single MCP tool: typed inputs, a prompt,
+> a model, and bound tools that must already exist on Bazantic as gateways.
+
+Not a flow, not a DAG. That changes the third prize plan, which assumed
+declared sequencing. The format is fully published: eight fields, exactly one
+`{{inputs}}` placeholder, bindings carrying only `gateway_slug` and
+`tool_name`, 24 KiB cap. **The account is the blocker, not the spec.** The
+correction is stated in place in `recipes/README.md` rather than quietly
+edited, because a doc that rewrites its own past is not a record.
+
+Two things the docs settled that were worth the read:
+
+- **The gateway provisions the x402 pathway.** The half we refused to fake is
+  done by the layer whose job it is, so no settlement code we cannot verify
+  needs writing.
+- **`bazantic.yaml` is unusable.** The manifest page is marked preview and says
+  the released CLI cannot read the file. Recorded before someone writes one.
+
+### A documented fail-open, now encoded
+
+Bazantic's own docs say that if `baz curl` cannot find a grant's key on the
+device it falls back to the self-custody wallet, "uncapped and irrevocable",
+and gives `--source hosted` to force a hard failure. That is the same class of
+bug `budget.mjs` already refuses with "an unknown price is not a free one". The
+site and the README both carry the flag and the reason.
+
+### The repo is public: github.com/clemenswan/clembot-doorman
+
+A snapshot of tracked files, not a history graft, so no ClemVault commit
+reaches it. Pre-publish scan found no `.env`, no key material, nothing matching
+a secret shape, nothing over 200KB.
+
+**One file was held back.** `clembot-doorman-project.md` carries the prize
+mapping, the day plan, and an open question about a business relationship with
+the sponsor affecting prize eligibility. Not publishable.
+
+**One thing was fixed on the way out.** All four `.sh` files are mode 644 in
+this repo, so `./install.sh` would have died with "Permission denied" on macOS
+and Linux, which is exactly the audience for the giveaway. The public copy is
+755. **The source is still 644**, so a future re-publish reverts it unless that
+is fixed here too.
+
+### Verified
+
+- Deployment `60a25dbd`, **Production**, source `e088dca`. Alias and custom
+  domain byte-identical at 132,348 bytes.
+- 1440 / 1280 / 900 / 390: no document overflow, no nav link wrapping its own
+  label, five diagram nodes, code block scrolls inside itself.
+- Contrast measured by painting to a canvas, lowest pair 5.18:1.
+- 296 doorman tests unchanged.
+
+**A mutation check came back green and that was the right answer.** Removing
+`white-space: nowrap` from the nav no longer breaks anything, because six links
+occupy 442px of 767px available. The guard has 325px of slack and is currently
+unfalsifiable. It was 578px in a 768px viewport when it last shipped a
+two-line masthead.
 
 ## 2026-09-05 - Session 9, reading the page as a judge would
 

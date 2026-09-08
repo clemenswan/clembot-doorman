@@ -1,3 +1,5 @@
+<img src="logo.png" alt="Clembot Doorman" width="150" align="right">
+
 # Clembot Doorman
 
 **Graded by being used, not by being read. Do not trust the letter. Replay the tape.**
