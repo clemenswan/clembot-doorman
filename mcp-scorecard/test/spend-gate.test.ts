@@ -340,3 +340,110 @@ describe('the MCP grade tool records the permit it was given', () => {
     expect(permitOf(db.batches)).toBe(1);
   });
 });
+
+describe('a guessable token is not a token', () => {
+  it('REFUSES the exact value this service was first configured with', async () => {
+    const { secretStrength } = await import('../src/routes/spend.js');
+    // 43 characters, so a length check alone would have passed it. The signal
+    // is character class: no uppercase, no digit, therefore a typed phrase.
+    const r = secretStrength('something-that-is-a-token-that-is-randomized');
+    expect(r.ok).toBe(false);
+    expect(r.why).toMatch(/uppercase|digit/);
+  });
+
+  it('accepts a real generated secret', async () => {
+    const { secretStrength } = await import('../src/routes/spend.js');
+    for (const good of [
+      'k3Jd8ZqR2mVx7pLnT4wYbF6sHcA9eG1u',           // base64url-ish, 32
+      '9f2c4a1e8b7d6035c9a2e4f18b3d7c60a5e9f2c41b8d7a3e6c095f2a4e18b3d7c', // hex, 64
+    ]) {
+      expect(secretStrength(good), good).toEqual({ ok: true });
+    }
+  });
+
+  it('refuses a short one however random it looks', async () => {
+    const { secretStrength } = await import('../src/routes/spend.js');
+    expect(secretStrength('aB3xQ9zK').ok).toBe(false);
+  });
+
+  it('refuses a long one with almost no distinct characters', async () => {
+    const { secretStrength } = await import('../src/routes/spend.js');
+    expect(secretStrength('A1' + 'a'.repeat(40)).ok).toBe(false);
+  });
+
+  it('reports a weak secret as MISCONFIGURED, never as a bad token', async () => {
+    const { spendPermit } = await import('../src/routes/spend.js');
+    // The distinction matters operationally: bad-token sends the operator
+    // hunting a caller problem, weak-secret points at the deployment.
+    const weak = env({ GRADE_TOKEN: 'all-lowercase-words-joined-by-hyphens-here' } as never);
+    expect(spendPermit(req('Bearer anything'), weak)).toBe('weak-secret');
+    const strong = env({ GRADE_TOKEN: 'k3Jd8ZqR2mVx7pLnT4wYbF6sHcA9eG1u' } as never);
+    expect(spendPermit(req('Bearer anything'), strong)).toBe('bad-token');
+  });
+
+  it('a weak secret still does not block anonymous callers', async () => {
+    const { spendPermit } = await import('../src/routes/spend.js');
+    // The demo must keep working while the operator fixes their config.
+    const weak = env({ GRADE_TOKEN: 'all-lowercase-words-joined-by-hyphens-here' } as never);
+    expect(spendPermit(req(), weak)).toBe('anonymous');
+  });
+});
+
+describe('each strength rule is load-bearing on its own', () => {
+  it('the LENGTH floor catches what the other two rules do not', async () => {
+    const { secretStrength } = await import('../src/routes/spend.js');
+    // Mutation-found gap: the first short-token test used an 8-character value,
+    // which the distinct-character rule rejected on its own, so dropping the
+    // length floor entirely left the suite green. This value passes the class
+    // rule and the distinct rule and fails ONLY on length.
+    const s = 'aB3xQ9zKmN7pR2';
+    expect(s.length).toBeLessThan(24);
+    expect(/[A-Z0-9]/.test(s)).toBe(true);
+    expect(new Set(s).size).toBeGreaterThanOrEqual(10);
+    expect(secretStrength(s).ok).toBe(false);
+    expect(secretStrength(s).why).toMatch(/characters|minimum/);
+  });
+});
+
+describe('handleGrade answers 503 for a weak secret, and queues nothing', () => {
+  const fakeDb = () => {
+    const batches: Array<Array<{ sql: string; args: unknown[] }>> = [];
+    const stmt = (sql: string) => ({
+      sql, args: [] as unknown[],
+      bind(...args: unknown[]) { this.args = args; return this; },
+    });
+    return { batches, binding: {
+      prepare: (sql: string) => stmt(sql),
+      batch: async (s: Array<{ sql: string; args: unknown[] }>) => { batches.push(s); return []; },
+    } };
+  };
+  const post = (auth?: string) =>
+    new Request('https://scorecard.example/grade', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', ...(auth ? { authorization: auth } : {}) },
+      body: JSON.stringify({ url: 'https://mcp.example.com/mcp' }),
+    });
+
+  it('503, not 401, so the operator looks at the deployment not the caller', async () => {
+    const { handleGrade } = await import('../src/routes/grade.js');
+    const db = fakeDb();
+    const res = await handleGrade(
+      post('Bearer anything'),
+      env({ DB: db.binding, GRADE_TOKEN: 'all-lowercase-words-joined-by-hyphens-here' } as never),
+    );
+    expect(res.status).toBe(503);
+    expect(db.batches).toHaveLength(0);
+    const body = await res.json() as { error: string };
+    expect(body.error).toMatch(/misconfigured/i);
+  });
+
+  it('and an anonymous caller is still served while it is broken', async () => {
+    const { handleGrade } = await import('../src/routes/grade.js');
+    const db = fakeDb();
+    const res = await handleGrade(
+      post(),
+      env({ DB: db.binding, GRADE_TOKEN: 'all-lowercase-words-joined-by-hyphens-here' } as never),
+    );
+    expect(res.status).toBe(202);
+  });
+});

@@ -17,7 +17,7 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
 - [x] Five probe modules behind one host-agnostic interface
 - [x] Outputs: grade.json, one-page report.md, recipe.md, badge SVG, SHA-256 bundle
 - [x] Anchor stub that refuses to claim success
-- [x] Worker: /grade, /grade/:id, /allowlist/:owner, /badge/*.svg, /api/*, /openapi.json
+- [x] Worker: /grade, /grade/:id, /allowlist/:owner, /badge/*.svg, /api/*, /openapi.json (the served spec omits the /api/* runner routes)
 - [x] Node probe runner: --once and --poll, sharing the Worker's grade module
 - [x] PreToolUse gate, offline, dependency-free, fails closed
 - [x] doorman subagent, /vet command, registry files, poller
@@ -238,8 +238,19 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
       rather than faked**: no wallet, no facilitator. So there is still no
       "payment on camera" moment. What there is instead is a refusal on camera,
       which is more on-thesis and is the one that works today.
-- [ ] **Bazantic: no account, no gateway.** This is the one item that needs a
-      human, and it is the only thing between the project and all three prizes.
+- [x] ~~**Bazantic: no account, no gateway.**~~ Done 2026-09-08. The account
+      exists and the gateway `Doorman` is ACTIVE at
+      `clembot-doorman.bazgateway.com`, upstream `scorecard.wanessalabs.com`,
+      `POST /grade` priced at 1,000 millicents on Base mainnet, reads at 0, the
+      two runner methods not routed. Registered with `baz gateway add`, which
+      succeeds where the dashboard's connection test does not: that test probes
+      `/grade` with no body and gets our correct 400.
+      **Still open, and it is not the account:** the gateway advertises 11 MCP
+      tools for an 8-method API. It parsed the spec at registration time and
+      holds that snapshot, and CLI 0.8.0 has no `update` or `refresh`. The
+      served spec was filtered the same day (8 operations, verified live), so
+      what remains is a dashboard re-import. Re-running `gateway add` would
+      create a second gateway and lose the handle and the price rows.
       The API it wraps is deployed, documented and self-graded.
       **Update 2026-09-07:** the recipe format is no longer unknown. It is
       published and recorded in `README.md` under Bazantic, along with the
@@ -275,9 +286,11 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
      instructions. If they do not, the probes are too weak.
 
 ### Also unblocked, no secret needed
-2. **Bazantic account**, then verify in-product: OpenAPI 3.1 import, recipe
-   format, fee/rev share, chains. Every Bazantic-shaped task is downstream of
-   this and it needs a human.
+2. ~~**Bazantic account.**~~ Done 2026-09-08, gateway live and priced. What is
+   left is a dashboard re-import of the filtered spec so `tools/list` stops
+   offering the two runner tools, and deleting the duplicate draft gateway
+   `scvpdfyppzat3oiffx6h7aeywq`. Both are dashboard-only: the released CLI has
+   neither a spec refresh nor a `gateway rm`.
 ### Week 1 remainder
 4. Tune probes against three real servers of different shapes.
 5. ~~Guidance delta.~~ Built. Needs the key from item 1 to produce a real number.

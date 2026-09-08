@@ -54,7 +54,42 @@ export interface SpendEnv {
   GRADE_TOKEN?: string;
 }
 
-export type SpendVerdict = 'authorised' | 'anonymous' | 'bad-token';
+export type SpendVerdict = 'authorised' | 'anonymous' | 'bad-token' | 'weak-secret';
+
+/**
+ * A guessable token is not a token.
+ *
+ * This exists because the first `GRADE_TOKEN` set on this service was
+ * `something-that-is-a-token-that-is-randomized`, which describes a random
+ * string rather than being one. It is 43 characters, so a length check alone
+ * would have passed it.
+ *
+ * The signal that separates a passphrase from a random string is character
+ * class, not length: a base64url or hex token carries digits and usually mixed
+ * case, while a typed phrase is lowercase letters and separators. So a value
+ * with no uppercase and no digit is refused however long it is.
+ *
+ * This matters more than a normal weak-secret check, because what this token
+ * guards is the one code path that spends the model budget. A guessable value
+ * here reopens exactly the hole the permit was built to close.
+ */
+export function secretStrength(secret: string): { ok: boolean; why?: string } {
+  if (secret.length < 24) {
+    return { ok: false, why: `GRADE_TOKEN is ${secret.length} characters; 24 is the minimum` };
+  }
+  if (!/[A-Z0-9]/.test(secret)) {
+    return {
+      ok: false,
+      why:
+        'GRADE_TOKEN contains no uppercase letter and no digit, which is the ' +
+        'shape of a typed phrase rather than a generated secret',
+    };
+  }
+  if (new Set(secret).size < 10) {
+    return { ok: false, why: 'GRADE_TOKEN uses fewer than 10 distinct characters' };
+  }
+  return { ok: true };
+}
 
 /** True when this method+path is one that can cost money. */
 export function isSpendGated(method: string, path: string): boolean {
@@ -82,6 +117,11 @@ export function spendPermit(req: Request, env: SpendEnv): SpendVerdict {
   const presented = header.replace(/^Bearer\s+/i, '').trim();
   if (!presented) return 'anonymous';
   if (!env.GRADE_TOKEN) return 'bad-token';
+  // A weak secret is a MISCONFIGURATION, not a failed authentication attempt,
+  // and the two need different answers. Reporting it as bad-token would tell a
+  // correctly-configured caller that its own token was wrong, and the operator
+  // would never learn the real reason.
+  if (!secretStrength(env.GRADE_TOKEN).ok) return 'weak-secret';
   return timingSafeEqual(presented, env.GRADE_TOKEN) ? 'authorised' : 'bad-token';
 }
 

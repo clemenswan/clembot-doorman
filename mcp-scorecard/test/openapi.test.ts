@@ -10,7 +10,10 @@
 
 import { describe, expect, it } from 'vitest';
 import { validate } from '@readme/openapi-parser';
-import { downgradeNode, openApiSpec, openApiSpec30 } from '../src/routes/openapi.js';
+import {
+  PRIVATE_TAG, downgradeNode, openApiSpec, openApiSpec30,
+  publicOpenApiSpec, publicOpenApiSpec30,
+} from '../src/routes/openapi.js';
 
 const ORIGIN = 'https://scorecard.wanessalabs.com';
 
@@ -120,6 +123,91 @@ describe('the 3.0 downgrade', () => {
     // valid 3.0 field.
     const mediaType = { examples: { ok: { value: 1 } } };
     expect(downgradeNode(mediaType)).toEqual(mediaType);
+  });
+});
+
+describe('the public document', () => {
+  /**
+   * Spelled out rather than derived. Bazantic turns every operation here into
+   * an MCP tool an agent can read and call, so the set is a decision, not a
+   * by-product. Adding one should be a deliberate edit to this line.
+   */
+  const PUBLIC_OPS = [
+    'getAllowlist', 'getAudit', 'getBadge', 'getLatestGrade',
+    'getLedger', 'getTranscripts', 'health', 'requestGrade',
+  ];
+  const PRIVATE_OPS = ['claimPendingWork', 'postResult'];
+
+  it('is what the full document is NOT', () => {
+    // Half of the guard, and the half that is easy to lose. If someone
+    // "fixes" this by deleting the runner operations from the source instead
+    // of filtering them, every other test below still passes and the full
+    // document quietly stops describing routes the Worker still answers.
+    expect(opIds(openApiSpec(ORIGIN))).toEqual([...PUBLIC_OPS, ...PRIVATE_OPS].sort());
+  });
+
+  it('describes exactly the operations meant to be callable', () => {
+    expect(opIds(publicOpenApiSpec(ORIGIN))).toEqual([...PUBLIC_OPS].sort());
+    expect(opIds(publicOpenApiSpec30(ORIGIN))).toEqual([...PUBLIC_OPS].sort());
+  });
+
+  it('drops the emptied paths, not just the operations', () => {
+    // A path object left behind with no methods is still an advertised route.
+    const paths = Object.keys((publicOpenApiSpec(ORIGIN) as Any).paths);
+    expect(paths).not.toContain('/api/pending');
+    expect(paths).not.toContain('/api/result');
+    expect(paths).toContain('/api/ledger');
+  });
+
+  it('leaves nothing tagged private anywhere in the document', () => {
+    const offenders: string[] = [];
+    walk(publicOpenApiSpec(ORIGIN), '$', (k, v, path) => {
+      if (k === 'tags' && Array.isArray(v) && v.includes(PRIVATE_TAG)) offenders.push(path);
+      if (k === 'name' && v === PRIVATE_TAG) offenders.push(path);
+    });
+    expect(offenders).toEqual([]);
+  });
+
+  it('removes the credential that only the removed routes used', () => {
+    // Leaving `runnerToken` behind still names the credential and the surface
+    // it opens, which is most of what taking the routes off was for.
+    const schemes = (publicOpenApiSpec(ORIGIN) as Any).components.securitySchemes;
+    expect(Object.keys(schemes)).toEqual(['gradeToken']);
+  });
+
+  it('keeps a security scheme that a surviving operation still references', () => {
+    // The other half of the rule above: pruning must not become pruning
+    // everything. requestGrade declares gradeToken, so it stays.
+    const doc = publicOpenApiSpec(ORIGIN) as Any;
+    expect(doc.paths['/grade'].post.security).toEqual([{}, { gradeToken: [] }]);
+    expect(doc.components.securitySchemes.gradeToken).toBeDefined();
+  });
+
+  it('never says the words a removed route was described by', () => {
+    // A description elsewhere that explains the runner queue would put the
+    // surface back on the page by prose alone.
+    const text = JSON.stringify(publicOpenApiSpec(ORIGIN));
+    expect(text).not.toContain('/api/pending');
+    expect(text).not.toContain('/api/result');
+    expect(text).not.toContain('probe-runner token');
+  });
+
+  it('is still a valid document in both versions', async () => {
+    // Removing nodes from a valid document is not automatically valid: an
+    // orphaned $ref or an empty required list would both fail here.
+    const r31 = await check(publicOpenApiSpec(ORIGIN));
+    expect(r31.valid, describeResult(r31)).toBe(true);
+    const r30 = await check(publicOpenApiSpec30(ORIGIN));
+    expect(r30.valid, describeResult(r30)).toBe(true);
+    expect((publicOpenApiSpec30(ORIGIN) as Any).openapi).toBe('3.0.3');
+  });
+
+  it('does not mutate the document it filtered', () => {
+    // stripPrivate clones. If it ever stopped, the full spec would lose its
+    // runner routes the first time anything asked for the public one, and the
+    // order tests happen to run in would decide whether that was caught.
+    publicOpenApiSpec(ORIGIN);
+    expect(opIds(openApiSpec(ORIGIN))).toContain('claimPendingWork');
   });
 });
 

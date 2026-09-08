@@ -342,7 +342,7 @@ node runner/run.mjs --poll
 
 ```bash
 # Tests
-cd mcp-scorecard && npm test          # 121 unit tests
+cd mcp-scorecard && npm test          # 228 unit tests, 12 files
 node test/smoke-grade.mjs             # grades a live public server
 node test/smoke-api.mjs               # 75 assertions over the HTTP surface
 cd ../doorman && bash test-gate.sh    # 29 adversarial gate tests
@@ -488,6 +488,27 @@ free:
   be mapped with `curl` and paid for only once confirmed.
 
 Prices come back in base units of a 6-decimal token: `10000` means `$0.01`.
+
+### The served spec is narrower than the routes
+
+`/openapi.json` describes eight operations. The Worker answers ten. `GET
+/api/pending` and `POST /api/result` are the probe-runner control plane, they
+stay routed, and a self-hoster running their own runner needs them, but they are
+not described on the public document.
+
+The reason is specific to how a gateway ingests a spec. Bazantic derives one MCP
+tool per operation, and it derives them from the whole document, not from the
+methods you priced. Excluding the two runner methods from pricing removed them
+from routing, so they 404 through the gateway, while `tools/list` went on
+offering them as callable tools. Two surfaces, one allow-list.
+
+An advertised tool that cannot be called is a false description on the exact
+surface this project exists to grade. So the filter lives in
+`src/routes/openapi.ts` as `stripPrivate()`: it removes every operation tagged
+`runner`, then the paths those emptied, the tag itself, and the `runnerToken`
+security scheme that nothing left referenced. The full document is still built
+and still tested, because deleting the operations outright would leave the
+Worker answering routes nothing described.
 
 ### The spec URL is fetched by THEIR servers, not yours
 

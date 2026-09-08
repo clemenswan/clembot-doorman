@@ -1179,8 +1179,9 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
             Seven steps. The one tagged <span class="tag tag-live">live</span> is a
             genuine call to the deployed scorecard, so its verdict is a real audit
             and not a scripted one. <span class="tag tag-flow">flow</span> is the
-            orchestration around it, and <span class="tag tag-planned">planned</span>
-            is the Bazantic payment hop, which is designed but not yet wired.
+            orchestration around it, and <span class="tag tag-planned">unpaid</span>
+            is the Bazantic payment hop. The gateway is live and priced; this demo
+            takes the free path through it rather than spending your money.
           </p>
         </div>
         <div class="runbar">
@@ -1233,7 +1234,7 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
             <text class="dg-name" x="308" y="48">doorman</text>
             <text class="dg-role" x="308" y="68">subagent · 1 mcp tool</text>
           </g>
-          <g class="dg-node" data-node="bazantic" data-planned="true">
+          <g class="dg-node" data-node="bazantic">
             <rect x="560" y="20" width="170" height="64" rx="10"/>
             <text class="dg-name" x="578" y="48">Bazantic</text>
             <text class="dg-role" x="578" y="68">gateway · x402</text>
@@ -1278,15 +1279,17 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
         <article class="step" data-state="idle" data-step="3" data-node="bazantic">
           <div class="step-who"><span class="dot"></span>bazantic</div>
           <div>
-            <h3>Pay for the call <span class="tag tag-planned">half built</span></h3>
+            <h3>Pay for the call <span class="tag tag-planned">unpaid here</span></h3>
             <p class="say">
-              Two halves, and only one is finished. <b>The doorman's spend cap is
-              complete</b>: it reads the price from the service rather than assuming
-              it, reserves against a hard per-run and per-day limit, and the paid
-              call refuses to run without that reservation. <b>Settlement is not
-              wired</b>, so a request that arrives carrying a payment is refused
-              rather than honoured. A paywall that opens for any string is worse
-              than no paywall, because it looks like protection.
+              <b>The gateway is live</b>, at <code>clembot-doorman.bazgateway.com</code>,
+              with <code>POST /grade</code> priced at one cent on Base mainnet and every
+              read at zero. <b>The doorman's spend cap is complete</b>: it reads that
+              price from the service rather than assuming it, reserves against a hard
+              per-run and per-day limit, and refuses to run a paid call without the
+              reservation. This demo still takes the <b>free path</b>, because a page
+              that spends a visitor's money to show a green tick is not a demo. No paid
+              call has been made through the gateway yet, and that is stated rather
+              than dressed up.
             </p>
           </div>
           <div class="out" data-out></div>
@@ -1405,15 +1408,17 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
         One grade, one permit, <b>capped before anything is signed</b>.
       </p>
 
-      <div class="arch-node reveal" data-state="planned">
-        <p class="arch-tag">3 &middot; bazantic gateway <span>specified, not deployed</span></p>
+      <div class="arch-node reveal">
+        <p class="arch-tag">3 &middot; bazantic gateway <span>live, never paid</span></p>
         <h3>Payment and discovery</h3>
         <p class="arch-files"><code>x402 pathway</code> &middot; <code>/mcp</code> &middot; <code>published Recipe</code></p>
         <p class="arch-note">
           The scorecard issues a real, spec-correct 402 challenge and then <b>refuses a
           payment signature</b>, because settlement is the one thing it cannot verify
-          and a faked receipt is worse than no receipt. A gateway provisions that half.
-          It is drawn dashed because it does not exist yet.
+          and a faked receipt is worse than no receipt. The gateway provisions that
+          half, and it is now registered and priced. What has not happened is a paid
+          call: nobody has spent a cent through it, so the receipt on this page is
+          still an absence rather than a screenshot.
         </p>
       </div>
 
@@ -1664,7 +1669,7 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
         <p class="baz-kicker">Gateway and payments</p>
         <!-- Drop the real Bazantic SVG in here and it replaces the type lockup. -->
         <div class="baz-mark" id="bazantic-mark">Bazantic</div>
-        <span class="baz-status planned">Account pending</span>
+        <span class="baz-status">Gateway live</span>
       </div>
       <div>
         <ul>
@@ -1679,10 +1684,12 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
             <b>The gateway owns settlement, and that is the point.</b> Our x402 challenge
             is real and spec-correct, and it <em>refuses</em> a payment signature rather
             than pretending to verify one, because settlement is the single thing this
-            service cannot check. A gateway provisions that pathway in front of it. Until
-            one exists, the flow above says
-            <span class="tag tag-plan-inline">half built</span> instead of showing a
-            receipt that was never issued.
+            service cannot check. The gateway provisions that pathway in front of it, and
+            as of 2026-09-08 it exists: <code>clembot-doorman.bazgateway.com</code>, one
+            cent for a grade, free for every read. The flow above still says
+            <span class="tag tag-plan-inline">unpaid here</span>, because no call has been
+            settled through it yet and a receipt that was never issued does not go on a
+            page.
           </li>
           <li>
             <b>A Recipe is one tool, not a pipeline.</b> Typed inputs, a prompt, a model
@@ -1713,24 +1720,32 @@ baz login
 API=https://scorecard.wanessalabs.com
 baz gateway add <b>--endpoint</b> $API <b>--spec-url</b> $API/openapi.json \
   <b>--auth-type</b> api-key \
-  <b>--name</b> "MCP Scorecard" <b>--status</b> draft --json
+  <b>--name</b> "Doorman" <b>--status</b> active --json
 
 <i># 3. a capped, revocable grant for the doorman to spend from.</i>
 <i>#    --source hosted is not optional: without it a missing device</i>
 <i>#    key falls back to your self-custody wallet, which is uncapped</i>
 <i>#    and irrevocable. Bazantic documents this. The doorman refuses it.</i>
-baz grant create <b>--name</b> doorman <b>--cap</b> 5 <b>--service</b> &lt;slug&gt;
-baz curl https://bazgateway.com/&lt;slug&gt;/grade \
+<i>#    The gateway URL is a SUBDOMAIN. Read endpointUrl out of</i>
+<i>#    baz gateway list --json; never assemble bazgateway.com/&lt;slug&gt;.</i>
+baz grant create <b>--name</b> doorman <b>--cap</b> 5 <b>--service</b> clembot-doorman
+baz curl https://clembot-doorman.bazgateway.com/grade \
   <b>--account</b> doorman <b>--max-amount</b> 0.05 <b>--source hosted</b> --json
 
 <i># 4. the Recipe is DASHBOARD-ONLY: `baz recipe` does not exist in the</i>
 <i>#    released CLI 0.8.0, though the docs describe it. Verified 2026-09-08.</i></pre>
 
     <p class="arch-caption reveal">
-      Commands checked against <code>@bazantic/cli@0.8.0</code> installed locally on
-      2026-09-08. The account does not exist yet, so <code>&lt;slug&gt;</code> is a real
-      blank and not a redaction, and nothing here has been executed against a live
-      gateway. The
+      <!-- email_off: Cloudflare Scrape Shield reads `cli@0.8.0` as an address and
+           rewrites the version to "[email protected]" on the custom domain ONLY.
+           The pages.dev alias is untouched, so this is invisible unless you read
+           the surface a visitor actually gets. -->
+      Commands checked against <!--email_off--><code>@bazantic/cli@0.8.0</code><!--/email_off--> installed locally on
+      2026-09-08, and steps 1 and 2 were run: the gateway they produce is the live one.
+      Step 3 has not been run, so no grant exists and nothing has been paid. The
+      dashboard's own connection test fails against this API with a 400, because
+      <code>POST /grade</code> requires a body naming a server; the CLI path above
+      bypasses it. The
       <code>bazantic.yaml</code> manifest is deliberately absent, because that page is
       marked preview and the released CLI cannot read the file.
       <a href="https://github.com/clemenswan/clembot-doorman#bazantic">Full install and usage in the repo</a>.
@@ -2255,11 +2270,12 @@ doorman eval npm:some-candidate \
     await sleep(420);
     setStep(2, 'done');
 
-    // 3 - the gateway. Marked planned, and the copy says so.
+    // 3 - the gateway. Live and priced, but this page does not pay. The copy
+    // beside it says so, and the output must not imply a settlement happened.
     setStep(3, 'active');
     await sleep(460);
-    out(3, '<span class="warn">402 payment required</span><br>settle over x402<br>' +
-           '<span class="warn">gateway not wired yet</span>');
+    out(3, '<span class="warn">402 payment required</span><br>10000 base units &middot; $0.01 &middot; base mainnet<br>' +
+           '<span class="warn">not paid here: free path taken</span>');
     await sleep(560);
     setStep(3, 'done');
 

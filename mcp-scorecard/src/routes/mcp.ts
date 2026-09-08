@@ -24,7 +24,7 @@
 
 import { type Env, CORS, json } from '../index.js';
 import { CACHE_TTL_DAYS, enqueueAudit, isStale } from './grade.js';
-import { paidAllowed, spendPermit, type SpendVerdict } from './spend.js';
+import { paidAllowed, secretStrength, spendPermit, type SpendVerdict } from './spend.js';
 
 const PROTOCOL_VERSION = '2025-06-18';
 const SERVER_NAME = 'mcp-scorecard';
@@ -95,6 +95,17 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
   // merely downgraded it, this endpoint would be the soft way in to exactly what
   // POST /grade refuses, and the two doors would disagree about the same key.
   const permit = spendPermit(req, env);
+  if (permit === 'weak-secret') {
+    return json(
+      {
+        error: 'misconfigured',
+        detail:
+          'this deployment is refusing paid audits until its GRADE_TOKEN is fixed: ' +
+          secretStrength(env.GRADE_TOKEN as string).why,
+      },
+      503,
+    );
+  }
   if (permit === 'bad-token') {
     return json(
       {

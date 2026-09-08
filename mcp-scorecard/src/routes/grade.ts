@@ -7,7 +7,7 @@
  */
 
 import { type Env, err, json } from '../index.js';
-import { paidAllowed, spendPermit } from './spend.js';
+import { paidAllowed, secretStrength, spendPermit } from './spend.js';
 
 export interface GradeRequestItem {
   name?: string;
@@ -34,6 +34,17 @@ export async function handleGrade(req: Request, env: Env): Promise<Response> {
   // because a caller who believes they are authenticated and is not will not
   // find out until the behavioural layer is silently missing from every grade.
   const permit = spendPermit(req, env);
+  if (permit === 'weak-secret') {
+    // 503, matching how an unconfigured paywall answers: the service is
+    // misconfigured, the caller did nothing wrong, and saying 401 here would
+    // send an operator hunting a token problem that does not exist.
+    return err(
+      'this deployment is misconfigured and is refusing paid audits until it is fixed: ' +
+      secretStrength(env.GRADE_TOKEN as string).why +
+      '. Anonymous static-only audits are unaffected.',
+      503,
+    );
+  }
   if (permit === 'bad-token') {
     return err(
       'the presented grade token was not accepted, so nothing was queued. ' +

@@ -6,6 +6,91 @@ updated: 2026-09-08
 
 # Lineage
 
+## 2026-09-08 - Session 14, the gateway is live and stops describing what it cannot do
+
+### The gateway exists
+
+`Doorman` at `clembot-doorman.bazgateway.com`, active, upstream
+`scorecard.wanessalabs.com`, authenticating to us with an API key over
+`Authorization: bearer` carrying `GRADE_TOKEN`. `POST /grade` is priced at 1,000
+millicents, one cent, on Base **mainnet**. Transcripts and every read are 0, and
+the two runner methods are not routed at all.
+
+Three things learned registering it, all of which cost time:
+
+- **`baz gateway add` works where the dashboard's connection test fails.** The
+  test probes `/grade` bare and gets a 400, because `POST /grade` requires a
+  JSON body naming a server. That 400 is correct behaviour on our side. The
+  dashboard also reports "MCP Server: Unavailable" while the endpoint answers a
+  real `tools/list` with 200: a false negative in their health check, not a
+  fault in ours.
+- **A `tools/list` call and a 402 price probe both cost nothing**, so the whole
+  gateway can be mapped and every price confirmed before a single paid call.
+- **`baz recipe` and `baz gateway domains` do not exist** in CLI 0.8.0, despite
+  full documentation with worked examples. Both had already been published in
+  this README and on the live site as the install path. Corrected. The rule now:
+  install the vendor's software and read `--help` before publishing a vendor
+  command as an instruction.
+
+### `tools/list` returned 11 tools for an 8-method API
+
+Excluding a method from pricing removes it from ROUTING. It does not remove it
+from MCP tool generation. Bazantic derives one tool per operation in the OpenAPI
+document, and it reads the whole document, not the subset that was priced.
+
+So the gateway simultaneously offered `claimPendingWork` and `postResult` as
+callable tools and returned 404 for both. Two surfaces derived independently
+from two different inputs, one allow-list applied to only one of them.
+
+Not exploitable. Both need `RUNNER_TOKEN`, which the gateway does not hold and
+does not forward; it forwards `GRADE_TOKEN`. But they were DESCRIBED on the
+surface an agent reads before deciding what to call, and a tool description that
+does not match what the tool does is the exact failure this project was built to
+detect. Grading other people's servers for it while shipping it is not a
+position worth defending.
+
+### The fix: two documents, one source
+
+`src/routes/openapi.ts` still builds the full document, all ten operations. A
+new `stripPrivate()` removes every operation tagged `runner`, then the paths
+those emptied, the tag declaration, and the `runnerToken` security scheme that
+nothing left referenced. `/openapi.json` and `/openapi-3.0.json` serve the
+filtered result; the runner routes stay routed and stay guarded.
+
+Filtering rather than deleting at the source is the load-bearing choice. Deleting
+the two operations would have satisfied every "the public spec is clean"
+assertion while leaving the Worker answering routes nothing described. So one
+test asserts the full document HAS them and another asserts the served one does
+not, and neither passes alone.
+
+### Verified
+
+- 228 tests pass across 12 files. Nine are new.
+- **Mutation-checked in both directions.** Making `stripPrivate` a no-op turns 5
+  tests red. "Fixing" it by deleting the runner operations from the source turns
+  a different 2 red.
+- Live after deploy (version `3975edbd`): `/openapi.json` and
+  `/openapi-3.0.json` each describe **8** operations, carry tags `grading, trust`
+  only, expose `gradeToken` as the only security scheme, and contain neither the
+  string `runnerToken` nor `/api/pending` anywhere in the document.
+- `GET /api/pending` on the origin still returns **401**. Still routed, still
+  guarded, no longer advertised.
+- Stale count corrected in the README: it claimed 121 unit tests, re-counted at
+  228.
+
+### The gateway did not pick it up, and there is no CLI path that makes it
+
+After the deploy, `tools/list` on the gateway still returns 11. The spec is
+fetched and parsed server-side **at registration time** and the gateway holds
+that snapshot. CLI 0.8.0 offers `gateway add` and `gateway list` and nothing
+else: no `update`, no `refresh`, no `rm`.
+
+Re-running `gateway add` would register a SECOND gateway with a new slug,
+abandoning the `clembot-doorman` handle and all eight price rows. So the
+remaining step is a dashboard re-import of the spec URL, which is a human
+action. Recorded here rather than worked around, because the workaround costs
+the custom domain.
+
 ## 2026-09-08 - Session 13, the instrument ships instead of the measurement
 
 Clemens: "i honestly don't want to use any LLM resource here at all."

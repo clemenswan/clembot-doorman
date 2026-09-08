@@ -8,6 +8,12 @@
  *
  * Generated in code rather than kept as a static file so the served origin is
  * always correct and the spec cannot drift from the routes beside it.
+ *
+ * TWO DOCUMENTS COME OUT OF ONE SOURCE. `openApiSpec` describes every route
+ * this Worker answers, including the runner control plane, and is what a
+ * self-hoster needs. `publicOpenApiSpec` is what gets SERVED: the same
+ * document with everything tagged `runner` removed. See the note above
+ * `stripPrivate` for why that distinction is not cosmetic.
  */
 
 export function openApiSpec(origin: string): Record<string, unknown> {
@@ -478,4 +484,84 @@ export function downgradeNode(node: unknown): unknown {
   }
 
   return out;
+}
+
+
+/**
+ * The tag that marks an operation as internal control plane.
+ *
+ * `/api/pending` and `/api/result` are how a probe runner claims queued work
+ * and posts a finished audit back. They are real, they stay routed, and a
+ * self-hoster running their own runner needs them. They are also guarded by
+ * `RUNNER_TOKEN`, which no caller outside this project holds.
+ *
+ * None of that makes it right to DESCRIBE them on the public spec. Bazantic
+ * derives an MCP tool per operation, so every entry here becomes a tool an
+ * agent reads and may try. Both of these 404 through the gateway, because the
+ * gateway routes only the priced methods. An advertised tool that cannot be
+ * called is a false description on the exact surface this project exists to
+ * grade, so it comes off the surface rather than getting a caveat.
+ */
+export const PRIVATE_TAG = 'runner';
+
+const HTTP_METHODS = [
+  'get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace',
+] as const;
+
+/**
+ * Remove every operation carrying PRIVATE_TAG, then remove what only existed
+ * to support them: an emptied path, the tag declaration itself, and any
+ * security scheme nothing left refers to. `runnerToken` is the one that
+ * matters there. Leaving it behind would still name the credential and the
+ * surface it opens, which is most of what the removal was for.
+ *
+ * Filtering here rather than deleting the operations at the source is
+ * deliberate. The full document stays testable, so the filter cannot go inert:
+ * one test asserts the full spec HAS these operations and another asserts the
+ * public one does not. Deleting the source would pass the second test while
+ * quietly destroying the thing the first one guards.
+ */
+export function stripPrivate(doc: Record<string, unknown>): Record<string, unknown> {
+  type Node = Record<string, any>;
+  const out = JSON.parse(JSON.stringify(doc)) as Node;
+
+  const paths = (out.paths ?? {}) as Record<string, Node>;
+  for (const [route, item] of Object.entries(paths)) {
+    for (const method of HTTP_METHODS) {
+      const op = item[method];
+      if (op && Array.isArray(op.tags) && op.tags.includes(PRIVATE_TAG)) delete item[method];
+    }
+    if (!HTTP_METHODS.some((m) => item[m])) delete paths[route];
+  }
+
+  if (Array.isArray(out.tags)) {
+    out.tags = out.tags.filter((t: Node) => t?.name !== PRIVATE_TAG);
+  }
+
+  const schemes = out.components?.securitySchemes as Record<string, unknown> | undefined;
+  if (schemes) {
+    const used = new Set<string>();
+    const collect = (reqs: unknown) => {
+      if (!Array.isArray(reqs)) return;
+      for (const req of reqs) for (const name of Object.keys(req ?? {})) used.add(name);
+    };
+    collect(out.security);
+    for (const item of Object.values(paths)) {
+      for (const method of HTTP_METHODS) collect(item[method]?.security);
+    }
+    for (const name of Object.keys(schemes)) if (!used.has(name)) delete schemes[name];
+  }
+
+  return out;
+}
+
+/** The 3.1 document as served. */
+export function publicOpenApiSpec(origin: string): Record<string, unknown> {
+  return stripPrivate(openApiSpec(origin));
+}
+
+/** The 3.0.3 document as served. Filtered first, then downgraded, so the two
+ *  served documents cannot describe different sets of operations. */
+export function publicOpenApiSpec30(origin: string): Record<string, unknown> {
+  return stripPrivate(openApiSpec30(origin));
 }

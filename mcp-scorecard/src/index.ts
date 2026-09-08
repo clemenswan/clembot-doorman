@@ -15,8 +15,8 @@
  *   GET  /api/ledger         demo site polls this (no streaming, free tier)
  *   POST /mcp                the scorecard AS an MCP server, one tool: grade
  *   GET  /price              what an audit costs, free to ask
- *   GET  /openapi.json       Bazantic import surface (3.1)
- *   GET  /openapi-3.0.json   the same spec as 3.0.3, for importers that need it
+ *   GET  /openapi.json       Bazantic import surface (3.1), runner routes filtered out
+ *   GET  /openapi-3.0.json   the same filtered spec as 3.0.3, for importers that need it
  *
  * Hand-rolled routing on purpose: one fewer dependency, and the whole request
  * path stays readable in one screen.
@@ -30,7 +30,7 @@ import { handleBadge } from './routes/badge.js';
 import { handlePending, handleResult } from './routes/runner.js';
 import { handleLedger } from './routes/ledger.js';
 import { handleMcp } from './routes/mcp.js';
-import { openApiSpec, openApiSpec30 } from './routes/openapi.js';
+import { publicOpenApiSpec, publicOpenApiSpec30 } from './routes/openapi.js';
 import { type PaymentEnv, handlePrice, paymentGate } from './routes/payment.js';
 
 export interface Env extends PaymentEnv {
@@ -87,14 +87,18 @@ export default {
       if (path === '/price' && req.method === 'GET') {
         return handlePrice(env, url.origin + '/grade');
       }
+      // PUBLIC document, not the full one. `/api/pending` and `/api/result`
+      // stay routed below for self-hosted runners but are not described here:
+      // an importer turns every described operation into a tool, and those two
+      // are not reachable through the gateway. See stripPrivate().
       if (path === '/openapi.json') {
-        return json(openApiSpec(url.origin));
+        return json(publicOpenApiSpec(url.origin));
       }
       // Same spec, transformed to 3.0.3. Not a second source of truth. Here
       // because importers are not uniform about 3.1 and the spec is the first
       // thing a partner has to ingest.
       if (path === '/openapi-3.0.json') {
-        return json(openApiSpec30(url.origin));
+        return json(publicOpenApiSpec30(url.origin));
       }
 
       if (path === '/grade' && req.method === 'POST') return handleGrade(req, env);
