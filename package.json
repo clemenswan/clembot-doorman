@@ -2,6 +2,7 @@
   "name": "clembot-doorman",
   "version": "0.1.0",
   "description": "Measure whether a candidate tool actually helps YOUR agent, in a throwaway sandbox, on your machine.",
+  "homepage": "https://clembot-doorman.wanessalabs.com",
   "type": "module",
   "bin": {
     "doorman": "./doorman/cli/doorman.mjs"

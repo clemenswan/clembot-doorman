@@ -4,6 +4,8 @@
 
 **Graded by being used, not by being read. Do not trust the letter. Replay the tape.**
 
+**[clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com)** · the live explainer, the 23 graded servers, and the finding.
+
 Adding an MCP server to an agent is one line of JSON. After that line, a server
 you have never audited describes its own tools to your agent, and your agent
 reads those descriptions as instructions. There is no grade, no gate, and no
@@ -50,7 +52,7 @@ costs nothing to find out.
 | `doorman/cli/` | The CLI: `doctor`, `report`, `eval`. Zero runtime dependencies. |
 | `doorman/` | The gate you install: a PreToolUse hook that blocks ungraded MCP servers, a subagent that vets them, and a registry you own. |
 | `mcp-scorecard/` | The grading service behind L1. Cloudflare Worker + D1 + a local probe runner. |
-| `site/` | The explainer at clembot-doorman.wanessalabs.com. |
+| `site/` | The explainer at [clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com). |
 | `fixtures/planted-bad-mcp/` | A deliberately hostile MCP server, deployed, so the demo denies something real instead of a line in a JSON file. |
 
 ## What it will not do

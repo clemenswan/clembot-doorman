@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "description": "Vets MCP servers, skills and repos before an agent gets them. Fit review first, paid grade second.",
+  "homepage": "https://clembot-doorman.wanessalabs.com",
   "bin": {
     "doorman": "./cli/doorman.mjs"
   },
@@ -29,5 +30,9 @@
     "`bin` is the CLI surface: doorman report (L1) and doorman eval (L3).",
     "L1 delegates to mcp-scorecard/runner/run.mjs rather than reimplementing",
     "the static layer, per invariant 2."
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clemenswan/clembot-doorman.git"
+  }
 }
