@@ -4,21 +4,157 @@
 
 **Graded by being used, not by being read. Do not trust the letter. Replay the tape.**
 
-Adding an MCP server to Claude Code is one line of JSON. After that line, a server
+Adding an MCP server to an agent is one line of JSON. After that line, a server
 you have never audited describes its own tools to your agent, and your agent
-believes the description. There is no grade, no gate, and no record of what you
-let in.
+reads those descriptions as instructions. There is no grade, no gate, and no
+record of what you let in.
 
-This repo is two halves of a fix:
+## What this is for
 
-| Half | What it is |
+Doorman measures whether a candidate tool actually helps **your** agent, and
+gives you a report about **your** build.
+
+That emphasis is the whole design. A benchmark someone else ran tells you
+whether a tool helped *their* agent. Whether it helps yours depends on your
+harness, your model, your existing servers, and what your agents actually do.
+Those differ enough that a central verdict is close to meaningless.
+
+So this is a thing you install, not a service you ask:
+
+- **It runs on your machine.** Two throwaway Docker sandboxes, identical except
+  one install layer.
+- **It drives the harness you already run.** Not a toy agent of ours.
+- **It spends from your own account**, bounded by a ceiling you set, and the
+  two cheapest layers spend nothing at all.
+- **Nothing is sent to us.** There is no account here to create, no telemetry,
+  and no server of ours in the path. We never see your results.
+
+The verdict is yours, produced on your machine, from numbers we never receive.
+
+## Three layers, cheapest first
+
+| | Command | Needs | Answers |
+|---|---|---|---|
+| **L0** | `doorman doctor` | nothing | What is in my build? Which servers can my agents reach, and is the gate actually running? |
+| **L1** | `doorman report <link>` | nothing | Is this server's implementation sound, and are its tool descriptions documentation or instructions? |
+| **L3** | `doorman eval <link> --task <f>` | Docker + your agent's key | Does an agent get more done with this than without it, on my stack? |
+
+**L0 and L1 need no model key and no Docker.** Most of what you want to know
+about a server, including whether it is quietly telling your agent what to do,
+costs nothing to find out.
+
+## What is in this repo
+
+| Path | What it is |
 |---|---|
-| `mcp-scorecard/` | The service. Grades an MCP server across three layers and produces an evidence bundle. Cloudflare Worker + D1 + a local probe runner. |
-| `doorman/` | The client. A PreToolUse hook that blocks ungraded MCP servers, a `doorman` subagent that vets them, and a local registry you own. |
+| `doorman/cli/` | The CLI: `doctor`, `report`, `eval`. Zero runtime dependencies. |
+| `doorman/` | The gate you install: a PreToolUse hook that blocks ungraded MCP servers, a subagent that vets them, and a registry you own. |
+| `mcp-scorecard/` | The grading service behind L1. Cloudflare Worker + D1 + a local probe runner. |
 | `site/` | The explainer at clembot-doorman.wanessalabs.com. |
-| `fixtures/planted-bad-mcp/` | A deliberately hostile MCP server we publish, so the demo denies something real instead of a line in a JSON file. |
+| `fixtures/planted-bad-mcp/` | A deliberately hostile MCP server, deployed, so the demo denies something real instead of a line in a JSON file. |
+
+## What it will not do
+
+Stated up front, because a measurement tool that oversells its own reach is the
+exact failure it exists to catch.
+
+- **It will not fabricate a number.** No key means the run stops and says so.
+  An unmeasured layer is reported as unmeasured, never scored zero.
+- **It will not reach ADOPT on one run per arm.** Agent runs vary, so a single
+  sample cannot be told apart from luck. DECLINE stays reachable at any run
+  count, which is what makes a cheap run worth doing.
+- **It does not observe network egress yet.** The security clause that would
+  auto-DECLINE a tool for undeclared network access has no input, so on today's
+  runs it does not pass, it *does not run*, and every report says so in those
+  words.
+- **It cannot install everything.** A candidate must be expressible as one
+  reproducible layer: npm, pip, or a git clone. Platform-class candidates are
+  refused by name rather than approximated with an arm that installed nothing.
 
 Built for ETHOnline 2026. Deadline Sunday 13 September 2026, 12:00 EDT.
+
+## Install
+
+**The answer depends on your stack, so run it on yours.** A central benchmark
+tells you whether a tool helped somebody else's agent. Whether it helps yours
+depends on your harness, your model, and what your agents actually do.
+
+So this is a thing you install, not a service you ask. It runs on your machine,
+drives the agent you already use, spends from your own account, and the report
+is about your build. **Nothing runs on our infrastructure and nothing is sent to
+us.** There is no account to create.
+
+```bash
+git clone https://github.com/clemenswan/clembot-doorman
+npm i -g ./clembot-doorman
+```
+
+Node 20+. Zero runtime dependencies, deliberately: every dependency is one more
+thing that can fail to install on your machine.
+
+### The three layers, cheapest first
+
+```bash
+# L0. What is in YOUR build. Free, local, read-only.
+#     No model, no container, no network.
+doorman doctor
+
+# L1. Grade a server by its implementation. Still no model key.
+doorman report https://your-mcp-server.example/mcp
+
+# L3. Does a candidate actually help YOUR agent? Two sandboxes, identical
+#     except one install layer, driving the harness you already run.
+doorman eval npm:some-candidate   --task evals/tasks/url-to-note.yaml --agent claude-code --max-cost 2
+```
+
+`doctor` and `report` need **no model key and no Docker**. Most of what you want
+to know about a server, including whether its tool descriptions are giving your
+agent orders rather than documenting it, costs nothing to find out.
+
+### What `doorman doctor` tells you
+
+Which harness the project is set up for, every MCP server your agents can reach
+and where each was declared, how many subagents hold MCP tools, and whether the
+gate is installed **and wired**. Those last two are different states, and the
+dangerous one is the middle: a gate that is present but not wired is not
+running, and looks exactly like one that is. Both are quiet.
+
+### Your key, your machine
+
+`--agent claude-code` drives the agent you already run. The credential your
+harness already uses is passed straight into a local container. It is never
+written to a file, never logged, and never leaves your machine except to the
+provider you already pay.
+
+An adapter that cannot measure something reports it as **not measured** rather
+than estimating it. `--agent exec "<command>"` will drive any harness at all,
+and reports success rate and wall time only, because a command doorman knows
+nothing about cannot be asked how many turns it took.
+
+### The bill is bounded before it starts
+
+An agent loop resends the whole conversation every turn, so cost grows with the
+**square** of the turn count. A 24-turn cap authorises far more than it looks
+like: on Sonnet, three runs per arm is **$54 at worst**.
+
+So `--max-cost` is the input and the turn cap is **derived from it**. A ceiling
+of $2 is a ceiling of $2. Add `--estimate` to print the worst case and spend
+nothing:
+
+```bash
+doorman eval npm:some-candidate --task <file> --max-cost 2 --estimate
+```
+
+It refuses rather than shaving: a ceiling too small for even a three-turn run
+stops and shows the arithmetic. The permit ledger is the same one the doorman
+uses on its own outbound spend.
+
+Fewer than three runs per arm cannot reach ADOPT, because one sample cannot be
+told apart from luck. DECLINE stays reachable at any run count, so a cheap run
+is still worth doing: it can tell you a candidate is bad, just not that one is
+good.
+
+---
 
 ## Live
 

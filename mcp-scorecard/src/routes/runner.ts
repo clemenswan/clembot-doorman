@@ -44,7 +44,7 @@ export async function handlePending(req: Request, url: URL, env: Env): Promise<R
 
   // Unclaimed, or claimed so long ago the runner is presumed gone.
   const rows = await env.DB.prepare(
-    'SELECT id, server_url, needed_for, attempts FROM pending ' +
+    'SELECT id, server_url, needed_for, attempts, paid_allowed FROM pending ' +
     'WHERE (claimed_at IS NULL OR claimed_at < ?) AND attempts < ? ' +
     'ORDER BY created_at LIMIT ?',
   ).bind(cutoff, MAX_ATTEMPTS, limit).all();
@@ -70,6 +70,10 @@ export async function handlePending(req: Request, url: URL, env: Env): Promise<R
         model: env.PROBE_MODEL,
         temperature: Number(env.PROBE_TEMPERATURE ?? '0'),
         runs: Number(env.PROBE_RUNS ?? '3'),
+        // The inbound spend permit. 0 means this audit was queued without a
+        // credential, so the runner must not spend a model token on it. The
+        // runner enforces it; this is the field it enforces from.
+        paid_allowed: Number((row as Record<string, unknown>).paid_allowed ?? 0),
       });
     }
   }

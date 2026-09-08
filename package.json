@@ -1,0 +1,34 @@
+{
+  "name": "clembot-doorman",
+  "version": "0.1.0",
+  "description": "Measure whether a candidate tool actually helps YOUR agent, in a throwaway sandbox, on your machine.",
+  "type": "module",
+  "bin": {
+    "doorman": "./doorman/cli/doorman.mjs"
+  },
+  "scripts": {
+    "doctor": "node doorman/cli/doorman.mjs doctor",
+    "test": "node doorman/test/run.mjs && node doorman/test/cli-run.mjs",
+    "test:all": "node doorman/test/run.mjs && node doorman/test/cli-run.mjs && bash doorman/test-gate.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clemenswan/clembot-doorman.git"
+  },
+  "comment": [
+    "Root package so the CLI installs from a clone:",
+    "  git clone https://github.com/clemenswan/clembot-doorman && npm i -g ./clembot-doorman",
+    "",
+    "It deliberately declares NO dependencies. This is a giveaway: every",
+    "dependency is one more thing that can fail to install on somebody else's",
+    "machine, and a gate that fails to start is a gate that fails open.",
+    "",
+    "The bin points into doorman/cli/ rather than duplicating it, and",
+    "report.mjs resolves the scorecard runner at runtime rather than assuming",
+    "the author's directory layout."
+  ]
+}

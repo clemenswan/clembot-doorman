@@ -7,6 +7,7 @@
  */
 
 import { type Env, err, json } from '../index.js';
+import { paidAllowed, spendPermit } from './spend.js';
 
 export interface GradeRequestItem {
   name?: string;
@@ -28,28 +29,36 @@ export async function handleGrade(req: Request, env: Env): Promise<Response> {
   const items = normaliseRequest(body);
   if (!items.ok) return err(items.error);
 
+  // The inbound spend permit. A missing credential is a choice and downgrades
+  // to a static-only audit; a wrong one is a mistake and is refused loudly,
+  // because a caller who believes they are authenticated and is not will not
+  // find out until the behavioural layer is silently missing from every grade.
+  const permit = spendPermit(req, env);
+  if (permit === 'bad-token') {
+    return err(
+      'the presented grade token was not accepted, so nothing was queued. ' +
+      'Omit the Authorization header entirely to queue a static-only audit, ' +
+      'which is free and needs no credential.',
+      401,
+    );
+  }
+  const paid = paidAllowed(permit);
+
   const owner = (req.headers.get('x-owner') ?? 'anonymous').slice(0, 120);
   const now = new Date().toISOString();
   const queued: Array<Record<string, unknown>> = [];
 
   for (const item of items.value) {
-    const id = crypto.randomUUID();
+    const { id } = await enqueueAudit(env, {
+      url: item.url, name: item.name, needed_for: item.needed_for,
+      requestedBy: owner, paidAllowed: paid,
+    });
 
-    await env.DB.batch([
-      env.DB.prepare(
-        'INSERT INTO audits (id, server_url, server_name, needed_for, status, model, created_at) ' +
-        'VALUES (?, ?, ?, ?, ?, ?, ?)',
-      ).bind(id, item.url, item.name ?? null, item.needed_for ?? null, 'queued', env.PROBE_MODEL, now),
-      env.DB.prepare(
-        'INSERT INTO pending (id, server_url, needed_for, requested_by, created_at) ' +
-        'VALUES (?, ?, ?, ?, ?)',
-      ).bind(id, item.url, item.needed_for ?? null, owner, now),
-      env.DB.prepare(
-        'INSERT INTO ledger (id, audit_id, event, detail, created_at) VALUES (?, ?, ?, ?, ?)',
-      ).bind(crypto.randomUUID(), id, 'queued', item.url, now),
-    ]);
-
-    queued.push({ audit_id: id, server_url: item.url, status: 'queued', poll: '/grade/' + id });
+    queued.push({
+      audit_id: id, server_url: item.url, status: 'queued', poll: '/grade/' + id,
+      depth: paid ? 'full' : 'static-only',
+      paid_allowed: Boolean(paid),
+    });
   }
 
   return json(
@@ -240,4 +249,45 @@ export function normaliseRequest(
     });
   }
   return { ok: true, value: out };
+}
+
+/**
+ * The ONE place an audit is written to the queue.
+ *
+ * There used to be two: this file and the MCP tool in `mcp.ts`, each with its
+ * own `INSERT INTO pending`. When the spend permit was added, only this one
+ * learned about it, so every audit queued through MCP silently defaulted to
+ * static-only. The column default meant that failed SAFE rather than open, but
+ * "the second copy quietly disagreed with the first" is exactly the drift
+ * invariant 2 exists to forbid, and a permit that half the callers cannot grant
+ * is not a permit.
+ *
+ * `spend-gate.test.ts` asserts `src/` contains exactly one `INSERT INTO pending`.
+ */
+export async function enqueueAudit(
+  env: Env,
+  a: {
+    url: string;
+    name?: string | null;
+    needed_for?: string | null;
+    requestedBy: string;
+    paidAllowed: 0 | 1;
+  },
+): Promise<{ id: string; now: string }> {
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+  await env.DB.batch([
+    env.DB.prepare(
+      'INSERT INTO audits (id, server_url, server_name, needed_for, status, model, created_at) ' +
+      'VALUES (?, ?, ?, ?, ?, ?, ?)',
+    ).bind(id, a.url, a.name ?? null, a.needed_for ?? null, 'queued', env.PROBE_MODEL, now),
+    env.DB.prepare(
+      'INSERT INTO pending (id, server_url, needed_for, requested_by, paid_allowed, created_at) ' +
+      'VALUES (?, ?, ?, ?, ?, ?)',
+    ).bind(id, a.url, a.needed_for ?? null, a.requestedBy, a.paidAllowed, now),
+    env.DB.prepare(
+      'INSERT INTO ledger (id, audit_id, event, detail, created_at) VALUES (?, ?, ?, ?, ?)',
+    ).bind(crypto.randomUUID(), id, 'queued', a.url, now),
+  ]);
+  return { id, now };
 }

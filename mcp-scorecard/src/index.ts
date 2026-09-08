@@ -40,6 +40,8 @@ export interface Env extends PaymentEnv {
   PROBE_RUNS: string;
   ANTHROPIC_API_KEY?: string;
   RUNNER_TOKEN?: string;
+  /** Authorises a PAID audit on POST /grade. Unset = static-only for everyone. */
+  GRADE_TOKEN?: string;
 }
 
 export const CORS = {

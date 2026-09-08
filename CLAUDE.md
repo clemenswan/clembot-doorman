@@ -148,6 +148,26 @@ These are not preferences. Breaking one silently makes the product dishonest.
     would be the most destructive thing the script could do. It reports `KEPT`
     instead.
 
+25. **Nothing arriving from outside may spend, unless it presented a permit.**
+    Invariant 19 refuses to spend on the way OUT without a permit; this is the
+    same rule pointed inward. `POST /grade` and the MCP `grade` tool are open on
+    purpose, because the site's demo queues a real audit, so an anonymous call
+    is accepted and marked `paid_allowed = 0`: it gets the free static layer and
+    the runner may never spend a model token on it. **A missing credential is a
+    choice, a wrong one is a mistake**, so a token that is presented and not
+    accepted is a 401 that queues nothing, never a silent downgrade. A caller
+    who believes it is authenticated would otherwise find out from a grade
+    quietly missing 70 of its 100 points. The migration column defaults to `0`
+    and the runner ORs the flag into `staticOnly`, so the permit can only ever
+    REMOVE the behavioural layer, never add one. Twelve mutants, all caught.
+
+26. **There is exactly one `INSERT INTO pending`.** There were two, this file
+    and the MCP tool, and when the permit landed only one of them learned about
+    it, so every MCP-queued audit silently defaulted to static-only. It failed
+    safe, which is why nothing broke and why nobody would have noticed. This is
+    invariant 2 applied to a write path instead of to grade math, and a test
+    counts the statement in `src/` and fails at two.
+
 ## Testing
 
 `mcpscore` must be on `PATH`. It is a Python console script, so a fresh
@@ -156,7 +176,7 @@ worktree usually needs `pip install mcpscore` and the interpreter's `Scripts/`
 before it grades anything.
 
 ```bash
-cd mcp-scorecard && npm test              # 184 unit
+cd mcp-scorecard && npm test              # 210 unit
 node test/smoke-grade.mjs                 # grades a live public server
 node test/smoke-api.mjs                   # 75 assertions, needs wrangler dev
 node test/smoke-x402.mjs                  # 20, needs wrangler dev with PAYMENTS_REQUIRED
@@ -199,6 +219,13 @@ Never in a file. `wrangler secret put`:
 |---|---|
 | `ANTHROPIC_API_KEY` | behavioural probes |
 | `RUNNER_TOKEN` | the probe runner claiming and posting work |
+| `GRADE_TOKEN` | authorising a PAID audit on `POST /grade` and the MCP `grade` tool |
+
+`GRADE_TOKEN` unset is a supported state and is what is deployed today: every
+caller is anonymous, every audit is static-only, and nothing can spend. It is
+NOT a state in which a presented token is accepted. **Set it before supplying
+`ANTHROPIC_API_KEY`**, or the first key turns an open endpoint into an open
+wallet.
 
 **Absent `RUNNER_TOKEN` means the runner endpoints reject everything.** That is
 deliberate: an unconfigured deployment accepts nothing rather than everything.

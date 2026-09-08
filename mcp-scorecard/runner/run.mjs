@@ -142,11 +142,21 @@ async function pollForever() {
       } else {
         const { work = [] } = await res.json();
         for (const job of work) {
+          // The inbound spend permit, enforced here because here is where the
+          // money is actually spent. An audit queued without a credential is
+          // static-only no matter how this runner was started: the flag can
+          // only ever REMOVE the behavioural layer, never add it, so a missing
+          // or unparseable field costs nothing rather than granting something.
+          const permitted = Number(job.paid_allowed ?? 0) === 1;
+          const jobStaticOnly = staticOnly || !permitted;
+          if (!permitted) {
+            log(`  ${job.audit_id} was queued anonymously: static layer only, no model spend`);
+          }
           log(`claimed ${job.audit_id} for ${job.server_url}`);
           let payload;
           try {
             payload = await runAudit(job, {
-              apiKey, log, skipBehavioral: staticOnly, skipGuidance: noGuidance,
+              apiKey, log, skipBehavioral: jobStaticOnly, skipGuidance: noGuidance,
             });
           } catch (e) {
             log(`audit failed: ${e.message}`);

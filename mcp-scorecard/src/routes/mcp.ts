@@ -23,7 +23,8 @@
  */
 
 import { type Env, CORS, json } from '../index.js';
-import { CACHE_TTL_DAYS, isStale } from './grade.js';
+import { CACHE_TTL_DAYS, enqueueAudit, isStale } from './grade.js';
+import { paidAllowed, spendPermit, type SpendVerdict } from './spend.js';
 
 const PROTOCOL_VERSION = '2025-06-18';
 const SERVER_NAME = 'mcp-scorecard';
@@ -89,6 +90,24 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
     );
   }
 
+  // The spend permit, read once here because this is the last frame holding the
+  // Request. A WRONG token is refused before a single message is parsed: if MCP
+  // merely downgraded it, this endpoint would be the soft way in to exactly what
+  // POST /grade refuses, and the two doors would disagree about the same key.
+  const permit = spendPermit(req, env);
+  if (permit === 'bad-token') {
+    return json(
+      {
+        error: 'unauthorized',
+        detail:
+          'the presented grade token was not accepted. Omit the Authorization ' +
+          'header entirely to use this server anonymously, which is free and ' +
+          'queues static-only audits.',
+      },
+      401,
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -99,7 +118,10 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
   const batch = Array.isArray(body) ? body : [body];
   const replies: unknown[] = [];
   for (const msg of batch) {
-    const reply = await handleMessage(msg, env);
+    // Read the spend permit ONCE, here, because this is the last frame that
+    // still has the Request. A wrong token is refused before any tool runs:
+    // the MCP path must not be the soft way in to the thing /grade refuses.
+    const reply = await handleMessage(msg, env, permit);
     if (reply) replies.push(reply);
   }
 
@@ -109,7 +131,7 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
   return json(Array.isArray(body) ? replies : replies[0]);
 }
 
-async function handleMessage(msg: unknown, env: Env): Promise<unknown> {
+async function handleMessage(msg: unknown, env: Env, permit: SpendVerdict): Promise<unknown> {
   const m = (msg ?? {}) as { id?: unknown; method?: string; params?: unknown };
   const id = m.id;
   const isNotification = id === undefined || id === null;
@@ -158,7 +180,7 @@ async function handleMessage(msg: unknown, env: Env): Promise<unknown> {
     }
 
     case 'tools/call':
-      return ok(id, await callTool(m.params, env));
+      return ok(id, await callTool(m.params, env, permit));
 
     default:
       if (isNotification) return null;
@@ -166,7 +188,7 @@ async function handleMessage(msg: unknown, env: Env): Promise<unknown> {
   }
 }
 
-async function callTool(params: unknown, env: Env): Promise<unknown> {
+async function callTool(params: unknown, env: Env, permit: SpendVerdict): Promise<unknown> {
   const p = (params ?? {}) as { name?: string; arguments?: Record<string, unknown> };
   if (p.name !== GRADE_TOOL.name) {
     return toolError(
@@ -229,21 +251,10 @@ async function callTool(params: unknown, env: Env): Promise<unknown> {
 
   // No usable cache. Queue, and say plainly that there is no grade yet. The
   // one thing this must never do is return a number that looks like a grade.
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-  await env.DB.batch([
-    env.DB.prepare(
-      'INSERT INTO audits (id, server_url, needed_for, status, model, created_at) ' +
-      'VALUES (?, ?, ?, ?, ?, ?)',
-    ).bind(id, parsed.toString(), needed_for ?? null, 'queued', env.PROBE_MODEL, now),
-    env.DB.prepare(
-      'INSERT INTO pending (id, server_url, needed_for, requested_by, created_at) ' +
-      'VALUES (?, ?, ?, ?, ?)',
-    ).bind(id, parsed.toString(), needed_for ?? null, 'mcp', now),
-    env.DB.prepare(
-      'INSERT INTO ledger (id, audit_id, event, detail, created_at) VALUES (?, ?, ?, ?, ?)',
-    ).bind(crypto.randomUUID(), id, 'queued', parsed.toString(), now),
-  ]);
+  const { id } = await enqueueAudit(env, {
+    url: parsed.toString(), needed_for, requestedBy: 'mcp',
+    paidAllowed: paidAllowed(permit),
+  });
 
   return toolResult({
     graded: false,
@@ -252,6 +263,7 @@ async function callTool(params: unknown, env: Env): Promise<unknown> {
     audit_id: id,
     status: 'queued',
     poll: '/grade/' + id,
+    depth: paidAllowed(permit) ? 'full' : 'static-only',
     note:
       'Queued. Grading runs on a probe runner, not in this Worker, because the ' +
       'static layer shells out to a Python tool. There is no grade yet and no ' +

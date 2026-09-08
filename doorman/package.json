@@ -4,10 +4,14 @@
   "private": true,
   "type": "module",
   "description": "Vets MCP servers, skills and repos before an agent gets them. Fit review first, paid grade second.",
+  "bin": {
+    "doorman": "./cli/doorman.mjs"
+  },
   "scripts": {
     "test": "node test/run.mjs",
+    "test:cli": "node test/cli-run.mjs",
     "test:gate": "bash test-gate.sh",
-    "test:all": "node test/run.mjs && bash test-gate.sh && node test-poller.mjs"
+    "test:all": "node test/run.mjs && node test/cli-run.mjs && bash test-gate.sh && node test-poller.mjs"
   },
   "comment": [
     "ZERO runtime dependencies, and that is a requirement rather than an",
@@ -16,6 +20,14 @@
     "one more thing that can fail to install on their machine, and a gate that",
     "fails to start is a gate that fails open.",
     "",
-    "The same reasoning is why test/run.mjs is 40 lines instead of a runner."
+    "The same reasoning is why test/run.mjs is 40 lines instead of a runner,",
+    "and why cli/task.mjs hand-parses a strict YAML subset instead of pulling",
+    "in a yaml package. That parser REFUSES what it cannot read rather than",
+    "guessing: a task file that quietly means something other than it looks",
+    "like would corrupt an eval while every number still looked plausible.",
+    "",
+    "`bin` is the CLI surface: doorman report (L1) and doorman eval (L3).",
+    "L1 delegates to mcp-scorecard/runner/run.mjs rather than reimplementing",
+    "the static layer, per invariant 2."
   ]
 }

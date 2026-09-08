@@ -1,10 +1,207 @@
 ---
 project: clembot-doorman
 cluster: agency
-updated: 2026-09-07
+updated: 2026-09-08
 ---
 
 # Lineage
+
+## 2026-09-08 - Session 13, the instrument ships instead of the measurement
+
+Clemens: "i honestly don't want to use any LLM resource here at all."
+
+The right answer was not a cheaper model. The shape was backwards. A central
+benchmark bills one account and answers one stack's question, and that stack is
+not the adopter's. So doorman became a thing you install rather than a service
+you ask: their machine, their harness, their key, their answer. Nothing runs on
+our infrastructure and nothing is sent to us.
+
+### Three builds
+
+**`doorman doctor`**, a new L0. Reads the project and reports what is in THEIR
+build: which harness, which MCP servers their agents can reach and where each
+was declared, how many subagents hold MCP tools, and whether the gate is
+installed **and wired**. Those last two are different states and the middle one
+is the dangerous one, because a gate that is present and unwired is not running
+and looks exactly like one that is. Free, local, read-only, no model and no
+container.
+
+**Agent adapters.** The arms drive the harness the adopter already runs
+(`--agent claude-code`). The built-in Anthropic loop is now one adapter of
+three rather than the only path. Each adapter declares what it can measure, so
+`--agent exec` drives anything at all and reports success and wall time only,
+with the rest shown as not measured rather than estimated.
+
+**Installability.** A root `package.json` with a `bin`, and `report.mjs` now
+resolves the static runner at runtime across four candidate locations instead of
+hardcoding `../../mcp-scorecard/runner/run.mjs`. That path was right in this
+checkout and wrong everywhere else, which is the classic giveaway bug: correct
+for the author, broken for everyone the thing was written for.
+
+### The cost ceiling, earlier the same session
+
+The turn cap is now DERIVED from `--max-cost` rather than the reverse. An agent
+loop resends the whole conversation every turn, so cost grows with the SQUARE of
+the turn count, and the old 24-turn constant quietly authorised **$54** for a
+three-run A/B on Sonnet and **$272** on Opus. `--estimate` is free, needs no key
+and no Docker, and leads with the worst case, because a cost warning that leads
+with the typical figure is an advert.
+
+One subtlety found while wiring it: `budget.settle()` commits the RESERVED
+price, so settling the worst case would charge $9 for a 30-cent run and burn the
+ceiling in six runs that spent two dollars. It now releases the guard and
+settles the actual.
+
+### A local backend was investigated and NOT built
+
+Three blockers, verified rather than assumed: `gemma3:4b` does not support tool
+calling at all (Ollama rejects the request), `gemma4:12b` OOMs on this machine,
+and reaching Ollama on the host conflicts with the sandbox's `--network none`.
+The `--backend ollama` reference my own error messages had started making was
+removed. A flag that does not exist is worse than none.
+
+### Verified
+
+37 CLI tests, and the async test runner was mutation-checked to prove it can
+still go red: a planted async failure reported FAIL and exit 1. 296 doorman, 29
+gate, 210 scorecard. `doorman report` run live from a foreign cwd, which is the
+install case, returned A 85.71 for deepwiki with a written evidence bundle.
+
+### Process note
+
+Four separate times this session an unquoted bash heredoc ate the backticks out
+of prose being written to a file, silently deleting every code-quoted term.
+Content with backticks goes through a scratchpad script from now on, never an
+inline heredoc.
+
+## 2026-09-08 - Session 12, doorman gets a CLI
+
+### It did not have one
+
+A brief arrived describing doorman as an installed CLI to be invoked and never
+opened. There was no CLI: not on PATH, not in the 12 global npm packages, no
+`bin` in any `package.json`, and no directory named doorman anywhere outside
+this project. Clemens confirmed this project IS the doorman meant, and that the
+CLI should be built here.
+
+### `doorman report` delegates, it does not reimplement
+
+`mcp-scorecard/runner/run.mjs` was already the static layer: it wraps `mcpscore`,
+runs the scan-only injection probe, and writes an evidence bundle. What was
+missing was a name and a stable interface, not the measurement. So
+`cli/report.mjs` shells to it. Invariant 2 is exactly this: two implementations
+drift, and the day they disagree the one you trusted is whichever you happened
+to run.
+
+L1 needs no model key, which matters more than it sounds. Every MCP candidate
+gets a real static report today, and the pipeline degrades to "statically
+measured, behaviourally unmeasured" rather than to nothing.
+
+### `doorman eval` is new, and is honest about what it cannot do
+
+Two Docker arms, byte-identical except one `RUN`. The candidate image is `FROM`
+the baseline image rather than a second parallel build, so the arms cannot drift:
+one is derived from the other.
+
+Preflight is ordered cheapest-refusal-first: task parses, layer derivable,
+Docker up, key present. Every one can fail without spending a cent. The live run
+reached the key check and stopped at **$0.00**, having built nothing.
+
+Two bugs the live run found that reading did not:
+
+- A stopped Docker daemon exited 1 ("broke") where `adopt.md` documents 3
+  ("could not measure"). Recording an absent prerequisite as a candidate failure
+  would libel a tool that was never run. Both no-Docker and no-install-layer are
+  now classified `blocked`.
+- `/adopt` claimed L1 runs "always". It cannot: L1 speaks MCP, so a pip package
+  has no L1 at all.
+
+### Zero runtime dependencies held
+
+`cli/task.mjs` hand-parses a strict YAML subset, because a yaml package would
+break the property that makes this half a giveaway. It REFUSES anchors, aliases,
+tags, tabs, odd indentation, duplicate keys and empty blocks, each with a line
+number, rather than guessing. Silent mis-parsing is the real danger: a task that
+means something other than it reads would corrupt an eval while every number
+still looked plausible.
+
+### Verified
+
+`test/cli-run.mjs`: 20 passed, covering the parser's refusals, the verdict rules
+and install-layer derivation. Existing suites unchanged: 210 scorecard, 296
+doorman, 29 gate, 16 install. Live: `doorman report` against a real MCP server
+returned static 85.71 with a written evidence bundle.
+
+## 2026-09-08 - Session 11, the inbound spend permit
+
+### The hole
+
+`POST /grade` was open. Deliberately: the site's demo lets a visitor type an
+MCP url and queue a real audit, and that is the best thing on the page.
+
+It cost nothing only because no `ANTHROPIC_API_KEY` had ever been supplied.
+**The moment one is, every anonymous visitor can spend it.** A careful spend cap
+was built for outbound calls (invariants 19 and 20) while inbound was wide open.
+
+### Decision: a downgrade, not a wall
+
+A wall closes the hole by deleting the demo. So an anonymous request is still
+accepted and still queued, marked `paid_allowed = 0`, and the runner may never
+spend a model token on it. The free layer is genuinely free, so an anonymous
+caller gets a real grade of the part that costs nothing.
+
+| Caller | Outcome |
+|---|---|
+| no credential | 202, queued, static layer only |
+| valid `GRADE_TOKEN` | 202, queued, full behavioural run |
+| wrong token | **401, nothing queued** |
+
+**A missing credential is a choice, a wrong one is a mistake.** Downgrading a
+caller who believes it is authenticated would hide a misconfigured runner until
+someone asked where 70 of the 100 points went.
+
+Enforced in three places so no single edit reopens it: the column DEFAULTS to 0,
+so code that forgets it is static-only; the runner ORs the flag into
+`staticOnly`, so the permit can only REMOVE the behavioural layer, never add
+one; and a bare `Authorization: Bearer` is refused rather than read as absent.
+
+### The bug the mutation run found
+
+Twelve mutants. Nine caught on the first pass, and the three that survived were
+the useful ones.
+
+Two showed `handleGrade` itself was untested: deleting the 401 entirely, and
+hardcoding every audit to paid, both left the suite green. A correct permit that
+nothing consults is decorative. Fixed with a D1 fake, which is what `smoke-x402`
+needs a live Worker for.
+
+The third was worse. **There were TWO `INSERT INTO pending` statements**, this
+one and the MCP tool's, and only one learned about the permit. Every MCP-queued
+audit silently defaulted to static-only. It failed safe, which is exactly why
+nobody would have noticed. Both now go through one `enqueueAudit()`, and a test
+counts the statement in `src/` and fails at two. That is invariant 2 applied to
+a write path rather than to grade math.
+
+MCP also merely downgraded a bad token, making it the soft way in to what
+`/grade` refuses. It now returns 401 before parsing a message.
+
+### Verified
+
+- 210 scorecard, 296 doorman, 29 gate, 16 install. **12/12 mutants caught.**
+- The OpenAPI spec documents both depths, the 401, and a `gradeToken` scheme,
+  because that spec is what Bazantic imports.
+- `GRADE_TOKEN` unset stays a supported state: static-only for everyone, which
+  is what is deployed. It is not a state in which a token is accepted.
+
+### Not done
+
+**The migration has NOT been applied to the remote D1 and the Worker is NOT
+deployed.** The new code writes `paid_allowed`, so a deploy before the
+migration fails every enqueue. Order is: migrate remote, then deploy.
+
+The doorman calls through MCP and holds no token, so its own audits are
+static-only until `GRADE_TOKEN` is wired into `.mcp.json`. That is the next
+step, and it is the reason to set the token before the first API key.
 
 ## 2026-09-07 - Session 10, a nav that stopped scaling, and the repo going public
 

@@ -48,7 +48,18 @@ export function openApiSpec(origin: string): Record<string, unknown> {
             'out to the mcpscore Python CLI on a probe runner. Poll ' +
             'GET /grade/{audit_id}. Supply needed_for whenever you can, as the ' +
             'Cold Open probe builds its task from it and the grade is more ' +
-            'meaningful when the probe reflects your real use case.',
+            'meaningful when the probe reflects your real use case. ' +
+            'CALLING WITHOUT AUTHORIZATION IS SUPPORTED and returns 202: the ' +
+            'audit is queued static-only, meaning the configuration layer is ' +
+            'graded and no model tokens are spent, so the behavioural and ' +
+            'guidance layers report as not measured rather than as zero. ' +
+            'Send a Bearer gradeToken to authorise a full run. A token that ' +
+            'is presented and not accepted returns 401 and queues nothing: ' +
+            'it is never downgraded silently, because a caller that believes ' +
+            'it is authenticated would otherwise learn it was not from a ' +
+            'grade that is quietly missing 70 of its 100 points. Each entry ' +
+            'in the response carries depth: full or static-only.',
+          security: [{}, { gradeToken: [] }],
           requestBody: {
             required: true,
             content: {
@@ -84,6 +95,12 @@ export function openApiSpec(origin: string): Record<string, unknown> {
               },
             },
             400: { $ref: '#/components/responses/BadRequest' },
+            401: {
+              description:
+                'A grade token was presented and not accepted, so nothing was ' +
+                'queued. Omit the Authorization header entirely for a free, ' +
+                'static-only audit.',
+            },
           },
         },
         get: {
@@ -266,6 +283,13 @@ export function openApiSpec(origin: string): Record<string, unknown> {
     components: {
       securitySchemes: {
         runnerToken: { type: 'http', scheme: 'bearer', description: 'Shared probe-runner token.' },
+        gradeToken: {
+          type: 'http', scheme: 'bearer',
+          description:
+            'Authorises a FULL audit on POST /grade. Optional: omitting it is a ' +
+            'supported, free path that queues a static-only audit. Presenting one ' +
+            'that is not accepted is a 401, never a silent downgrade.',
+        },
       },
       responses: {
         BadRequest: {

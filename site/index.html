@@ -866,6 +866,7 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
       <a href="#flow">Demo</a>
       <a href="#architecture">Architecture</a>
       <a href="#bazantic">Bazantic</a>
+      <a href="#install">Run it</a>
       <a href="#verify">Verify</a>
       <a href="#judges">Judges</a>
     </nav>
@@ -1914,6 +1915,83 @@ baz recipe install <b>--client</b> claude-code</pre>
 </div>
 
 <!-- ── FOR JUDGES ───────────────────────────────────────────────────── -->
+<!-- ── RUN IT ON YOUR OWN STACK ─────────────────────────────────── -->
+<section id="install">
+  <div class="wrap">
+    <p class="eyebrow reveal">Run it yourself</p>
+    <h2 class="reveal d1">The answer depends on your stack, so run it on yours</h2>
+    <p class="section-intro reveal d2">
+      A central benchmark tells you whether a tool helped <em>somebody else's</em>
+      agent. Whether it helps yours depends on your harness, your model, and what
+      your agents actually do. So doorman is a thing you install, not a service you
+      ask. It runs on your machine, drives the agent you already use, spends from
+      your own account, and the report is about your build.
+      <b>Nothing runs on ours and nothing is sent to us.</b>
+    </p>
+
+    <p class="baz-sub reveal">Install</p>
+    <pre class="verify-cmd reveal"><i># no account, no signup, no key needed for this part</i>
+git clone https://github.com/clemenswan/clembot-doorman
+npm i -g ./clembot-doorman
+
+<i># 1. what is actually in your build. Free, local, read-only.</i>
+<i>#    No model, no container, no network.</i>
+doorman doctor
+
+<i># 2. grade a server you already have installed. Still no model key.</i>
+doorman report https://your-mcp-server.example/mcp
+
+<i># 3. does a candidate actually help YOUR agent? Two sandboxes, identical</i>
+<i>#    except one install layer, driving the harness you already run.</i>
+doorman eval npm:some-candidate \
+  <b>--task</b> evals/tasks/url-to-note.yaml <b>--agent</b> claude-code \
+  <b>--max-cost</b> 2 <b>--estimate</b>     <i># prints the bill first, spends nothing</i></pre>
+
+    <div class="refuse-grid reveal" style="margin-top: var(--sp-10)">
+      <article class="judge">
+        <h3>Your key, your machine</h3>
+        <p>
+          The credential your harness already uses is passed straight into a local
+          container. It is never written to a file, never logged, and never leaves
+          your machine except to the provider you already pay. There is no account
+          here to make.
+        </p>
+      </article>
+      <article class="judge">
+        <h3>The bill is bounded before it starts</h3>
+        <p>
+          An agent loop resends the whole conversation every turn, so cost grows with
+          the <b>square</b> of the turn count. <code>--max-cost</code> is the input and the
+          turn cap is derived from it, so a ceiling of $2 is a ceiling of $2.
+          <code>--estimate</code> shows the worst case and spends nothing.
+        </p>
+      </article>
+      <article class="judge">
+        <h3>Free layers first</h3>
+        <p>
+          <code>doorman doctor</code> and <code>doorman report</code> need no model at all.
+          Most of what you want to know about a server, including whether its tool
+          descriptions are giving your agent orders, costs nothing to find out.
+        </p>
+      </article>
+      <article class="judge">
+        <h3>It drives your harness</h3>
+        <p>
+          <code>--agent claude-code</code> runs the agent you already run. An adapter that
+          cannot measure something reports it as <b>not measured</b> rather than
+          estimating it, so the columns you get are the ones that are real.
+        </p>
+      </article>
+    </div>
+
+    <p class="arch-caption reveal">
+      Requirements: Node 20+, Docker for the sandbox layer, and whatever your harness
+      already needs. <code>doctor</code> and <code>report</code> work without Docker.
+      <a href="https://github.com/clemenswan/clembot-doorman#install">Full instructions in the repo</a>.
+    </p>
+  </div>
+</section>
+
 <section id="judges">
   <div class="wrap">
     <p class="eyebrow reveal">Shortcuts</p>
@@ -1968,9 +2046,9 @@ baz recipe install <b>--client</b> claude-code</pre>
           success if it misbehaves.
         </p>
         <p class="judge-links">
+          <a href="#install">run it on your stack</a>
           <a href="https://github.com/clemenswan/clembot-doorman">the repo</a>
           <a href="#gate">the gate</a>
-          <a href="#architecture">where it sits</a>
         </p>
       </article>
     </div>
