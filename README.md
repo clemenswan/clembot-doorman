@@ -446,6 +446,7 @@ baz login
 #    so there is nothing to write for this step.
 API=https://scorecard.wanessalabs.com
 baz gateway add --endpoint $API --spec-url $API/openapi.json \
+  --auth-type api-key \
   --name "MCP Scorecard" --status draft --json
 
 # 3. a capped, revocable grant for the doorman to spend from.
@@ -453,11 +454,58 @@ baz grant create --name doorman --cap 5 --service <slug>
 baz curl https://bazgateway.com/<slug>/grade \
   --account doorman --max-amount 0.05 --source hosted --json
 
-# 4. publish the Recipe. Any agent then gets vetting as one MCP tool.
-baz recipe create vet-mcp-server.json --json
-baz recipe publish vet-mcp-server --json
-baz recipe install --client claude-code
+# 4. the Recipe is DASHBOARD-ONLY on the released CLI. See below.
 ```
+
+### Verified against the installed CLI, 2026-09-08
+
+`@bazantic/cli@0.8.0` was installed and its command surface read directly. Two
+families the docs describe **do not exist in the released build**:
+
+| Documented | `baz` 0.8.0 |
+|---|---|
+| `baz recipe list/get/create/update/publish/unpublish/delete` | **absent** (`unknown command: recipe`) |
+| `baz gateway domains add/status/verify/rm` | **absent** (`unknown gateway command: domains`) |
+| `--auth-type none`, documented as the default | **not offered.** The CLI takes `api-key \| jwt \| x402-mpp \| basic` and defaults to `x402-mpp`, which the docs describe as retired and credential-free |
+| `bazantic.yaml` manifest | absent, and the docs do say it is preview |
+
+What the released CLI does have: `login`, `whoami`, `gateway add`, `gateway
+list`, `curl`, `wallet`, `grant`. That covers registration and the whole payment
+path. **Recipes and custom domains have to go through the dashboard.**
+
+We use `--auth-type api-key`, which exists in both, so the gateway forwards
+`GRADE_TOKEN` upstream and the calling agent never sees it.
+
+### Two things that cost nothing, worth doing before paying
+
+Straight from the CLI docs, and they are the reason a gateway can be mapped for
+free:
+
+- **List the tools.** `POST {endpointUrl}/mcp` with a JSON-RPC `tools/list`
+  returns every operation and its parameters.
+- **Probe for a price.** A wrong path returns 404; a correct one returns 402
+  with the exact price in the body. Neither costs anything, so every route can
+  be mapped with `curl` and paid for only once confirmed.
+
+Prices come back in base units of a 6-decimal token: `10000` means `$0.01`.
+
+### The spec URL is fetched by THEIR servers, not yours
+
+`--spec-url` is fetched server-side. A spec behind localhost, a VPN, or auth
+fails with `spec rejected: could not fetch --spec-url` even though it loads in
+your browser.
+
+**Measured on this host, 2026-09-08:** `scorecard.wanessalabs.com/openapi.json`
+returns **403 to `Python-urllib/3.12`** and 200 to `curl`, `Go-http-client`,
+`node-fetch` and a request with no user-agent at all. That is our own Cloudflare
+WAF. If Bazantic's fetcher presents a blocked agent, registration fails for a
+reason that looks like a Bazantic problem and is ours. The fix is to paste the
+document into the dashboard field instead of pointing at the URL.
+
+### `input_schema` dialect: resolved
+
+**JSON Schema Draft 2020-12, with local references.** This was marked `[VERIFY]`
+until the CLI docs stated it.
 
 Read the gateway URL out of `baz gateway list --json` as `endpointUrl` rather
 than assembling it by hand. More than one URL form is served and which one
@@ -481,18 +529,20 @@ silently stops applying is worse than no cap, because you stop watching.
 
 ### The Recipe file
 
-`baz recipe create <file>` takes a JSON file with **exactly** these fields.
+The Recipe definition has **exactly** these fields. The docs describe a
+`baz recipe create <file>` command that takes them as JSON; that command is
+absent from CLI 0.8.0, so today this is what the dashboard editor is filling in.
 Unknown fields error before any network request.
 
 | Field | Notes |
 |---|---|
 | `name` | The handle is derived from it and is immutable. |
 | `description` | |
-| `input_schema` | JSON. Dialect not stated in the docs. `[VERIFY]` |
+| `input_schema` | JSON Schema **Draft 2020-12**, local references only |
 | `input_example` | |
 | `output_example` | `Use as output example` on a real test run fills this. |
 | `prompt_template` | Exactly one `{{inputs}}` placeholder. 4000 chars max. |
-| `model` | Allowed values come from `baz recipe --help`. `[VERIFY]` |
+| `model` | Allowed values come from `baz recipe --help`, which **does not exist in CLI 0.8.0**. Read them off the dashboard editor instead. `[VERIFY]` |
 | `tool_bindings` | Each entry carries only `gateway_slug` and `tool_name`. 1 to 64. |
 
 Whole definition caps at 24 KiB of compact UTF-8 JSON. An update file takes a

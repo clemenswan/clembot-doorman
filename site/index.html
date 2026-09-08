@@ -776,6 +776,12 @@ section { padding: clamp(72px, 11vh, 136px) 0; }
   display: grid; gap: var(--sp-5);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
 }
+/* Four cards in an auto-fit grid land 3 + 1, and the orphan reads as a card
+   that did not fit rather than a deliberate row. This section has exactly four,
+   so it gets two columns and a 2x2. */
+@media (min-width: 720px) {
+  #install .refuse-grid { grid-template-columns: repeat(2, 1fr); }
+}
 .refuse, .judge {
   border: 1px solid var(--ink-border); border-radius: var(--radius-lg);
   padding: clamp(18px,2.4vw,26px); background: var(--ink-surface);
@@ -1706,6 +1712,7 @@ baz login
 <i>#    served, so there is nothing to write for this step.</i>
 API=https://scorecard.wanessalabs.com
 baz gateway add <b>--endpoint</b> $API <b>--spec-url</b> $API/openapi.json \
+  <b>--auth-type</b> api-key \
   <b>--name</b> "MCP Scorecard" <b>--status</b> draft --json
 
 <i># 3. a capped, revocable grant for the doorman to spend from.</i>
@@ -1716,14 +1723,14 @@ baz grant create <b>--name</b> doorman <b>--cap</b> 5 <b>--service</b> &lt;slug&
 baz curl https://bazgateway.com/&lt;slug&gt;/grade \
   <b>--account</b> doorman <b>--max-amount</b> 0.05 <b>--source hosted</b> --json
 
-<i># 4. publish the Recipe. Any agent then gets vetting as one MCP tool.</i>
-baz recipe create vet-mcp-server.json --json
-baz recipe publish vet-mcp-server --json
-baz recipe install <b>--client</b> claude-code</pre>
+<i># 4. the Recipe is DASHBOARD-ONLY: `baz recipe` does not exist in the</i>
+<i>#    released CLI 0.8.0, though the docs describe it. Verified 2026-09-08.</i></pre>
 
     <p class="arch-caption reveal">
-      Written from Bazantic's published spec and <b>not yet run</b>: the account does not
-      exist, so <code>&lt;slug&gt;</code> is a real blank and not a redaction. The
+      Commands checked against <code>@bazantic/cli@0.8.0</code> installed locally on
+      2026-09-08. The account does not exist yet, so <code>&lt;slug&gt;</code> is a real
+      blank and not a redaction, and nothing here has been executed against a live
+      gateway. The
       <code>bazantic.yaml</code> manifest is deliberately absent, because that page is
       marked preview and the released CLI cannot read the file.
       <a href="https://github.com/clemenswan/clembot-doorman#bazantic">Full install and usage in the repo</a>.
