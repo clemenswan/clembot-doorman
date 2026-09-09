@@ -365,10 +365,15 @@ from a scripted stub in the test suite; none is a measurement of a real server. 
 interface, and the runner refuses to fabricate results without a key: it marks
 the audit failed and says why.
 
-The chain those probes sit in is verified end to end against the deployed stack:
-a hostile server published, graded F through the live queue, written into a
-registry that cites the audit id and evidence hash, and blocked by the gate at
-exit 2 while the A-graded server passes at exit 0.
+The chain those probes sit in was verified end to end against the deployed stack
+on **3 September 2026**: a hostile server published, graded F through the live
+queue, written into a registry that cites the audit id and evidence hash, and
+blocked by the gate at exit 2 while the A-graded server passes at exit 0.
+
+**No probe runner has been polling since that date.** The queue accepts work and
+nothing claims it, so an audit requested today stays `queued` until someone
+starts a runner. That is a second gap, separate from the missing key and more
+immediate: `RUNBOOK.md` Test 2 closes it, costs nothing, and needs no key.
 
 ## Replay the tape
 

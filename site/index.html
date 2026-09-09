@@ -455,7 +455,20 @@ button.ghost {
   background: var(--surface-raised); white-space: nowrap;
 }
 .audits tbody tr:last-child td { border-bottom: 0; }
+.audits tr.is-ours { background: var(--surface-raised); }
+/* A plain <td> inherits the SECTION colour, and one of these tables sits
+   inside a dark section while keeping a near-white surface of its own.
+   Measured at 1.84:1 before this line. The board has no plain-text cell,
+   which is why the rule was never needed until now. */
+.audits td { color: var(--text-primary); }
+.audits .ours-tag {
+  display: inline-block; margin-left: var(--sp-2); padding: 1px 7px;
+  border: 1px solid var(--border); border-radius: 999px;
+  font-size: .6875rem; font-weight: 500; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-muted);
+}
 .audits .server { color: var(--text-primary); font-weight: 500; }
+.next-head { margin-top: var(--sp-9, 3rem); }
 .audits .server small { display: block; font-size: .8125rem; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
 .audits .band {
   font-family: var(--font-display); font-weight: 800; font-size: 1.125rem;
@@ -904,7 +917,7 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
     </p>
     <p class="hero-cta reveal d2">
       <a class="btn" href="#finding">Read what it says to your agent</a>
-      <a class="btn btn-ghost" href="#audits">See all 23 grades</a>
+      <a class="btn btn-ghost" href="#audits">See all 24 grades</a>
     </p>
    </div>
    <div class="hero-logo reveal d2">
@@ -945,7 +958,7 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
       call that loads the tool.
     </p>
     <p class="audit-note reveal">
-      <b>It is an outlier, and we checked.</b> Across the other twenty-two servers
+      <b>It is an outlier, and we checked.</b> Across the other twenty-two third-party servers
       the longest tool description is 2,285 characters and <b>not one</b> trips a
       single steering marker. WebZum trips all six.
     </p>
@@ -971,13 +984,19 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
 <!-- ── THE BOARD ────────────────────────────────────────────────────── -->
 <section id="audits">
   <div class="wrap">
-    <p class="eyebrow reveal">23 real servers, graded</p>
+    <p class="eyebrow reveal">24 servers graded, ours among them</p>
     <h2 class="reveal d1">Configuration cannot tell you which one is hostile</h2>
     <p class="section-intro reveal d2">
       Every row is an audit that ran against a live public endpoint on 3 September
       2026, and every row links its full transcript. Read the configuration column
       before the grade. The server that fails scores <b>89.86%</b> there, higher
       than seventeen of the servers that pass.
+    </p>
+    <p class="audit-note reveal">
+      <b>The first row is us.</b> We are graded by the same runner, on the same
+      scale, with the same layer unmeasured, and the tape is public like every
+      other. A grader that exempts itself from its own board is asking to be
+      trusted, which is the thing this page argues against.
     </p>
 
     <div class="audits reveal d2">
@@ -992,6 +1011,13 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
           </tr>
         </thead>
         <tbody>
+          <tr class="is-ours">
+            <td class="server" data-label="Server">mcp-scorecard <span class="ours-tag">ours</span><small>scorecard.wanessalabs.com/mcp</small></td>
+            <td class="stat" data-label="Config">98.63%</td>
+            <td class="stat num" data-label="Tools">1</td>
+            <td data-label="Grade"><span class="band" data-band="A">A<small>98.63</small></span></td>
+            <td data-label="Evidence"><a href="https://scorecard.wanessalabs.com/grade/d4bc490c-5e51-4fb7-be67-6ef6f5a0a0ea/transcripts">tape</a></td>
+          </tr>
           <tr>
             <td class="server" data-label="Server">SubwayInfo NYC<small>subwayinfo.nyc/mcp</small></td>
             <td class="stat" data-label="Config">92.62%</td>
@@ -1599,6 +1625,13 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
     <p class="verify-cmd reveal"><i># from the repo</i>
 <b>node</b> mcp-scorecard/verify-tape.mjs https://webzum.com/api/mcp</p>
 
+    <p class="section-intro reveal d2">
+      That checks one grade. To check the whole chain instead, from a paid call to
+      a completed audit,
+      <a href="https://github.com/clemenswan/clembot-doorman/blob/main/RUNBOOK.md">RUNBOOK.md</a>
+      is four ordered tests with the observed output of each. Three of them are free.
+    </p>
+
     <ul class="checks reveal">
       <li><b>Fetches the server itself.</b> Speaks MCP to the graded endpoint and reads its tools. We are not in this step.</li>
       <li><b>Compares it to our tape.</b> If we trimmed, altered or invented a tool description, this disagrees.</li>
@@ -1925,6 +1958,50 @@ baz curl https://clembot-doorman.bazgateway.com/grade \
         </article>
       </div>
 
+      <h3 class="next-head reveal">What is not measured yet, and what would measure it</h3>
+      <p class="section-intro reveal">
+        Not a roadmap. Every row is a test with a stated cost that anyone can run,
+        including you, and each one can come back against us. A page that lists
+        intentions is asking for patience. This lists the three results that would
+        change what it says.
+      </p>
+
+      <div class="audits reveal">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Not measured</th>
+              <th scope="col">What would settle it</th>
+              <th scope="col">Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="server" data-label="Not measured">70 of the 100 points<small>on every grade on this page</small></td>
+              <td data-label="What would settle it">Six probes and a guidance pass against a live model, transcripts published like the rest</td>
+              <td class="stat" data-label="Cost">model tokens</td>
+            </tr>
+            <tr>
+              <td class="server" data-label="Not measured">Whether a recipe helps<small>the claim the recipe format rests on</small></td>
+              <td data-label="What would settle it">One A/B: the same agent cold, then guided, both tapes side by side and both published whichever way it falls</td>
+              <td class="stat" data-label="Cost">model tokens</td>
+            </tr>
+            <tr>
+              <td class="server" data-label="Not measured">Whether paying delivers<small>nobody has spent a cent through the gateway</small></td>
+              <td data-label="What would settle it">One paid call that reaches a completed audit, with the ledger showing the spend</td>
+              <td class="stat" data-label="Cost">$0.01</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="notes reveal">
+        <strong>How to check this section is honest:</strong> the four tests behind
+        it are written down, in order, with the observed output of each, in
+        <a href="https://github.com/clemenswan/clembot-doorman/blob/main/RUNBOOK.md">RUNBOOK.md</a>.
+        Three of the four cost nothing to run.
+      </p>
+
       <p class="notes reveal">
         <strong>The evidence is never behind a wall.</strong> Every transcript
         behind every grade here is public and needs no token, and the one paid
@@ -2051,13 +2128,14 @@ doorman eval npm:some-candidate \
       <article class="judge reveal">
         <h3>Show me the receipts</h3>
         <p>
-          Twenty-three graded servers, every one linking the full transcript of
-          every turn behind its grade. Never paginated, never sampled, no token.
+          Twenty-four graded servers, ours in the table on the same scale, every
+          one linking the full transcript of every turn behind its grade. Never
+          paginated, never sampled, no token.
         </p>
         <p class="judge-links">
           <a href="#audits">the board</a>
           <a href="#verify">verify it yourself</a>
-          <a href="#finding">the finding</a>
+          <a href="https://github.com/clemenswan/clembot-doorman/blob/main/RUNBOOK.md">run the tests</a>
         </p>
       </article>
       <article class="judge reveal">
