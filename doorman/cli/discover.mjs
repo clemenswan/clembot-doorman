@@ -216,16 +216,19 @@ export function renderDiscover(r, file) {
   out.push(`  NEEDS A HUMAN LOOK                 ${r.flagged_by_scan}` +
            `   (${r.hard_hits} injection-shaped, ${r.steering_hits} commercial steering)`);
   out.push('');
-  out.push('  !! THESE ARE NOT FINDINGS. On the first 100 servers swept, TWO of');
-  out.push('     fifteen survived a hand check: roughly 13% precision. The');
-  out.push('     patterns were tuned on a handful of servers and one egregious');
-  out.push('     example, and at directory scale they fire on ordinary API prose:');
-  out.push('     a Slack param that posts a reply to a conversation, an LLM');
-  out.push('     testing tool whose job is to accept a system prompt, "system:"');
-  out.push('     meaning a games console, and "use this instead of" pointing at');
-  out.push('     ANOTHER TOOL IN THE SAME SERVER rather than at a competitor.');
-  out.push('     Publishing this list as-is would accuse a dozen innocent');
-  out.push('     vendors. See test/discover-precision.test.mjs.');
+  out.push('  These are candidates for review, NOT findings, and the difference');
+  out.push('  is not pedantry. The first sweep of 100 servers flagged fifteen');
+  out.push('  and TWO survived a hand check: a Slack parameter that posts a');
+  out.push('  reply to a conversation, an LLM testing tool whose job is to');
+  out.push('  accept a system prompt, "system:" as a docstring parameter name,');
+  out.push('  and five vendors saying "use this instead of" about another tool');
+  out.push('  in their OWN server. Five patterns were tightened on 2026-09-10');
+  out.push('  and the same sweep now flags those two and nothing else.');
+  out.push('');
+  out.push('  That is thirteen strings, not a directory. Zero false positives on');
+  out.push('  a corpus that small means the KNOWN failure modes are fixed, not');
+  out.push('  that the next hundred servers hold none. Read the excerpt before');
+  out.push('  repeating any of it. See test/discover-precision.test.mjs.');
 
   const flagged = r.candidates.filter((c) => c.scan.hard || c.scan.steering)
     .sort((a, b) => (b.use_count ?? 0) - (a.use_count ?? 0));

@@ -269,6 +269,32 @@ cent, and card fees exceed the value of the thing being sold. The product is not
 And a grade is cached with its full transcript free forever, so one agent's cent
 does not buy one answer. It funds a commons nobody could bill for directly.
 
+### Finding candidates in the first place
+
+`doorman discover` sweeps a public MCP registry and writes a candidate file, then
+stops. It never enqueues and never spends.
+
+```bash
+node doorman/cli/doorman.mjs discover --pages 1
+```
+
+The registry returns only its own proxy, which needs its token, so the origin an
+audit would need is not in the record. But the detail record ships the full tool
+descriptions, so the static scan reads the exact surface an agent reads without
+calling a single server.
+
+**The first sweep is why the scan is now measured.** It flagged 15 of 100, and
+two survived a hand check. The rest were ordinary documentation: a Slack
+parameter that posts a reply to a conversation, an LLM testing tool whose job is
+to accept a system prompt, `system:` as a docstring parameter name, and five
+vendors saying "use this instead of" about another tool in their own server.
+Five patterns were tightened and the same sweep now flags two.
+
+All fifteen strings live in `doorman/test/discover-precision.test.mjs`, verbatim
+and named, next to the strings that must keep tripping. The baseline is a
+ratchet: it fails if precision gets worse, and demands the number be lowered in
+the commit that improves it.
+
 ### Not built, and said so
 
 The released Bazantic CLI has **no marketplace discovery command**, so ingest is

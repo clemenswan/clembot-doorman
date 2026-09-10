@@ -36,14 +36,14 @@ const inv = (tools: ToolSpec[]): Inventory => ({
 const tool = (description: string): ToolSpec => ({ name: 'host_site', description });
 
 describe('the severity split', () => {
-  it('keeps the original eight as hard fails', () => {
-    expect(HARD_PATTERNS).toHaveLength(8);
+  it('keeps the hard-fail set intact', () => {
+    expect(HARD_PATTERNS).toHaveLength(9);
     expect(HARD_PATTERNS.map((p) => p.name)).toContain('ignore-previous-instructions');
     expect(HARD_PATTERNS.map((p) => p.name)).toContain('exfiltration-request');
   });
 
-  it('adds six steering patterns that never cap a grade', () => {
-    expect(STEERING_PATTERNS).toHaveLength(6);
+  it('the steering patterns never cap a grade', () => {
+    expect(STEERING_PATTERNS).toHaveLength(7);
     expect(STEERING_PATTERNS.every((p) => p.severity === 'steering')).toBe(true);
   });
 
