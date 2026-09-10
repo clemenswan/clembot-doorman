@@ -1202,8 +1202,11 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
           <p class="eyebrow">Run it</p>
           <h2>Watch the doorman work</h2>
           <p>
-            Seven steps. The one tagged <span class="tag tag-live">live</span> is a
-            genuine call to the deployed scorecard, so its verdict is a real audit
+            Seven steps, and the question is <b>should I adopt this</b>. It defaults
+            to a server that fails, because a demo that only shows the happy path is
+            not a demo of a gate. Change the URL to run it against anything you like,
+            including your own. The step tagged <span class="tag tag-live">live</span>
+            is a genuine call to the deployed scorecard, so its verdict is a real audit
             and not a scripted one. <span class="tag tag-flow">flow</span> is the
             orchestration around it, and <span class="tag tag-planned">unpaid</span>
             is the Bazantic payment hop. The gateway is live and priced; this demo
@@ -1212,7 +1215,7 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
         </div>
         <div class="runbar">
           <label for="mcp-url" class="visually-hidden" style="position:absolute;left:-9999px">MCP server URL</label>
-          <input type="url" id="mcp-url" value="https://mcp.deepwiki.com/mcp" spellcheck="false">
+          <input type="url" id="mcp-url" value="https://webzum.com/api/mcp" spellcheck="false">
           <button class="run" id="run-btn" type="button">Run the flow</button>
           <button class="run ghost" id="reset-btn" type="button" hidden>Reset</button>
         </div>
@@ -1278,17 +1281,17 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
         <article class="step" data-state="idle" data-step="0" data-node="clembot">
           <div class="step-who"><span class="dot"></span>clembot</div>
           <div>
-            <h3>A task arrives <span class="tag tag-flow">flow</span></h3>
-            <p class="say">The orchestrator picks the subagent whose job this is and dispatches it.</p>
+            <h3>A candidate arrives <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Someone proposes adding an MCP server to the build. The question is not whether it works. It is whether it makes this agent better, and what it costs to find out.</p>
           </div>
           <div class="out" data-out></div>
         </article>
 
         <article class="step" data-state="idle" data-step="1" data-node="clembot">
-          <div class="step-who"><span class="dot"></span>research-agent</div>
+          <div class="step-who"><span class="dot"></span>doorman doctor</div>
           <div>
-            <h3>Connectivity gap <span class="tag tag-flow">flow</span></h3>
-            <p class="say">The subagent has no tool that can answer this. It does not go looking for one, and it does not improvise. It reports the gap.</p>
+            <h3>What you already have <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Free, local, read only, and it reads your build before it reads the candidate: which servers you already run, which subagents hold MCP tools, and whether the gate is installed <b>and wired</b>, which are two different states and both of them quiet.</p>
           </div>
           <div class="out" data-out></div>
         </article>
@@ -1296,8 +1299,8 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
         <article class="step" data-state="idle" data-step="2" data-node="doorman">
           <div class="step-who"><span class="dot"></span>doorman</div>
           <div>
-            <h3>Ask for a grade <span class="tag tag-flow">flow</span></h3>
-            <p class="say">The doorman holds <code>Read</code> and exactly one MCP tool, and that tool is the scorecard. It does not browse, fetch or improvise. It asks the agentified API for a verdict.</p>
+            <h3>The cheap check first <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Before spending your own compute on a measurement, spend a cent on the question the static layer can answer alone: does this thing tell your agent to do something you did not ask for. The doorman holds <code>Read</code> and exactly one MCP tool, and that tool is the scorecard.</p>
           </div>
           <div class="out" data-out></div>
         </article>
@@ -1351,8 +1354,17 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
         <article class="step" data-state="idle" data-step="5" data-node="clembot">
           <div class="step-who"><span class="dot"></span>clembot</div>
           <div>
-            <h3>Scope it to one agent <span class="tag tag-flow">flow</span></h3>
-            <p class="say">The server goes on the allowlist for the agent that needed it. Every other subagent still sees nothing, so nobody pays context for a tool they will not call.</p>
+            <h3>What the measurement would cost <span class="tag tag-flow">flow</span></h3>
+            <p class="say">The answer you actually wanted is two throwaway sandboxes, identical except one install layer, driving your harness on a real task. That is not cheap, so it gets priced <b>before</b> it runs and the turn cap is derived from the budget rather than the budget hoped for afterwards.</p>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+        <article class="step" data-state="idle" data-step="6" data-node="clembot">
+          <div class="step-who"><span class="dot"></span>clembot</div>
+          <div>
+            <h3>The decision <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Adopt, decline, or say the runs disagreed. A security finding outranks every number in the table: a tool that steers your agent does not get adopted for being fast.</p>
             <div class="roster" id="roster" hidden>
               <div class="agent" data-granted="false">
                 <span class="a-name">research-agent</span>
@@ -1371,14 +1383,7 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
           <div class="out" data-out></div>
         </article>
 
-        <article class="step" data-state="idle" data-step="6" data-node="clembot">
-          <div class="step-who"><span class="dot"></span>research-agent</div>
-          <div>
-            <h3>Finish the task <span class="tag tag-flow">flow</span></h3>
-            <p class="say">The subagent retries with exactly one new tool, and the recipe drafted from whatever the probes caught.</p>
-          </div>
-          <div class="out" data-out></div>
-        </article>
+
 
       </div>
     </div>
@@ -2306,7 +2311,7 @@ doorman eval npm:some-candidate \
       // Not graded yet. Queue it honestly and report that it is queued.
       var q = await fetch(API + '/grade', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url: url, needed_for: 'answer the research-agent task' })
+        body: JSON.stringify({ url: url, needed_for: 'decide whether to adopt this server' })
       });
       var qj = await q.json();
       if (q.status === 202) {
@@ -2327,24 +2332,26 @@ doorman eval npm:some-candidate \
     diagram.setAttribute('data-running', 'true');
     var url = urlInput.value.trim();
 
-    // 0 - task arrives
+    // 0 - a candidate is proposed
     setStep(0, 'active');
     await sleep(520);
-    out(0, 'task: <span class="ok">"find out how this repo works"</span><br>route: research-agent');
+    out(0, 'candidate:<br>' + esc(url) + '<br>question: <span class="ok">would this make the build better?</span>');
     await sleep(400);
     setStep(0, 'done');
 
-    // 1 - the gap
+    // 1 - doctor. Free, local, read-only, and it reads YOUR build first.
     setStep(1, 'active');
     await sleep(500);
-    out(1, 'tools available: Read, Grep<br><span class="bad">no tool can answer this</span><br>escalating to clembot');
+    out(1, 'harness: <span class="ok">claude-code</span><br>mcp servers already running: 3<br>' +
+           '27 agents, <span class="ok">1</span> holds MCP tools<br>gate: installed <span class="ok">and wired</span>');
     await sleep(400);
     setStep(1, 'done');
 
     // 2 - the doorman asks
     setStep(2, 'active');
     await sleep(500);
-    out(2, 'tool: <span class="ok">mcp__scorecard__grade</span><br>candidate:<br>' + esc(url));
+    out(2, 'tool: <span class="ok">mcp__scorecard__grade</span><br>' +
+           'cheapest layer first: <span class="ok">static</span><br>cost to ask: $0.01');
     await sleep(420);
     setStep(2, 'done');
 
@@ -2384,7 +2391,7 @@ doorman eval npm:some-candidate \
              'audit ' + esc(String(res.id.audit_id || '').slice(0, 8)) + '<br>' +
              'a probe runner has to claim it, so this is not instant');
       setStep(4, 'done');
-      out(5, '<span class="warn">waiting on the grade</span><br>nothing is scoped until it lands');
+      out(5, '<span class="warn">waiting on the grade</span><br>nothing is priced or decided until it lands');
       return stop();
     } else {
       out(4, '<span class="bad">could not grade: ' + esc(res.why || 'unknown') + '</span><br>' +
@@ -2393,23 +2400,45 @@ doorman eval npm:some-candidate \
       return stop();
     }
 
-    // 5 - scope to one agent
+    // A security finding outranks every number. Before this branch existed the
+    // flow granted the tool no matter what the grade said, so running it against
+    // a hard-failing server showed the doorman letting it through. That is the
+    // opposite of what the gate does.
+    var blocked = !!g.hard_fail || g.grade === 'F';
+
+    // 5 - price the measurement BEFORE running it. Figures come from
+    // cli/cost.mjs estimateEval({runs: 3}), not from a copywriter.
     setStep(5, 'active');
-    roster.hidden = false;
     await sleep(540);
-    $('ra-tools').innerHTML = '<span class="chip">Read</span> <span class="chip">Grep</span> ' +
-      '<span class="chip new">' + esc(shortName(url)) + '</span>';
-    roster.querySelector('.agent').setAttribute('data-granted', 'true');
-    out(5, 'granted to: <span class="ok">research-agent</span><br>' +
-           'unchanged: code-reviewer, doorman<br>context added elsewhere: <span class="ok">none</span>');
-    await sleep(600);
+    if (blocked) {
+      out(5, '3 runs per arm on claude-sonnet-5<br>' +
+             'worst case <span class="warn">$54.47</span> &middot; typical $3.57<br>' +
+             '<span class="bad">not running it</span><br>one cent already answered the question');
+    } else {
+      out(5, '3 runs per arm on claude-sonnet-5<br>' +
+             'worst case <span class="warn">$54.47</span> &middot; typical $3.57<br>' +
+             'opus would be $272.34: <span class="bad">refused</span> at a $5 ceiling<br>' +
+             'turn cap derived from the budget');
+    }
+    await sleep(700);
     setStep(5, 'done');
 
-    // 6 - finish
+    // 6 - the decision, and it is allowed to be no
     setStep(6, 'active');
     await sleep(520);
-    out(6, 'retried with 1 new tool<br><span class="ok">task complete</span>');
-    await sleep(320);
+    if (blocked) {
+      out(6, '<span class="bad">DECLINE</span><br>' +
+             'the gate refuses it at exit 2<br>' +
+             'spent <span class="ok">$0.01</span>, avoided <span class="ok">$54.47</span>');
+    } else {
+      roster.hidden = false;
+      $('ra-tools').innerHTML = '<span class="chip">Read</span> <span class="chip">Grep</span> ' +
+        '<span class="chip new">' + esc(shortName(url)) + '</span>';
+      roster.querySelector('.agent').setAttribute('data-granted', 'true');
+      out(6, '<span class="ok">ADOPT</span>, scoped to one agent<br>' +
+             'unchanged: code-reviewer, doorman<br>context added elsewhere: <span class="ok">none</span>');
+    }
+    await sleep(420);
     setStep(6, 'done');
 
     stop();

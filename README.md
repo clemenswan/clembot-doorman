@@ -4,7 +4,16 @@
 
 **Graded by being used, not by being read. Do not trust the letter. Replay the tape.**
 
-**[clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com)** · the live explainer, the 23 graded servers, and the finding.
+**[clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com)** · the live explainer, the 24 graded servers, and the finding.
+
+![The doorman declining a server it just graded F](media/doorman-decline.gif)
+
+*A real run against a real server. The grade, the hard fail, and the arithmetic
+are live values, not a mockup: `webzum.com/api/mcp` scores **89.9% on
+configuration** and still fails, because one tool description tells your agent
+to do something you did not ask for. One cent answered a question that would
+have cost $54.47 to measure. [Run it yourself](https://clembot-doorman.wanessalabs.com/#flow),
+against any server you like.*
 
 Adding an MCP server to an agent is one line of JSON. After that line, a server
 you have never audited describes its own tools to your agent, and your agent
@@ -167,6 +176,7 @@ good.
 | OpenAPI spec | https://scorecard.wanessalabs.com/openapi.json (3.1.0) |
 | Same spec as 3.0.3 | https://scorecard.wanessalabs.com/openapi-3.0.json |
 | End-to-end runbook | [`RUNBOOK.md`](RUNBOOK.md) |
+| Embeddable demo | https://clembot-doorman.wanessalabs.com/embed/flow.html |
 | Example badge | https://scorecard.wanessalabs.com/badge/https%3A%2F%2Fmcp.deepwiki.com%2Fmcp.svg |
 
 Two real production audits, both queued through the API, claimed by a laptop
@@ -189,6 +199,25 @@ the scorecard is itself an MCP server, it was graded by itself, and it had to
 pass its own gate to be callable. Nothing here is exempt.
 
 ---
+
+### Embed the demo
+
+One file, no build step, no dependency on this repo at runtime. It runs the same
+live call the site runs.
+
+```html
+<iframe src="https://clembot-doorman.wanessalabs.com/embed/flow.html"
+        width="100%" height="1900" style="border:0" loading="lazy"
+        title="Doorman: should I adopt this server?"></iframe>
+```
+
+Add `?api=` to point it at your own scorecard deployment.
+
+It is **generated** by `node scripts/build-widget.mjs`, never hand-maintained: a
+second hand-copied copy of a 12KB driver and a 45KB stylesheet drifts the first
+time anyone edits either, and drifts silently, because both still run. The
+builder carries a drift guard that refuses to write a widget whose Run button
+would throw.
 
 ## The grade
 

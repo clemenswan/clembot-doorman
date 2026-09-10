@@ -1,0 +1,1363 @@
+<!doctype html>
+<html lang="en" class="js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Doorman: should I adopt this server?</title>
+<meta name="robots" content="noindex">
+<meta name="description" content="A live run of the doorman adoption flow. Grades a real MCP server, prices the measurement, and decides.">
+<meta name="scorecard-api" content="https://scorecard.wanessalabs.com">
+<style>
+
+/* ─────────────────────────────────────────────────────────────────────────
+   Wanessa Labs tokens, verbatim from wanessalabs-astro/design/tokens.css.
+   Rank 1 authority. The dark scale is an extension on the same warm hue axis
+   and the same single forest green, not a second palette.
+
+   Not used, because rank 1 and the vault tell list both refuse them:
+   gradients, glassmorphism, drop shadows, pure #000 or #FFF.
+   Depth is border, space and scale.
+   ───────────────────────────────────────────────────────────────────────── */
+:root {
+  --bg:              oklch(97.5% 0.006 82);
+  --surface:         oklch(99.5% 0.003 82);
+  --surface-raised:  oklch(94%   0.010 82);
+  --border:          oklch(87%   0.007 82);
+
+  --text-primary:    oklch(13%   0.008 82);
+  --text-secondary:  oklch(38%   0.008 82);
+  --text-muted:      oklch(51%   0.007 82);
+
+  --accent:          oklch(37%   0.12  152);
+  --accent-hover:    oklch(31%   0.12  152);
+  --accent-mid:      oklch(52%   0.10  152);
+  --on-accent:       oklch(97%   0.004 82);
+
+  --s-green:   oklch(48% 0.13 152);
+  --s-blue:    oklch(52% 0.13 240);
+  --s-orange:  oklch(60% 0.15 45);
+  --s-red:     oklch(53% 0.19 27);
+
+  --ink-bg:      oklch(18%   0.010 82);
+  --ink-surface: oklch(22%   0.010 82);
+  --ink-raised:  oklch(26%   0.010 82);
+  --ink-border:  oklch(30%   0.010 82);
+  --ink-text:    oklch(93%   0.006 82);
+  --ink-body:    oklch(80%   0.008 82);
+  --ink-muted:   oklch(64%   0.008 82);
+  --ink-accent:  oklch(72%   0.14  152);
+  --ink-red:     oklch(72%   0.15  27);
+  --ink-amber:   oklch(78%   0.13  85);
+
+  --font-display: 'Bricolage Grotesque', sans-serif;
+  --font-body:    'Archivo', system-ui, sans-serif;
+  --font-label:   'Barlow Condensed', sans-serif;
+  --font-mono:    ui-monospace, 'SFMono-Regular', 'Cascadia Mono', Menlo, monospace;
+
+  --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:20px; --sp-6:24px;
+  --sp-8:32px; --sp-10:40px; --sp-12:48px; --sp-16:64px; --sp-24:96px;
+
+  --radius-sm:3px; --radius-md:6px; --radius-lg:8px; --radius-xl:14px; --radius-full:9999px;
+  --ease-signature: cubic-bezier(0.16, 1, 0.3, 1);
+  --measure: 62ch;
+  --gutter: clamp(20px, 5vw, 48px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0; background: var(--bg); color: var(--text-secondary);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3 { font-family: var(--font-display); color: var(--text-primary); font-weight: 700; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(2.3rem, 5.6vw, 4.25rem); font-weight: 800; line-height: 1.0; letter-spacing: -0.035em; }
+h2 { font-size: clamp(1.7rem, 3.6vw, 2.6rem); line-height: 1.06; letter-spacing: -0.028em; }
+h3 { font-size: 1.0625rem; line-height: 1.3; letter-spacing: -0.012em; }
+
+p { margin: 0 0 var(--sp-5); max-width: var(--measure); }
+a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { color: var(--accent-hover); }
+code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: var(--radius-sm); }
+.ink :focus-visible { outline-color: var(--ink-accent); }
+
+.wrap { max-width: 1140px; margin: 0 auto; padding-inline: var(--gutter); }
+
+.eyebrow {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.11em;
+  font-weight: 600; font-size: 0.8125rem; color: var(--text-muted);
+  display: flex; align-items: center; gap: var(--sp-2); margin: 0 0 var(--sp-5);
+}
+.eyebrow::before { content: ""; width: 6px; height: 6px; border-radius: var(--radius-full); background: var(--accent); flex: none; }
+.ink .eyebrow { color: var(--ink-muted); }
+.ink .eyebrow::before { background: var(--ink-accent); }
+
+.ink { background: var(--ink-bg); color: var(--ink-body); }
+.ink h1, .ink h2, .ink h3 { color: var(--ink-text); }
+.ink a { color: var(--ink-accent); }
+
+/* ── masthead ─────────────────────────────────────────────────────────── */
+.masthead {
+  position: sticky; top: 0; z-index: 50;
+  border-bottom: 1px solid transparent; background: var(--bg);
+  transition: border-color .3s var(--ease-signature);
+}
+.masthead[data-stuck="true"] { border-bottom-color: var(--border); }
+.masthead .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-4); height: 58px; }
+.wordmark {
+  display: inline-flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--font-display); font-weight: 800; font-size: 1.0625rem;
+  color: var(--text-primary); letter-spacing: -0.03em; text-decoration: none;
+}
+/* The mark is artwork, so it keeps its own colours. It is NOT a source of UI
+   colour: the token block above allows one accent and it is the forest green.
+   Radius rather than a circle, to match every other bordered surface here. */
+.wordmark img { display: block; width: 26px; height: 26px; border-radius: var(--radius-sm); flex: none; }
+.wordmark i { color: var(--accent-mid); font-style: normal; }
+.masthead nav { display: flex; gap: var(--sp-6); }
+.masthead nav a {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); text-decoration: none;
+  position: relative; padding-block: 4px; transition: color .2s var(--ease-signature);
+}
+.masthead nav a::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform .3s var(--ease-signature);
+}
+.masthead nav a:hover { color: var(--text-primary); }
+.masthead nav a[aria-current="true"] { color: var(--accent); }
+.masthead nav a[aria-current="true"]::after { transform: scaleX(1); }
+/* A nav link must never wrap its own text. Two sections were added to an
+   already-full nav and the links broke mid-label instead of overflowing, so
+   the masthead silently became two lines tall while every scrollWidth and
+   document-overflow check still read clean. Wrapping is not overflow. */
+.masthead nav a { white-space: nowrap; }
+
+/* The nav scrolls sideways rather than disappearing.
+   It used to be hidden under 760px, which was fine at six links. At nine it
+   overflowed the PAGE between 760 and about 1060: 578px of links inside a
+   768px viewport pushed the document to 814 and the whole site scrolled
+   horizontally. Hiding it at a higher breakpoint would have fixed the overflow
+   by removing navigation from every tablet, so it scrolls instead and stays
+   reachable at 320. */
+@media (max-width: 1060px) {
+  .masthead .wrap { gap: var(--sp-4); }
+  .masthead nav {
+    min-width: 0; overflow-x: auto; gap: var(--sp-5);
+    scrollbar-width: none; -ms-overflow-style: none;
+    /* Bleed to the edge so the last link is not trapped under the gutter. */
+    margin-inline-end: calc(var(--gutter) * -1);
+    padding-inline: 0 var(--gutter);
+    -webkit-overflow-scrolling: touch;
+  }
+  .masthead nav::-webkit-scrollbar { display: none; }
+  .masthead nav a { white-space: nowrap; flex: none; }
+}
+
+/* ── header: short. The demo is the point, not the prose. ─────────────── */
+.header { padding: clamp(56px, 9vh, 96px) 0 clamp(36px, 5vh, 56px); }
+.header h1 { max-width: 21ch; }
+
+/* Hero calls to action. Same shape as button.run so the page has one button
+   idiom, not two: solid for the thing we want read, outlined for the aside.
+   Borders and never shadows, per the brand file. */
+.hero-cta { display: flex; flex-wrap: wrap; gap: var(--sp-3); margin-top: var(--sp-6); }
+.btn {
+  font-family: var(--font-body); font-weight: 600; font-size: 0.9375rem;
+  text-decoration: none; white-space: nowrap;
+  display: inline-flex; align-items: center; min-height: 46px;
+  padding: var(--sp-3) var(--sp-6); border-radius: var(--radius-md);
+  background: var(--accent); color: var(--surface); border: 1px solid var(--accent);
+  transition: transform .2s var(--ease-signature), opacity .2s var(--ease-signature);
+}
+.btn:hover { transform: translateY(-1px); opacity: .92; }
+.btn-ghost {
+  background: transparent; color: var(--text-primary); border-color: var(--border);
+}
+@media (max-width: 420px) { .hero-cta .btn { flex: 1 1 100%; justify-content: center; } }
+.header .story {
+  font-size: clamp(1.0625rem, 1.55vw, 1.25rem); color: var(--text-secondary);
+  max-width: 60ch; margin-top: var(--sp-6); line-height: 1.55;
+}
+.header .story b { color: var(--text-primary); font-weight: 600; }
+
+/* ── the flow: the main event ─────────────────────────────────────────── */
+.stage { padding: clamp(40px, 6vh, 72px) 0 clamp(72px, 11vh, 128px); }
+.stage-head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: var(--sp-6); flex-wrap: wrap; margin-bottom: var(--sp-8);
+}
+.stage-head > div:first-child { max-width: 62ch; }
+.stage-head h2 + p { margin: var(--sp-4) 0 0; color: var(--ink-muted); font-size: 0.9375rem; max-width: 58ch; }
+.stage-head .runbar { padding-bottom: 4px; }
+
+.runbar { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
+.runbar input {
+  min-width: min(340px, 72vw); padding: var(--sp-3) var(--sp-4);
+  font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-text);
+  background: var(--ink-bg); border: 1px solid var(--ink-border);
+  border-radius: var(--radius-md); min-height: 46px;
+}
+.runbar input::placeholder { color: var(--ink-muted); }
+button.run {
+  font-family: var(--font-body); font-weight: 600; font-size: 0.9375rem;
+  background: var(--ink-accent); color: var(--ink-bg); border: 1px solid var(--ink-accent);
+  border-radius: var(--radius-md); padding: var(--sp-3) var(--sp-6); cursor: pointer;
+  min-height: 46px; white-space: nowrap;
+  transition: transform .2s var(--ease-signature), opacity .2s var(--ease-signature);
+}
+button.run:hover:not(:disabled) { transform: translateY(-1px); opacity: .92; }
+button.run:disabled { opacity: .45; cursor: not-allowed; }
+button.ghost {
+  background: transparent; color: var(--ink-body); border: 1px solid var(--ink-border);
+}
+
+/* ── the orchestration diagram ─────────────────────────────────────────
+   Four nodes, three hops out, one hop back. Packets travel the connectors on
+   a loop while idle, and the diagram is driven step by step while the flow is
+   running, so it is a readout rather than decoration.
+
+   Pure inline SVG plus CSS keyframes: no animation library, no dependency,
+   and every segment is horizontal so the motion is a plain translateX that
+   works everywhere.
+   ─────────────────────────────────────────────────────────────────────── */
+.diagram { margin: 0 0 var(--sp-10); }
+.diagram svg { width: 100%; height: auto; display: block; overflow: visible; }
+
+.dg-node rect {
+  fill: var(--ink-surface); stroke: var(--ink-border); stroke-width: 1;
+  transition: stroke .45s var(--ease-signature), fill .45s var(--ease-signature);
+}
+.dg-node .dg-name {
+  font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 17px;
+  fill: var(--ink-text); letter-spacing: -0.02em;
+}
+.dg-node .dg-role {
+  font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 12px;
+  fill: var(--ink-muted); letter-spacing: 0.11em; text-transform: uppercase;
+}
+.dg-node[data-on="true"] rect { stroke: var(--ink-accent); fill: var(--ink-raised); }
+.dg-node[data-on="true"] .dg-name { fill: var(--ink-accent); }
+.dg-node[data-planned="true"] rect { stroke-dasharray: 4 3; }
+
+.dg-link { stroke: var(--ink-border); stroke-width: 1; fill: none; }
+.dg-link-label {
+  font-family: ui-monospace, monospace; font-size: 11px; fill: var(--ink-muted);
+  text-anchor: middle;
+}
+.dg-arrow { fill: var(--ink-border); }
+
+/* travelling packets */
+.dg-packet { fill: var(--ink-accent); opacity: 0; }
+.js .dg-packet { animation: packet 2.8s var(--ease-signature) infinite; }
+.dg-packet.p2 { animation-delay: .35s; }
+.dg-packet.p3 { animation-delay: .7s; }
+.dg-packet.back { fill: var(--ink-amber); animation-delay: 1.05s; }
+@keyframes packet {
+  0%       { opacity: 0; transform: translateX(0); }
+  8%       { opacity: 1; }
+  70%      { opacity: 1; }
+  78%,100% { opacity: 0; transform: translateX(var(--dx, 100px)); }
+}
+
+/* While a run is in progress the ambient loop stops and the diagram follows. */
+.diagram[data-running="true"] .dg-packet { animation-play-state: paused; opacity: 0; }
+.diagram[data-running="true"] .dg-packet[data-live="true"] {
+  animation-play-state: running; opacity: 1;
+}
+
+@media (max-width: 720px) {
+  .diagram { overflow-x: auto; }
+  .diagram svg { min-width: 620px; }
+}
+
+.tag-planned { color: var(--ink-amber); }
+
+/* ── Bazantic attribution ─────────────────────────────────────────────
+   The wordmark is set in type, deliberately. We do not have Bazantic's logo
+   asset, and drawing a lookalike would be worse than showing none: drop the
+   real SVG into #bazantic-mark and it replaces the text with no other change.
+   ─────────────────────────────────────────────────────────────────────── */
+.baz {
+  display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 56px); align-items: start;
+  border: 1px solid var(--border); border-radius: var(--radius-xl);
+  background: var(--surface); padding: clamp(26px, 3.6vw, 42px);
+}
+@media (max-width: 780px) { .baz { grid-template-columns: 1fr; } }
+.baz-mark {
+  font-family: var(--font-display); font-weight: 800;
+  font-size: clamp(1.75rem, 3.4vw, 2.5rem); letter-spacing: -0.035em;
+  color: var(--text-primary); line-height: 1;
+}
+.baz-mark svg, .baz-mark img { max-width: 240px; height: auto; display: block; }
+.baz-kicker {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.11em;
+  font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-bottom: var(--sp-3);
+}
+.baz-status {
+  display: inline-flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-5);
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: 0.75rem; font-weight: 600; padding: var(--sp-1) var(--sp-3);
+  border-radius: var(--radius-full); border: 1px solid currentColor;
+}
+.baz-status.planned { color: var(--s-orange); }
+.baz ul { margin: var(--sp-5) 0 0; padding: 0; list-style: none; display: grid; gap: var(--sp-4); }
+.baz li { padding-top: var(--sp-4); border-top: 1px solid var(--border); font-size: 0.9375rem; }
+.baz li b { color: var(--text-primary); font-weight: 600; }
+.baz code { background: var(--surface-raised); padding: 1px 5px; border-radius: var(--radius-sm); }
+.baz .tag-plan-inline { color: var(--s-orange); }
+.baz-sub {
+  margin: var(--sp-10) 0 var(--sp-4); max-width: none;
+  font: 600 .75rem/1.3 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
+  color: var(--text-primary);
+}
+
+/* steps */
+.flow { display: grid; gap: var(--sp-3); }
+.step {
+  display: grid; grid-template-columns: 130px minmax(0,1fr) minmax(0, 300px);
+  gap: clamp(14px, 2.4vw, 32px); align-items: start;
+  border: 1px solid var(--ink-border); border-radius: var(--radius-xl);
+  background: var(--ink-surface); padding: clamp(18px, 2.4vw, 26px) clamp(18px, 2.6vw, 28px);
+  opacity: .3;
+  transition: opacity .5s var(--ease-signature), border-color .5s var(--ease-signature),
+              transform .5s var(--ease-signature);
+}
+@media (max-width: 920px) {
+  .step { grid-template-columns: 1fr; gap: var(--sp-3); }
+}
+.step[data-state="active"] { opacity: 1; border-color: var(--ink-accent); transform: translateY(-2px); }
+.step[data-state="done"]   { opacity: 1; }
+.step[data-state="idle"]   { opacity: .3; }
+
+.step-who {
+  font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-accent);
+  display: flex; align-items: center; gap: var(--sp-2); padding-top: 2px;
+}
+.step-who .dot {
+  width: 7px; height: 7px; border-radius: var(--radius-full);
+  background: var(--ink-border); flex: none;
+  transition: background .4s var(--ease-signature);
+}
+.step[data-state="active"] .dot { background: var(--ink-accent); animation: pulse 1.2s var(--ease-signature) infinite; }
+.step[data-state="done"] .dot   { background: var(--ink-accent); }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
+
+.step h3 { margin-bottom: var(--sp-2); font-size: 1rem; }
+.step .say { margin: 0; font-size: 0.9375rem; color: var(--ink-body); max-width: 52ch; }
+.step .out {
+  font-family: var(--font-mono); font-size: 0.78125rem; color: var(--ink-muted);
+  border-left: 1px solid var(--ink-border); padding-left: var(--sp-4); min-height: 1.4em;
+  line-height: 1.7; word-break: break-word;
+}
+@media (max-width: 920px) {
+  .step .out { border-left: 0; border-top: 1px solid var(--ink-border); padding-left: 0; padding-top: var(--sp-3); }
+}
+.out .ok   { color: var(--ink-accent); }
+.out .bad  { color: var(--ink-red); }
+.out .warn { color: var(--ink-amber); }
+
+/* Honesty badge. Says which steps touch the real service. */
+.tag {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.09em;
+  font-size: 0.6875rem; font-weight: 600; padding: 2px var(--sp-2);
+  border-radius: var(--radius-full); border: 1px solid currentColor;
+  margin-left: var(--sp-2); vertical-align: 2px;
+}
+.tag-live { color: var(--ink-accent); }
+.tag-flow { color: var(--ink-muted); }
+
+/* verdict card revealed by the doorman step */
+.verdict {
+  margin-top: var(--sp-4); border: 1px solid var(--ink-border);
+  border-radius: var(--radius-lg); background: var(--ink-raised); overflow: hidden;
+}
+.verdict[hidden] { display: none; }
+.verdict-top {
+  display: flex; align-items: baseline; gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--ink-border);
+}
+.v-band {
+  font-family: var(--font-display); font-weight: 800; font-size: 2.5rem; line-height: .85;
+  letter-spacing: -0.04em; color: var(--ink-accent); font-variant-numeric: tabular-nums;
+}
+.v-band[data-band="F"] { color: var(--ink-red); }
+.v-band[data-band="C"] { color: var(--ink-amber); }
+.v-score { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; color: var(--ink-text); font-variant-numeric: tabular-nums; }
+.v-meta { margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-muted); text-align: right; }
+.verdict-layers { padding: var(--sp-4) var(--sp-5); display: grid; gap: var(--sp-3); }
+.vl { display: grid; grid-template-columns: 88px 1fr 92px; gap: var(--sp-3); align-items: center; }
+.vl-name { font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.6875rem; font-weight: 600; color: var(--ink-muted); }
+.vl-track { height: 4px; border-radius: var(--radius-full); background: var(--ink-border); overflow: hidden; }
+.vl-fill { height: 100%; border-radius: var(--radius-full); background: var(--ink-accent); width: 0; transition: width 1s var(--ease-signature); }
+.vl-val { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-body); text-align: right; font-variant-numeric: tabular-nums; }
+.vl[data-measured="false"] .vl-track { background: transparent; border-top: 1px dashed var(--ink-border); height: 1px; border-radius: 0; }
+.vl[data-measured="false"] .vl-val { color: var(--ink-muted); font-family: var(--font-label); text-transform: uppercase; letter-spacing: .08em; font-size: .625rem; }
+
+/* the roster: which agent ends up holding the tool */
+.roster { margin-top: var(--sp-4); display: grid; gap: var(--sp-2); }
+.roster[hidden] { display: none; }
+.agent {
+  display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap;
+  border: 1px solid var(--ink-border); border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4); background: var(--ink-bg);
+  transition: border-color .4s var(--ease-signature);
+}
+.agent[data-granted="true"] { border-color: var(--ink-accent); }
+.agent .a-name { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-text); min-width: 148px; }
+.agent .a-tools { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-muted); }
+.chip {
+  font-family: var(--font-mono); font-size: 0.6875rem; padding: 2px var(--sp-2);
+  border-radius: var(--radius-sm); border: 1px solid var(--ink-border); color: var(--ink-muted);
+}
+.chip.new { color: var(--ink-accent); border-color: var(--ink-accent); }
+.chip.none { color: var(--ink-muted); font-style: italic; border-style: dashed; }
+
+/* ── sections ─────────────────────────────────────────────────────────── */
+/* ── LEDGER: three real audits ───────────────────────────────────────────
+   The only section on this page that is a table, because it is the only
+   place where the argument IS the comparison: three servers, one column
+   that disagrees with the verdict. Depth is border and scale, per rank 1.
+   Semantic colour appears on the grade letter alone; using it on the row
+   would pre-judge the static column the reader is meant to read. */
+.audits { border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; background: var(--surface); }
+.audits table { width: 100%; border-collapse: collapse; font-size: .9375rem; }
+.audits th, .audits td { text-align: left; padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--border); vertical-align: baseline; }
+.audits thead th {
+  font-family: var(--font-label); font-size: .6875rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .11em; color: var(--text-muted);
+  background: var(--surface-raised); white-space: nowrap;
+}
+.audits tbody tr:last-child td { border-bottom: 0; }
+.audits tr.is-ours { background: var(--surface-raised); }
+/* A plain <td> inherits the SECTION colour, and one of these tables sits
+   inside a dark section while keeping a near-white surface of its own.
+   Measured at 1.84:1 before this line. The board has no plain-text cell,
+   which is why the rule was never needed until now. */
+.audits td { color: var(--text-primary); }
+.audits .ours-tag {
+  display: inline-block; margin-left: var(--sp-2); padding: 1px 7px;
+  border: 1px solid var(--border); border-radius: 999px;
+  font-size: .6875rem; font-weight: 500; letter-spacing: .04em;
+  text-transform: uppercase; color: var(--text-muted);
+}
+.audits .server { color: var(--text-primary); font-weight: 500; }
+.next-head { margin-top: var(--sp-9, 3rem); }
+.audits .server small { display: block; font-size: .8125rem; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+.audits .band {
+  font-family: var(--font-display); font-weight: 800; font-size: 1.125rem;
+  letter-spacing: -0.02em; font-variant-numeric: tabular-nums;
+}
+.audits .band[data-band="A"] { color: var(--s-green); }
+.audits .band[data-band="F"] { color: var(--s-red); }
+.audits .band small { font-family: var(--font-body); font-weight: 400; font-size: .8125rem; color: var(--text-muted); letter-spacing: 0; margin-left: 6px; }
+.audits .stat { font-variant-numeric: tabular-nums; color: var(--text-primary); }
+/* The one number the section exists to make you look at. The label states a
+   comparison that is true of THIS row, not a superlative: the scorecard scores
+   higher still, so "highest" would have been false. */
+.audits .stat.high { font-weight: 600; }
+.audits .stat.high::after {
+  content: "above DeepWiki"; display: block; font-family: var(--font-label);
+  font-size: .625rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .11em; color: var(--text-muted); margin-top: 2px;
+}
+.audits td a {
+  font-size: .875rem; white-space: nowrap;
+  display: inline-block; padding-block: 7px;
+}
+.audit-note { margin: var(--sp-6) 0 0; font-size: .9375rem; }
+.audits .num { color: var(--text-muted); }
+/* The flagged row is marked by a rule on its leading edge, not a fill. A
+   coloured band behind the row would pre-judge the config column the reader is
+   being asked to read first. */
+.audits tr.flagged td:first-child { box-shadow: inset 3px 0 0 0 var(--s-red); }
+.finding-quote {
+  margin: var(--sp-8) 0 0; padding: var(--sp-6) var(--sp-8);
+  border: 1px solid var(--ink-border); border-left: 3px solid var(--ink-amber);
+  border-radius: var(--radius-lg); background: var(--ink-surface);
+}
+.finding-quote p { margin: 0 0 var(--sp-4); max-width: var(--measure); color: var(--ink-body); }
+.finding-quote p:last-child { margin-bottom: 0; }
+.finding-quote b { color: var(--ink-text); }
+.ink .audit-note { color: var(--ink-body); }
+.ink .audit-note a { color: var(--ink-accent); }
+.ink h2 { color: var(--ink-text); }
+.ink .section-intro { color: var(--ink-body); }
+.ink code { color: var(--ink-amber); }
+@media (max-width: 720px) {
+  /* No horizontal scroll on a phone: the table becomes stacked records and
+     the header row is dropped rather than repeated per cell. */
+  .audits thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .audits tr { display: block; border-bottom: 1px solid var(--border); padding: var(--sp-2) 0; }
+  .audits tbody tr:last-child { border-bottom: 0; }
+  .audits td { display: flex; justify-content: space-between; gap: var(--sp-4); border-bottom: 0; padding: var(--sp-2) var(--sp-5); }
+  .audits td::before { content: attr(data-label); font-family: var(--font-label); font-size: .6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: .11em; color: var(--text-muted); }
+  .audits .stat.high::after { display: inline; margin-left: 6px; }
+  /* The server cell is the widest and the only one with a second line. Left
+     to the row's flex rule it puts the name and its detail side by side and
+     both wrap. Stacked, it reads as a heading with a caption. */
+  .audits td.server { display: block; }
+  .audits td.server::before { display: block; margin-bottom: 3px; }
+}
+
+/* ── TAPE MODAL ──────────────────────────────────────────────────────────
+   A native <dialog>, so the focus trap, Escape, inert background and
+   backdrop come from the platform instead of from us getting them wrong.
+
+   SECURITY: everything rendered in here is third-party text we did not
+   write, and at least one server on the board is deliberately trying to
+   talk to a reading agent. Every value goes in through textContent. There
+   is no innerHTML in the tape renderer, and that is not a style choice. */
+.tape-modal {
+  width: min(920px, calc(100vw - 2 * var(--gutter)));
+  max-height: min(82vh, 900px);
+  padding: 0; border: 1px solid var(--border); border-radius: var(--radius-xl);
+  background: var(--surface); color: var(--text-secondary);
+  font-family: var(--font-body);
+}
+.tape-modal::backdrop { background: oklch(18% 0.01 82 / 0.55); }
+.tape-head {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: var(--sp-6);
+  padding: var(--sp-6) var(--sp-8); border-bottom: 1px solid var(--border);
+  background: var(--surface-raised); position: sticky; top: 0;
+}
+.tape-head .eyebrow { margin: 0 0 var(--sp-1); }
+.tape-sub { margin: 0; font-size: .8125rem; color: var(--text-muted); word-break: break-all; }
+.tape-actions { display: flex; align-items: center; gap: var(--sp-4); flex: none; }
+.tape-actions a { font-size: .8125rem; }
+.tape-close {
+  font: 600 .8125rem/1 var(--font-label); letter-spacing: .09em; text-transform: uppercase;
+  padding: var(--sp-3) var(--sp-4); cursor: pointer; color: var(--text-primary);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-md);
+}
+.tape-close:hover { background: var(--surface-raised); }
+.tape-body { padding: var(--sp-6) var(--sp-8) var(--sp-10); overflow-y: auto; }
+.tape-note { font-size: .875rem; color: var(--text-muted); margin: 0 0 var(--sp-6); max-width: none; }
+.tape-h {
+  font: 600 .6875rem/1 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
+  color: var(--text-muted); margin: var(--sp-8) 0 var(--sp-4);
+}
+.tape-h:first-child { margin-top: 0; }
+.tape-hit {
+  border: 1px solid var(--border); border-left: 3px solid var(--s-orange);
+  border-radius: var(--radius-md); padding: var(--sp-4) var(--sp-5); margin-bottom: var(--sp-3);
+}
+.tape-hit[data-sev="hard"] { border-left-color: var(--s-red); }
+.tape-hit-top { display: flex; gap: var(--sp-3); align-items: baseline; flex-wrap: wrap; margin-bottom: var(--sp-2); }
+.tape-sev {
+  font: 600 .625rem/1 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
+  padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid var(--s-orange); color: var(--s-orange);
+}
+.tape-hit[data-sev="hard"] .tape-sev { border-color: var(--s-red); color: var(--s-red); }
+.tape-pattern { font-family: var(--font-mono); font-size: .8125rem; color: var(--text-primary); }
+.tape-where { font-size: .75rem; color: var(--text-muted); }
+.tape-excerpt {
+  margin: 0; font-family: var(--font-mono); font-size: .8125rem; line-height: 1.55;
+  color: var(--text-secondary); white-space: pre-wrap; word-break: break-word; max-width: none;
+}
+.tape-tool { border-top: 1px solid var(--border); }
+.tape-tool summary {
+  cursor: pointer; padding: var(--sp-3) 0; font-size: .875rem; color: var(--text-primary);
+  display: flex; gap: var(--sp-3); align-items: baseline;
+}
+.tape-tool summary::marker { color: var(--text-muted); }
+.tape-tool .len { font-size: .75rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.tape-tool pre {
+  margin: 0 0 var(--sp-5); padding: var(--sp-4) var(--sp-5); overflow-x: auto;
+  background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-md);
+  font-family: var(--font-mono); font-size: .8125rem; line-height: 1.55; white-space: pre-wrap;
+  word-break: break-word; color: var(--text-secondary);
+}
+.tape-summary {
+  margin-top: var(--sp-6); padding: var(--sp-4) var(--sp-5); font-size: .875rem;
+  border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface-raised);
+}
+@media (max-width: 720px) {
+  .tape-modal { width: 100vw; max-width: 100vw; max-height: 92vh; border-radius: 0; border-left: 0; border-right: 0; }
+  .tape-head, .tape-body { padding-inline: var(--sp-5); }
+}
+
+/* ── ORG + VERIFY ────────────────────────────────────────────────────────── */
+.org {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1px;
+  background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-xl);
+  overflow: hidden; margin-top: var(--sp-8);
+}
+.org-group { background: var(--surface); padding: var(--sp-6); }
+.org-label {
+  font: 600 .6875rem/1 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
+  color: var(--text-muted); margin: 0 0 var(--sp-4); display: flex; justify-content: space-between;
+}
+.org-label span { color: var(--accent-mid); font-variant-numeric: tabular-nums; }
+.org-list { list-style: none; margin: 0; padding: 0; }
+.org-list li {
+  display: flex; align-items: baseline; gap: var(--sp-2); justify-content: space-between;
+  font-size: .875rem; padding: var(--sp-2) 0; border-bottom: 1px solid var(--border);
+}
+.org-list li:last-child { border-bottom: 0; }
+.org-name { color: var(--text-primary); }
+.org-mcp {
+  font: 600 .625rem/1 var(--font-label); letter-spacing: .09em; text-transform: uppercase;
+  padding: 3px 6px; border-radius: var(--radius-sm);
+  border: 1px solid var(--s-orange); color: var(--s-orange); flex: none;
+}
+.flow-strip {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px;
+  background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-xl);
+  overflow: hidden; margin-top: var(--sp-8);
+}
+.flow-step { background: var(--surface); padding: var(--sp-5); }
+.flow-step .n {
+  font: 600 .625rem/1 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.flow-step h3 { margin: var(--sp-3) 0 var(--sp-2); font-size: .9375rem; }
+.flow-step p { margin: 0; font-size: .8125rem; }
+.flow-step[data-stop="true"] { background: var(--surface-raised); }
+.verify-cmd {
+  margin: var(--sp-6) 0 0; padding: var(--sp-5) var(--sp-6); overflow-x: auto;
+  background: var(--ink-bg); border: 1px solid var(--ink-border); border-radius: var(--radius-lg);
+  font-family: var(--font-mono); font-size: .875rem; line-height: 1.7; color: var(--ink-body);
+  white-space: pre; max-width: none;
+}
+.verify-cmd b { color: var(--ink-accent); font-weight: 400; }
+.verify-cmd i { color: var(--ink-muted); font-style: normal; }
+.checks { list-style: none; margin: var(--sp-6) 0 0; padding: 0; max-width: var(--measure); }
+.checks li { padding: var(--sp-3) 0; border-bottom: 1px solid var(--border); font-size: .9375rem; }
+.checks li:last-child { border-bottom: 0; }
+.checks b { color: var(--text-primary); }
+
+/* ── HERO ────────────────────────────────────────────────────────────────
+   The canvas sits behind the copy and is decorative: aria-hidden, no focus
+   stop, and the hero reads identically with it removed. If three.js fails to
+   load, WebGL is unavailable, or the visitor prefers reduced motion, the only
+   difference is an empty transparent canvas. */
+.header { position: relative; overflow: hidden; }
+/* The vetted side. Everything right of the threshold is inside, so it gets a
+   ground of its own and the mark stands on it. The canvas sits ABOVE this and
+   below the copy, so cleared cards read as knockouts on the field instead of
+   as coloured confetti scattered over the whole hero.
+
+   The field is the LIGHT green rather than the ink, measured: the logo carries
+   black artwork (the wordmark, the door), and black on --ink-accent is 8.95:1
+   where black on --ink-bg was 1.12:1 and effectively invisible. Cleared cards
+   flip dark to follow it, 8.02:1, because white on this green is only 2.35:1. */
+.hero-panel {
+  position: absolute; top: 0; bottom: 0; right: 0; width: 38%;
+  background: var(--ink-accent); z-index: 0;
+}
+#gate-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: block; z-index: 1; pointer-events: none;
+}
+.header > .wrap { position: relative; z-index: 2; }
+/* Copy left, the full mark right. The artwork is a tall portrait composition,
+   so it fills the column the text column leaves empty rather than being
+   letterboxed into a wide slot. */
+.hero-grid {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(24px, 5vw, 72px); align-items: center;
+}
+/* The green panel is DECORATION painted behind a z-index:2 wrap, so hero copy
+   does not wrap around it: it runs on top of it. Long lines then sit dark-on-
+   green at the seam. Capping the column keeps every line on the paper side,
+   and a render check asserts the right edge stays left of the panel. */
+.hero-copy { min-width: 0; max-width: 54ch; }
+.hero-logo { display: flex; justify-content: flex-end; }
+.hero-logo img {
+  display: block; width: auto; height: clamp(260px, 34vw, 420px);
+  max-width: 100%;
+}
+@media (max-width: 900px) {
+  /* Below this the two columns squeeze the measure badly. The mark moves above
+     the copy and shrinks, and the masthead still carries the identity either
+     way, so nothing is lost by keeping it modest here. */
+  .hero-grid { grid-template-columns: 1fr; gap: var(--sp-6); }
+  .hero-logo { order: -1; justify-content: flex-start; }
+  .hero-logo img { height: clamp(150px, 30vw, 220px); }
+  /* The panel and the drifting cards are a two-column idea. Stacked, the panel
+     has no side to be on and the cards cross the copy, so both are dropped
+     rather than reflowed into something that only looks like a mistake. The
+     script sees display:none and never starts a render loop. */
+  .hero-panel { display: none; }
+  #gate-canvas { display: none; }
+}
+
+section { padding: clamp(72px, 11vh, 136px) 0; }
+.section-intro { color: var(--text-secondary); max-width: var(--measure); margin: var(--sp-6) 0 var(--sp-12); font-size: 1.0625rem; }
+.ink .section-intro { color: var(--ink-body); }
+
+.trio { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
+.trio > div { background: var(--surface); padding: clamp(24px, 3.4vw, 36px); }
+.trio .n { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 3.6vw, 2.75rem); line-height: .85; letter-spacing: -0.04em; color: var(--accent-mid); font-variant-numeric: tabular-nums; }
+.trio .n small { display: block; font-family: var(--font-label); font-size: .6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: .11em; color: var(--text-muted); margin-top: var(--sp-2); }
+.trio h3 { margin: var(--sp-5) 0 var(--sp-2); }
+.trio p { margin: 0; font-size: .9375rem; }
+
+/* Refusals and judge shortcuts. One card idiom, borders and never shadows,
+   auto-fit so neither grid needs its own breakpoint. */
+/* ── architecture diagram ──────────────────────────────────────────────
+   Deliberately HTML and not SVG. An SVG with a 900px viewBox scaled into a
+   390px phone renders 12px labels at 5px, and this diagram is mostly labels.
+   A single stacked column reflows instead of shrinking, so the text stays at
+   its real size at every width. Depth is border and space, per the tokens. */
+.arch { max-width: 760px; margin: var(--sp-10) 0 0; }
+.arch-node {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-xl); padding: var(--sp-5) var(--sp-6);
+}
+/* Dashed is the honest state: this layer is specified and not deployed. */
+.arch-node[data-state="planned"] { border-style: dashed; background: transparent; }
+.arch-tag {
+  display: flex; justify-content: space-between; align-items: baseline;
+  gap: var(--sp-4); margin: 0 0 var(--sp-3); max-width: none;
+  font: 600 .625rem/1.4 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
+  color: var(--text-muted);
+}
+.arch-tag span { color: var(--accent-mid); text-align: right; }
+.arch-node[data-state="planned"] .arch-tag span { color: var(--s-orange); }
+.arch-node h3 { margin: 0 0 var(--sp-2); font-size: 1.0625rem; }
+.arch-files {
+  margin: 0 0 var(--sp-3); max-width: none; overflow-x: auto; white-space: nowrap;
+  font-family: var(--font-mono); font-size: .8125rem; color: var(--text-secondary);
+  padding-bottom: 2px;
+}
+.arch-note { margin: 0; font-size: .875rem; max-width: none; }
+.arch-note b { color: var(--text-primary); font-weight: 600; }
+.arch-link {
+  position: relative; margin: 0; max-width: none;
+  padding: var(--sp-4) 0 var(--sp-5) var(--sp-8);
+  font-size: .8125rem; line-height: 1.45; color: var(--text-muted);
+}
+.arch-link::before {
+  content: ""; position: absolute; left: 24px; top: 0; bottom: 0;
+  width: 1.5px; background: var(--border);
+}
+.arch-link::after {
+  content: ""; position: absolute; left: 20px; bottom: 3px; width: 8px; height: 8px;
+  border-right: 1.5px solid var(--border); border-bottom: 1.5px solid var(--border);
+  transform: rotate(45deg);
+}
+.arch-link b { color: var(--text-secondary); font-weight: 600; }
+.arch-caption {
+  margin: var(--sp-6) 0 0; max-width: 760px;
+  font-size: .875rem; color: var(--text-muted);
+}
+/* The six sections that left the masthead. Not a consolation prize: they are
+   each a detail of one tier above, so this is where they belonged. */
+.arch-jump {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2);
+  max-width: 760px; margin: var(--sp-8) 0 0; padding: 0; list-style: none;
+}
+.arch-jump li { margin: 0; }
+.arch-jump a {
+  display: inline-block; padding: 6px var(--sp-4);
+  border: 1px solid var(--border); border-radius: var(--radius-full);
+  background: var(--surface); text-decoration: none; color: var(--text-secondary);
+  font: 600 .75rem/1.3 var(--font-label); letter-spacing: .08em; text-transform: uppercase;
+  transition: border-color .2s var(--ease-signature), color .2s var(--ease-signature);
+}
+.arch-jump a:hover { border-color: var(--accent); color: var(--accent); }
+
+.refuse-grid, .judge-grid {
+  display: grid; gap: var(--sp-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+}
+/* Four cards in an auto-fit grid land 3 + 1, and the orphan reads as a card
+   that did not fit rather than a deliberate row. This section has exactly four,
+   so it gets two columns and a 2x2. */
+@media (min-width: 720px) {
+  #install .refuse-grid { grid-template-columns: repeat(2, 1fr); }
+}
+.refuse, .judge {
+  border: 1px solid var(--ink-border); border-radius: var(--radius-lg);
+  padding: clamp(18px,2.4vw,26px); background: var(--ink-surface);
+}
+.judge { border-color: var(--border); background: var(--surface); }
+.refuse h3, .judge h3 { margin: 0 0 var(--sp-3); font-size: 1.0625rem; }
+.refuse p { margin: 0; color: var(--ink-body); font-size: .9375rem; }
+.judge p { margin: 0; color: var(--text-secondary); font-size: .9375rem; }
+.refuse h3 { color: var(--ink-accent); }
+.judge h3 { color: var(--accent); }
+.judge-links {
+  display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4);
+  margin-top: var(--sp-4) !important; font-family: var(--font-label);
+  font-size: .8125rem;
+}
+
+.probes { border-top: 1px solid var(--ink-border); }
+.probe { display: grid; grid-template-columns: 56px minmax(0,1fr) minmax(0,.8fr); gap: clamp(14px,2.6vw,40px); padding: clamp(22px,2.8vw,32px) 0; border-bottom: 1px solid var(--ink-border); align-items: start; }
+@media (max-width: 860px) { .probe { grid-template-columns: 40px 1fr; } .probe .p-asks { grid-column: 2; } }
+.probe .p-n { font-family: var(--font-display); font-weight: 800; font-size: 1rem; color: var(--ink-muted); font-variant-numeric: tabular-nums; padding-top: 2px; }
+.probe .p-n .cond { display: block; font-family: var(--font-label); text-transform: uppercase; letter-spacing: .09em; font-size: .625rem; color: var(--ink-accent); margin-top: var(--sp-2); }
+.probe h3 { margin-bottom: var(--sp-2); }
+.probe p { margin: 0; color: var(--ink-body); font-size: .9375rem; max-width: 52ch; }
+.probe .p-asks { color: var(--ink-accent); font-size: .9375rem; border-left: 1px solid var(--ink-border); padding-left: clamp(14px,2vw,24px); }
+@media (max-width: 860px) { .probe .p-asks { border-left: 0; padding-left: 0; padding-top: var(--sp-3); } }
+
+.notes { border: 1px solid var(--border); border-left: 2px solid var(--accent); border-radius: var(--radius-lg); background: var(--surface); padding: clamp(20px,3vw,28px) clamp(22px,3vw,32px); margin-top: var(--sp-10); }
+.notes p:last-child { margin-bottom: 0; }
+.notes strong { color: var(--text-primary); }
+.ink .notes { background: var(--ink-surface); border-color: var(--ink-border); border-left-color: var(--ink-accent); }
+.ink .notes strong { color: var(--ink-text); }
+
+dl.facts { display: grid; grid-template-columns: minmax(150px, 200px) 1fr; gap: var(--sp-5) clamp(24px,4vw,56px); margin: var(--sp-10) 0 0; }
+dl.facts dt { font-family: var(--font-label); text-transform: uppercase; letter-spacing: .1em; font-size: .8125rem; font-weight: 600; color: var(--text-muted); }
+.ink dl.facts dt { color: var(--ink-muted); }
+dl.facts dd { margin: 0; max-width: 62ch; }
+dl.facts dt, dl.facts dd { padding-top: var(--sp-4); border-top: 1px solid var(--border); }
+.ink dl.facts dt, .ink dl.facts dd { border-top-color: var(--ink-border); }
+@media (max-width: 680px) { dl.facts { grid-template-columns: 1fr; gap: var(--sp-2) 0; } dl.facts dd { margin-bottom: var(--sp-8); border-top: 0; padding-top: var(--sp-1); } }
+
+.terminal { background: var(--ink-surface); border: 1px solid var(--ink-border); border-radius: var(--radius-xl); overflow: hidden; margin-top: var(--sp-8); }
+.terminal-bar { padding: var(--sp-4) var(--sp-6); border-bottom: 1px solid var(--ink-border); font-family: var(--font-label); text-transform: uppercase; letter-spacing: .11em; font-size: .75rem; font-weight: 600; color: var(--ink-muted); }
+.terminal pre { margin: 0; padding: clamp(20px,3vw,30px); overflow-x: auto; font-family: var(--font-mono); font-size: .8125rem; line-height: 1.75; color: var(--ink-body); }
+.c-user { color: var(--ink-accent); }
+.c-block { color: var(--ink-red); font-weight: 600; }
+.c-dim { color: var(--ink-muted); }
+
+footer { padding: var(--sp-16) 0 var(--sp-24); border-top: 1px solid var(--border); }
+footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
+
+.skip { position: absolute; left: -9999px; top: 0; background: var(--accent); color: var(--on-accent); padding: var(--sp-3) var(--sp-5); z-index: 100; }
+.skip:focus { left: 0; }
+
+/* ── reveal ───────────────────────────────────────────────────────────
+   Swept from the throttled scroll handler, never an IntersectionObserver:
+   scrolling fast past a section must not leave it permanently blank.
+   Gated on .js, set before first paint, so with JavaScript off everything is
+   simply visible. The header animates on load and never waits for a callback.
+   ───────────────────────────────────────────────────────────────────── */
+.js .reveal { opacity: 0; transform: translateY(16px); }
+.js .reveal.in { opacity: 1; transform: none; transition: opacity .65s var(--ease-signature), transform .65s var(--ease-signature); }
+.js .reveal.d1.in { transition-delay: .06s; }
+.js .reveal.d2.in { transition-delay: .12s; }
+.js .header .reveal { animation: riseIn .75s var(--ease-signature) both; opacity: 1; transform: none; }
+.js .header .reveal.d1 { animation-delay: .06s; }
+.js .header .reveal.d2 { animation-delay: .12s; }
+@keyframes riseIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+  .js .reveal, .js .header .reveal { opacity: 1; transform: none; }
+}
+
+/* widget-only: this file is a fragment on its own page, so it owns the frame */
+body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
+#flow { margin: 0; }
+.widget-foot {
+  max-width: 62rem; margin: var(--sp-5, 1.25rem) auto 0; padding: 0 var(--sp-5, 1.25rem);
+  font-size: .8125rem; color: var(--text-muted); text-align: center;
+}
+.widget-foot a { color: inherit; }
+</style>
+</head>
+<body>
+<!-- The driver owns the site's masthead and nav as well as the flow. Stubbed so
+     its init does not throw; hidden because a widget has no chrome of its own. -->
+<header id="masthead" hidden></header>
+<nav id="nav" hidden></nav>
+<div class="ink" id="flow">
+  <div class="stage">
+    <div class="wrap">
+      <div class="stage-head">
+        <div>
+          <p class="eyebrow">Run it</p>
+          <h2>Watch the doorman work</h2>
+          <p>
+            Seven steps, and the question is <b>should I adopt this</b>. It defaults
+            to a server that fails, because a demo that only shows the happy path is
+            not a demo of a gate. Change the URL to run it against anything you like,
+            including your own. The step tagged <span class="tag tag-live">live</span>
+            is a genuine call to the deployed scorecard, so its verdict is a real audit
+            and not a scripted one. <span class="tag tag-flow">flow</span> is the
+            orchestration around it, and <span class="tag tag-planned">unpaid</span>
+            is the Bazantic payment hop. The gateway is live and priced; this demo
+            takes the free path through it rather than spending your money.
+          </p>
+        </div>
+        <div class="runbar">
+          <label for="mcp-url" class="visually-hidden" style="position:absolute;left:-9999px">MCP server URL</label>
+          <input type="url" id="mcp-url" value="https://webzum.com/api/mcp" spellcheck="false">
+          <button class="run" id="run-btn" type="button">Run the flow</button>
+          <button class="run ghost" id="reset-btn" type="button" hidden>Reset</button>
+        </div>
+      </div>
+
+      <div class="diagram" id="diagram" data-running="false">
+        <svg viewBox="0 0 1040 168" role="img"
+             aria-label="Clembot dispatches the doorman, which calls the scorecard API through the Bazantic gateway, and the grade returns to Clembot.">
+          <title>Orchestration path: clembot to doorman to Bazantic gateway to scorecard, and back.</title>
+
+          <!-- connectors -->
+          <g class="dg-link-group">
+            <line class="dg-link" x1="190" y1="52" x2="282" y2="52"/>
+            <polygon class="dg-arrow" points="282,52 274,48 274,56"/>
+            <text class="dg-link-label" x="236" y="38">dispatch</text>
+
+            <line class="dg-link" x1="460" y1="52" x2="552" y2="52"/>
+            <polygon class="dg-arrow" points="552,52 544,48 544,56"/>
+            <text class="dg-link-label" x="506" y="38">402</text>
+
+            <line class="dg-link" x1="730" y1="52" x2="822" y2="52"/>
+            <polygon class="dg-arrow" points="822,52 814,48 814,56"/>
+            <text class="dg-link-label" x="776" y="38">settle</text>
+
+            <!-- return path, scorecard back to clembot -->
+            <path class="dg-link" d="M915 92 L915 134 L105 134 L105 92"/>
+            <polygon class="dg-arrow" points="105,92 101,100 109,100"/>
+            <text class="dg-link-label" x="510" y="150">grade · report · recipe</text>
+          </g>
+
+          <!-- packets -->
+          <circle class="dg-packet p1" data-live="true" cx="196" cy="52" r="3.5" style="--dx:80px"/>
+          <circle class="dg-packet p2" cx="466" cy="52" r="3.5" style="--dx:80px"/>
+          <circle class="dg-packet p3" cx="736" cy="52" r="3.5" style="--dx:80px"/>
+          <circle class="dg-packet back" cx="890" cy="134" r="3.5" style="--dx:-770px"/>
+
+          <!-- nodes -->
+          <g class="dg-node" data-node="clembot">
+            <rect x="20" y="20" width="170" height="64" rx="10"/>
+            <text class="dg-name" x="38" y="48">clembot</text>
+            <text class="dg-role" x="38" y="68">orchestrator</text>
+          </g>
+          <g class="dg-node" data-node="doorman">
+            <rect x="290" y="20" width="170" height="64" rx="10"/>
+            <text class="dg-name" x="308" y="48">doorman</text>
+            <text class="dg-role" x="308" y="68">subagent · 1 mcp tool</text>
+          </g>
+          <g class="dg-node" data-node="bazantic">
+            <rect x="560" y="20" width="170" height="64" rx="10"/>
+            <text class="dg-name" x="578" y="48">Bazantic</text>
+            <text class="dg-role" x="578" y="68">gateway · x402</text>
+          </g>
+          <g class="dg-node" data-node="scorecard">
+            <rect x="830" y="20" width="170" height="64" rx="10"/>
+            <text class="dg-name" x="848" y="48">scorecard</text>
+            <text class="dg-role" x="848" y="68">openapi · d1 · probes</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="flow" id="flow-steps">
+
+        <article class="step" data-state="idle" data-step="0" data-node="clembot">
+          <div class="step-who"><span class="dot"></span>clembot</div>
+          <div>
+            <h3>A candidate arrives <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Someone proposes adding an MCP server to the build. The question is not whether it works. It is whether it makes this agent better, and what it costs to find out.</p>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+        <article class="step" data-state="idle" data-step="1" data-node="clembot">
+          <div class="step-who"><span class="dot"></span>doorman doctor</div>
+          <div>
+            <h3>What you already have <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Free, local, read only, and it reads your build before it reads the candidate: which servers you already run, which subagents hold MCP tools, and whether the gate is installed <b>and wired</b>, which are two different states and both of them quiet.</p>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+        <article class="step" data-state="idle" data-step="2" data-node="doorman">
+          <div class="step-who"><span class="dot"></span>doorman</div>
+          <div>
+            <h3>The cheap check first <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Before spending your own compute on a measurement, spend a cent on the question the static layer can answer alone: does this thing tell your agent to do something you did not ask for. The doorman holds <code>Read</code> and exactly one MCP tool, and that tool is the scorecard.</p>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+        <article class="step" data-state="idle" data-step="3" data-node="bazantic">
+          <div class="step-who"><span class="dot"></span>bazantic</div>
+          <div>
+            <h3>Pay for the call <span class="tag tag-planned">unpaid here</span></h3>
+            <p class="say">
+              <b>The gateway is live</b>, at <code>clembot-doorman.bazgateway.com</code>,
+              with <code>POST /grade</code> priced at one cent on Base mainnet and every
+              read at zero. <b>The doorman's spend cap is complete</b>: it reads that
+              price from the service rather than assuming it, reserves against a hard
+              per-run and per-day limit, and refuses to run a paid call without the
+              reservation. This demo still takes the <b>free path</b>, because a page
+              that spends a visitor's money to show a green tick is not a demo. No paid
+              call has been made through the gateway yet, and that is stated rather
+              than dressed up.
+            </p>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+        <article class="step" data-state="idle" data-step="4" data-node="scorecard">
+          <div class="step-who"><span class="dot"></span>scorecard</div>
+          <div>
+            <h3>The verdict <span class="tag tag-live">live</span></h3>
+            <p class="say">Three layers, weighted 30 / 50 / 20. This step is a genuine call to the deployed service, so the audit id, model and evidence hash below are real.</p>
+            <div class="verdict" id="verdict" hidden>
+              <div class="verdict-top">
+                <span class="v-band" id="v-band" data-band="A">A</span>
+                <span class="v-score"><span id="v-score">0</span> / 100</span>
+                <span class="v-meta"><span id="v-model">model</span><br><span id="v-sha">hash</span></span>
+              </div>
+              <div class="verdict-layers">
+                <div class="vl" data-measured="false" id="vl-static-row">
+                  <span class="vl-name">Static</span><span class="vl-track"><span class="vl-fill" id="vl-static"></span></span><span class="vl-val" id="vl-static-v">not measured</span>
+                </div>
+                <div class="vl" data-measured="false" id="vl-beh-row">
+                  <span class="vl-name">Behavioral</span><span class="vl-track"><span class="vl-fill" id="vl-beh"></span></span><span class="vl-val" id="vl-beh-v">not measured</span>
+                </div>
+                <div class="vl" data-measured="false" id="vl-gui-row">
+                  <span class="vl-name">Guidance</span><span class="vl-track"><span class="vl-fill" id="vl-gui"></span></span><span class="vl-val" id="vl-gui-v">not measured</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+        <article class="step" data-state="idle" data-step="5" data-node="clembot">
+          <div class="step-who"><span class="dot"></span>clembot</div>
+          <div>
+            <h3>What the measurement would cost <span class="tag tag-flow">flow</span></h3>
+            <p class="say">The answer you actually wanted is two throwaway sandboxes, identical except one install layer, driving your harness on a real task. That is not cheap, so it gets priced <b>before</b> it runs and the turn cap is derived from the budget rather than the budget hoped for afterwards.</p>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+        <article class="step" data-state="idle" data-step="6" data-node="clembot">
+          <div class="step-who"><span class="dot"></span>clembot</div>
+          <div>
+            <h3>The decision <span class="tag tag-flow">flow</span></h3>
+            <p class="say">Adopt, decline, or say the runs disagreed. A security finding outranks every number in the table: a tool that steers your agent does not get adopted for being fast.</p>
+            <div class="roster" id="roster" hidden>
+              <div class="agent" data-granted="false">
+                <span class="a-name">research-agent</span>
+                <span class="a-tools" id="ra-tools"></span>
+              </div>
+              <div class="agent" data-granted="false">
+                <span class="a-name">code-reviewer</span>
+                <span class="a-tools"><span class="chip">Read</span> <span class="chip">Grep</span> <span class="chip none">no MCP</span></span>
+              </div>
+              <div class="agent" data-granted="false">
+                <span class="a-name">doorman</span>
+                <span class="a-tools"><span class="chip">Read</span> <span class="chip">mcp__scorecard__grade</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="out" data-out></div>
+        </article>
+
+
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="widget-foot">
+  A live call to <a href="https://scorecard.wanessalabs.com">scorecard.wanessalabs.com</a>.
+  The grade, the audit id and the evidence hash are real.
+  <a href="https://clembot-doorman.wanessalabs.com">clembot-doorman.wanessalabs.com</a>
+</p>
+<script>
+
+(function () {
+  'use strict';
+
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var API = (function () {
+    var q = new URLSearchParams(location.search).get('api');
+    if (q) return q.replace(/\/+$/, '');
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return 'http://127.0.0.1:8799';
+    var meta = document.querySelector('meta[name="scorecard-api"]');
+    return meta && meta.content ? meta.content.replace(/\/+$/, '') : '';
+  })();
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, reduce ? 0 : ms); }); }
+
+  /* ── reveal: a scroll sweep, which cannot miss ────────────────────── */
+  var pending = [].slice.call(document.querySelectorAll('.reveal'))
+    .filter(function (el) { return !el.closest('.header'); });
+
+  function sweep() {
+    if (!pending.length) return;
+    var limit = window.innerHeight * 0.94;
+    pending = pending.filter(function (el) {
+      if (el.getBoundingClientRect().top < limit) { el.classList.add('in'); return false; }
+      return true;
+    });
+  }
+  if (reduce) { pending.forEach(function (el) { el.classList.add('in'); }); pending = []; }
+
+  var masthead = $('masthead');
+  var navLinks = [].slice.call(document.querySelectorAll('#nav a'));
+  var targets = navLinks.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+
+  function onScroll() {
+    sweep();
+    masthead.setAttribute('data-stuck', String(window.scrollY > 8));
+    var best = null, bestTop = -Infinity;
+    for (var i = 0; i < targets.length; i++) {
+      var top = targets[i].getBoundingClientRect().top - 90;
+      if (top <= 0 && top > bestTop) { bestTop = top; best = targets[i]; }
+    }
+    navLinks.forEach(function (a) {
+      if (best && a.getAttribute('href') === '#' + best.id) a.setAttribute('aria-current', 'true');
+      else a.removeAttribute('aria-current');
+    });
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function () {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(function () { onScroll(); ticking = false; });
+  }, { passive: true });
+  window.addEventListener('resize', onScroll, { passive: true });
+  onScroll();
+
+  /* ── the flow ─────────────────────────────────────────────────────── */
+  var steps = [].slice.call(document.querySelectorAll('.step'));
+  var runBtn = $('run-btn');
+  var resetBtn = $('reset-btn');
+  var urlInput = $('mcp-url');
+  var verdict = $('verdict');
+  var roster = $('roster');
+  var running = false;
+
+  var diagram = $('diagram');
+  var dgNodes = {};
+  [].slice.call(document.querySelectorAll('.dg-node')).forEach(function (n) {
+    dgNodes[n.getAttribute('data-node')] = n;
+  });
+
+  /* Light the diagram node that owns the step being run, so the picture and
+     the list are the same event rather than two decorations. */
+  function lightNode(name) {
+    Object.keys(dgNodes).forEach(function (k) {
+      dgNodes[k].setAttribute('data-on', String(k === name));
+    });
+  }
+  function clearNodes() {
+    Object.keys(dgNodes).forEach(function (k) { dgNodes[k].removeAttribute('data-on'); });
+  }
+
+  function setStep(i, state) {
+    steps[i].setAttribute('data-state', state);
+    if (state === 'active') lightNode(steps[i].getAttribute('data-node'));
+  }
+  function out(i, html) { steps[i].querySelector('[data-out]').innerHTML = html; }
+
+  function resetFlow() {
+    steps.forEach(function (s) { s.setAttribute('data-state', 'idle'); s.querySelector('[data-out]').innerHTML = ''; });
+    verdict.hidden = true;
+    roster.hidden = true;
+    [].slice.call(roster.querySelectorAll('.agent')).forEach(function (a) { a.setAttribute('data-granted', 'false'); });
+    ['static', 'beh', 'gui'].forEach(function (k) {
+      $('vl-' + k + '-row').setAttribute('data-measured', 'false');
+      $('vl-' + k + '-v').textContent = 'not measured';
+      $('vl-' + k).style.width = '0';
+    });
+    resetBtn.hidden = true;
+    runBtn.textContent = 'Run the flow';
+    clearNodes();
+    diagram.setAttribute('data-running', 'false');
+  }
+
+  function setLayer(key, pct) {
+    var row = $('vl-' + key + '-row'), val = $('vl-' + key + '-v'), fill = $('vl-' + key);
+    if (typeof pct === 'number') {
+      row.setAttribute('data-measured', 'true');
+      val.textContent = pct.toFixed(1) + '%';
+      requestAnimationFrame(function () { fill.style.width = Math.max(0, Math.min(100, pct)) + '%'; });
+    } else {
+      row.setAttribute('data-measured', 'false');
+      val.textContent = 'not measured';
+      fill.style.width = '0';
+    }
+  }
+
+  /*
+   * The grading step is real. It reads the deployed scorecard for an existing
+   * audit of this server; if there is none it queues one and says so, rather
+   * than inventing a verdict to keep the animation moving.
+   */
+  async function gradeLive(url) {
+    if (!API) return { ok: false, why: 'no scorecard configured on this page' };
+    try {
+      var r = await fetch(API + '/grade?server=' + encodeURIComponent(url), { cache: 'no-store' });
+      if (r.status === 200) {
+        var g = await r.json();
+        if (g && g.grade) return { ok: true, grade: g };
+      }
+      // Not graded yet. Queue it honestly and report that it is queued.
+      var q = await fetch(API + '/grade', {
+        method: 'POST', headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ url: url, needed_for: 'decide whether to adopt this server' })
+      });
+      var qj = await q.json();
+      if (q.status === 202) {
+        return { ok: false, queued: true, id: (qj.audits || [])[0] || {} };
+      }
+      return { ok: false, why: qj.error || ('HTTP ' + q.status) };
+    } catch (e) {
+      return { ok: false, why: e.message };
+    }
+  }
+
+  async function run() {
+    if (running) return;
+    running = true;
+    resetFlow();
+    runBtn.disabled = true;
+    runBtn.textContent = 'Running';
+    diagram.setAttribute('data-running', 'true');
+    var url = urlInput.value.trim();
+
+    // 0 - a candidate is proposed
+    setStep(0, 'active');
+    await sleep(520);
+    out(0, 'candidate:<br>' + esc(url) + '<br>question: <span class="ok">would this make the build better?</span>');
+    await sleep(400);
+    setStep(0, 'done');
+
+    // 1 - doctor. Free, local, read-only, and it reads YOUR build first.
+    setStep(1, 'active');
+    await sleep(500);
+    out(1, 'harness: <span class="ok">claude-code</span><br>mcp servers already running: 3<br>' +
+           '27 agents, <span class="ok">1</span> holds MCP tools<br>gate: installed <span class="ok">and wired</span>');
+    await sleep(400);
+    setStep(1, 'done');
+
+    // 2 - the doorman asks
+    setStep(2, 'active');
+    await sleep(500);
+    out(2, 'tool: <span class="ok">mcp__scorecard__grade</span><br>' +
+           'cheapest layer first: <span class="ok">static</span><br>cost to ask: $0.01');
+    await sleep(420);
+    setStep(2, 'done');
+
+    // 3 - the gateway. Live and priced, but this page does not pay. The copy
+    // beside it says so, and the output must not imply a settlement happened.
+    setStep(3, 'active');
+    await sleep(460);
+    out(3, '<span class="warn">402 payment required</span><br>10000 base units &middot; $0.01 &middot; base mainnet<br>' +
+           '<span class="warn">not paid here: free path taken</span>');
+    await sleep(560);
+    setStep(3, 'done');
+
+    // 4 - the verdict, for real
+    setStep(4, 'active');
+    out(4, 'calling the deployed scorecard<br><span class="warn">grading</span>');
+    var res = await gradeLive(url);
+
+    if (res.ok) {
+      var g = res.grade;
+      verdict.hidden = false;
+      $('v-band').textContent = g.grade;
+      $('v-band').setAttribute('data-band', g.grade);
+      $('v-score').textContent = typeof g.score === 'number' ? g.score.toFixed(2) : '--';
+      $('v-model').textContent = g.model || 'unknown model';
+      $('v-sha').textContent = (g.evidence_sha256 || '').slice(0, 12) || 'unhashed';
+      var L = g.layers || {};
+      setLayer('static', L.static_pct);
+      setLayer('beh', L.behavioral_pct);
+      setLayer('gui', L.guidance_pct);
+      out(4, 'verdict <span class="ok">' + esc(g.grade) + '</span> from the live scorecard<br>' +
+             'audit ' + esc(String(g.audit_id || '').slice(0, 8)) +
+             (g.hard_fail ? '<br><span class="bad">hard fail: ' + esc(g.hard_fail) + '</span>' : ''));
+      await sleep(850);
+      setStep(4, 'done');
+    } else if (res.queued) {
+      out(4, '<span class="warn">no audit yet, so one was queued</span><br>' +
+             'audit ' + esc(String(res.id.audit_id || '').slice(0, 8)) + '<br>' +
+             'a probe runner has to claim it, so this is not instant');
+      setStep(4, 'done');
+      out(5, '<span class="warn">waiting on the grade</span><br>nothing is priced or decided until it lands');
+      return stop();
+    } else {
+      out(4, '<span class="bad">could not grade: ' + esc(res.why || 'unknown') + '</span><br>' +
+             'the flow stops here rather than inventing a verdict');
+      setStep(4, 'done');
+      return stop();
+    }
+
+    // A security finding outranks every number. Before this branch existed the
+    // flow granted the tool no matter what the grade said, so running it against
+    // a hard-failing server showed the doorman letting it through. That is the
+    // opposite of what the gate does.
+    var blocked = !!g.hard_fail || g.grade === 'F';
+
+    // 5 - price the measurement BEFORE running it. Figures come from
+    // cli/cost.mjs estimateEval({runs: 3}), not from a copywriter.
+    setStep(5, 'active');
+    await sleep(540);
+    if (blocked) {
+      out(5, '3 runs per arm on claude-sonnet-5<br>' +
+             'worst case <span class="warn">$54.47</span> &middot; typical $3.57<br>' +
+             '<span class="bad">not running it</span><br>one cent already answered the question');
+    } else {
+      out(5, '3 runs per arm on claude-sonnet-5<br>' +
+             'worst case <span class="warn">$54.47</span> &middot; typical $3.57<br>' +
+             'opus would be $272.34: <span class="bad">refused</span> at a $5 ceiling<br>' +
+             'turn cap derived from the budget');
+    }
+    await sleep(700);
+    setStep(5, 'done');
+
+    // 6 - the decision, and it is allowed to be no
+    setStep(6, 'active');
+    await sleep(520);
+    if (blocked) {
+      out(6, '<span class="bad">DECLINE</span><br>' +
+             'the gate refuses it at exit 2<br>' +
+             'spent <span class="ok">$0.01</span>, avoided <span class="ok">$54.47</span>');
+    } else {
+      roster.hidden = false;
+      $('ra-tools').innerHTML = '<span class="chip">Read</span> <span class="chip">Grep</span> ' +
+        '<span class="chip new">' + esc(shortName(url)) + '</span>';
+      roster.querySelector('.agent').setAttribute('data-granted', 'true');
+      out(6, '<span class="ok">ADOPT</span>, scoped to one agent<br>' +
+             'unchanged: code-reviewer, doorman<br>context added elsewhere: <span class="ok">none</span>');
+    }
+    await sleep(420);
+    setStep(6, 'done');
+
+    stop();
+  }
+
+  function stop() {
+    clearNodes();
+    diagram.setAttribute('data-running', 'false');
+    runBtn.disabled = false;
+    runBtn.textContent = 'Run again';
+    resetBtn.hidden = false;
+    running = false;
+  }
+
+  function shortName(url) {
+    try {
+      var h = new URL(url).hostname.split('.');
+      return 'mcp__' + (h.length > 2 ? h[1] : h[0]) + '__*';
+    } catch (e) { return 'mcp__server__*'; }
+  }
+
+  runBtn.addEventListener('click', run);
+  resetBtn.addEventListener('click', function () { if (!running) resetFlow(); });
+})();
+
+</script>
+</body>
+</html>
