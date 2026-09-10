@@ -272,6 +272,24 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
       by a real parser in CI, and the downgrade refuses a union it cannot
       express rather than narrowing it silently.
 
+- [x] **The subscription slice.** `GET /feed` publishes newly graded
+      candidates, one row per server, free and in the OpenAPI spec.
+      `doorman watch` reads it and classifies against a LOCAL inventory:
+      `already-installed`, `blocked`, `unreviewed`, `skipped`. The split is the
+      point: the grade is shared and cached so the marginal cost of the next
+      subscriber is not another audit, and the half that is about your build
+      never leaves your machine. Verified live against 26 graded servers, with
+      the cursor round-tripping. 19 new tests, 3 mutants caught.
+- [x] **`/direction.html`**, the page that states where this is going and which
+      half of it runs today. Generated from the site's own stylesheet by
+      `scripts/build-page.mjs` rather than a second copy of it.
+- [ ] **Marketplace ingest.** Blocked on the other side: CLI 0.8.0 has no
+      discovery command, so `gateway list` returns your own gateways and not the
+      catalogue. This is the one dependency in the design that does not exist,
+      and it is a conversation to have rather than a thing to build around.
+- [ ] **Recurring settlement.** The rail is live and priced. The meter has
+      never turned.
+
 ## Next, in order
 
 ### Immediately (needs a secret, and only a secret)

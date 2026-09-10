@@ -6,6 +6,111 @@ updated: 2026-09-08
 
 # Lineage
 
+## 2026-09-10 - Session 15, the product becomes a subscription
+
+Clemens: "just like how weekly newsletters would give you some of the hot
+githubs, this takes a bit further and says that you can subscribe to an agentic
+service that will keep you updated on the latest builds for your setup."
+
+The gap this closes was a business one. `doctor` is free, the A/B runs on the
+adopter's machine with their key, and the only sellable thing was a one cent
+grade, once. Nothing recurred. A subscription recurs, and it is also the purest
+argument for the payment rail this project is built on: the useful price for
+"is this new tool worth your attention" is a fraction of a cent, and card fees
+exceed the value of the thing being sold. The product is not nicer on a
+micropayment rail. It cannot exist without one.
+
+### The split is the design
+
+`GET /feed` is the shared half. `doorman watch` is the private half and it runs
+on the subscriber's machine, reading their agent roster, their installed
+servers and their allowlist. The only request it makes is a GET for the feed,
+and that GET says nothing about who is asking.
+
+That split is not a privacy policy bolted on. It is what makes the economics
+work: a candidate is graded ONCE, the grade is cached and its transcript is
+free forever, so the marginal cost of the next subscriber is one local fit
+check rather than another audit. The same property means one agent's cent funds
+a verdict everyone else reads for nothing.
+
+### Decisions inside the feed
+
+- **One row per server, not one per audit.** A feed of events shows a re-graded
+  server three times and leaves the reader to work out which line is current.
+- **Ordered by when the grade LANDED**, not when the audit was queued. An audit
+  queued Monday and finished Friday is Friday's news; `created_at` buries it.
+- **Not curated.** It contains our own servers and the planted fixture, both
+  real graded rows, both flagged rather than removed. Filtering them server
+  side would be a hidden editorial decision inside something called a feed.
+- **A null cursor on an empty page.** Returning `generated_at` instead would
+  move a poller past rows that land with an earlier `completed_at`, and it
+  would never see them.
+
+### What `watch` is forbidden to say
+
+It performs a mechanical overlap check. It can say you already have something,
+and that something hard-failed. It cannot say a candidate would help, so it
+never emits `fits`, which is `fitReview`'s word and needs a model to earn.
+**Two tests exist for no other purpose than to stop it.** This is invariant 3
+pointed at vocabulary instead of at a number.
+
+Two details that took a second pass:
+
+- Server identity is host **plus path**. OpenZeppelin publishes four servers on
+  one host, and keying on host alone reports three of them as already installed
+  on the strength of the fourth.
+- `already-installed` is decided BEFORE the grade. A server you already run
+  that has since been graded F is news about YOUR build, and filing it under
+  "blocked" reads as advice about something you have not installed.
+
+### Three contrast bugs, and one of them was mine twice
+
+The exhaustive sweep, every distinct colour pair on the page rather than a hand
+picked list, found what targeted checks had missed for weeks:
+
+- `<code>` inside a light-surfaced table inside a DARK section rendered amber
+  on near-white at **1.99:1**. Same shape as the `<td>` bug fixed on 2026-09-09:
+  a light component nested in a dark section inherits the dark section's text
+  colour.
+- `--s-orange` as TEXT on the light surface is **4.14:1**, under AA, in five
+  places including a chip that has been live for weeks. Fixed with
+  `--s-orange-ink` at 50% lightness. Borders keep the original.
+
+**And a correction worth recording.** The first attempt at that second bug
+assumed the chip sat on a dark ground and swapped in `--ink-amber`. It made it
+worse, 4.14 to 1.99, because the chip is on the LIGHT surface. Measuring the
+background instead of assuming it took one command and would have skipped the
+wrong fix entirely.
+
+### A regression caught before it shipped
+
+Adding a `Direction` link took the nav from seven items to eight. At 768px the
+seven fit with none off screen; the eighth pushed itself off, at a width where
+the nav had not scrolled before. The nav had already been cut from eleven to
+six in session 10 for the same class of reason. Reverted, and the page is
+linked from the judges block instead, where a reader is already asking what
+this is.
+
+### Verified
+
+- 241 scorecard tests, 315 doorman tests, 19 new.
+- Mutants caught: a cursor reporting `now()` (2 red), an unmeasured layer
+  reported as 0 (1 red), classification reordered (1 red).
+- The openapi guard written on 2026-09-08 refused this change until `getFeed`
+  was added to `PUBLIC_OPS` deliberately. It worked on its own author.
+- Live: `/feed` returns 26 servers, the cursor round-trips to `count=0`,
+  `next_since=null`, and every `watch` verdict fires on real data including
+  WebZum as blocked.
+- Contrast: index 36 distinct pairs, direction 19, widget 12. Zero failing on
+  all three, lowest 4.81:1.
+- 1440 / 1280 / 900 / 390: zero page overflow, every wide element contained.
+
+### Not built, and stated on the page rather than drawn as though it were
+
+Marketplace ingest has no source: CLI 0.8.0 has no discovery command. Nothing
+has settled through the gateway once. And 70 of every 100 points in every row
+of that feed are unmeasured until a key exists.
+
 ## 2026-09-08 - Session 14, the gateway is live and stops describing what it cannot do
 
 ### The gateway exists

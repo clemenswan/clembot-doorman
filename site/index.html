@@ -55,6 +55,10 @@
   --s-green:   oklch(48% 0.13 152);
   --s-blue:    oklch(52% 0.13 240);
   --s-orange:  oklch(60% 0.15 45);
+  /* Same hue, darkened for TEXT on the light surface. --s-orange is a fine
+     border at 60% and measures 4.14:1 as 10px text on --surface, which is
+     under AA. Borders keep --s-orange; text uses this. */
+  --s-orange-ink: oklch(50% 0.16 45);
   --s-red:     oklch(53% 0.19 27);
 
   --ink-bg:      oklch(18%   0.010 82);
@@ -326,12 +330,12 @@ button.ghost {
   font-size: 0.75rem; font-weight: 600; padding: var(--sp-1) var(--sp-3);
   border-radius: var(--radius-full); border: 1px solid currentColor;
 }
-.baz-status.planned { color: var(--s-orange); }
+.baz-status.planned { color: var(--s-orange-ink); }
 .baz ul { margin: var(--sp-5) 0 0; padding: 0; list-style: none; display: grid; gap: var(--sp-4); }
 .baz li { padding-top: var(--sp-4); border-top: 1px solid var(--border); font-size: 0.9375rem; }
 .baz li b { color: var(--text-primary); font-weight: 600; }
 .baz code { background: var(--surface-raised); padding: 1px 5px; border-radius: var(--radius-sm); }
-.baz .tag-plan-inline { color: var(--s-orange); }
+.baz .tag-plan-inline { color: var(--s-orange-ink); }
 .baz-sub {
   margin: var(--sp-10) 0 var(--sp-4); max-width: none;
   font: 600 .75rem/1.3 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
@@ -461,6 +465,12 @@ button.ghost {
    Measured at 1.84:1 before this line. The board has no plain-text cell,
    which is why the rule was never needed until now. */
 .audits td { color: var(--text-primary); }
+/* `.ink code` paints code amber for a DARK section, and these tables keep a
+   light surface inside one, so the amber lands on near-white at 1.99:1. Same
+   shape as the rule above: a light-surfaced component nested in a dark section
+   inherits the dark section's text colour. `td code` outranks `.ink code` on
+   specificity; placing it later would not, since both are two classes. */
+.audits td code, .audits th code { color: inherit; }
 .audits .ours-tag {
   display: inline-block; margin-left: var(--sp-2); padding: 1px 7px;
   border: 1px solid var(--border); border-radius: 999px;
@@ -572,7 +582,7 @@ button.ghost {
 .tape-hit-top { display: flex; gap: var(--sp-3); align-items: baseline; flex-wrap: wrap; margin-bottom: var(--sp-2); }
 .tape-sev {
   font: 600 .625rem/1 var(--font-label); letter-spacing: .11em; text-transform: uppercase;
-  padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid var(--s-orange); color: var(--s-orange);
+  padding: 3px 6px; border-radius: var(--radius-sm); border: 1px solid var(--s-orange); color: var(--s-orange-ink);
 }
 .tape-hit[data-sev="hard"] .tape-sev { border-color: var(--s-red); color: var(--s-red); }
 .tape-pattern { font-family: var(--font-mono); font-size: .8125rem; color: var(--text-primary); }
@@ -625,7 +635,7 @@ button.ghost {
 .org-mcp {
   font: 600 .625rem/1 var(--font-label); letter-spacing: .09em; text-transform: uppercase;
   padding: 3px 6px; border-radius: var(--radius-sm);
-  border: 1px solid var(--s-orange); color: var(--s-orange); flex: none;
+  border: 1px solid var(--s-orange); color: var(--s-orange-ink); flex: none;
 }
 .flow-strip {
   display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px;
@@ -741,7 +751,7 @@ section { padding: clamp(72px, 11vh, 136px) 0; }
   color: var(--text-muted);
 }
 .arch-tag span { color: var(--accent-mid); text-align: right; }
-.arch-node[data-state="planned"] .arch-tag span { color: var(--s-orange); }
+.arch-node[data-state="planned"] .arch-tag span { color: var(--s-orange-ink); }
 .arch-node h3 { margin: 0 0 var(--sp-2); font-size: 1.0625rem; }
 .arch-files {
   margin: 0 0 var(--sp-3); max-width: none; overflow-x: auto; white-space: nowrap;
@@ -2153,7 +2163,7 @@ doorman eval npm:some-candidate \
         <p class="judge-links">
           <a href="#install">run it on your stack</a>
           <a href="https://github.com/clemenswan/clembot-doorman">the repo</a>
-          <a href="#gate">the gate</a>
+          <a href="/direction.html">where this is headed</a>
         </p>
       </article>
     </div>

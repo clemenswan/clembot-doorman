@@ -177,6 +177,7 @@ good.
 | Same spec as 3.0.3 | https://scorecard.wanessalabs.com/openapi-3.0.json |
 | End-to-end runbook | [`RUNBOOK.md`](RUNBOOK.md) |
 | Embeddable demo | https://clembot-doorman.wanessalabs.com/embed/flow.html |
+| Where this is headed | https://clembot-doorman.wanessalabs.com/direction.html |
 | Example badge | https://scorecard.wanessalabs.com/badge/https%3A%2F%2Fmcp.deepwiki.com%2Fmcp.svg |
 
 Two real production audits, both queued through the API, claimed by a laptop
@@ -218,6 +219,62 @@ second hand-copied copy of a 12KB driver and a 45KB stylesheet drifts the first
 time anyone edits either, and drifts silently, because both still run. The
 builder carries a drift guard that refuses to write a widget whose Run button
 would throw.
+
+## Where this is headed
+
+**A subscription that keeps an agent stack current.** New tools appear every
+week. The useful question is not whether one is good, it is whether one is good
+for the build you already have, and answering that repeatedly is a different
+product from answering it once.
+
+Full version, with the line between built and specified drawn where it actually
+falls: **<https://clembot-doorman.wanessalabs.com/direction.html>**
+
+### The split, and why it is the whole design
+
+| Half | Runs | Who pays | Cost of the next subscriber |
+|---|---|---|---|
+| The grade | ours, cached, public tape | whoever asked first, once | **$0.00** |
+| The fit | **your machine** | you, in tokens | their own |
+
+A candidate is graded **once** and every subscriber reads that grade for
+nothing, so the marginal cost of the thousandth subscriber is not another audit.
+The half that is actually about you, your agent roster, your installed servers,
+your allowlist, is read locally and never leaves. `doorman watch` makes exactly
+one request, a `GET` for the feed, and that request says nothing about who is
+asking. The privacy is not a policy, it is the shape of the thing.
+
+### Working today
+
+```bash
+# the shared half: newly graded candidates, one row per server, free
+curl https://scorecard.wanessalabs.com/feed
+
+# the private half: which of those are new to THIS build
+node doorman/cli/doorman.mjs watch . --all
+```
+
+`watch` sorts candidates into `already-installed`, `blocked`, `unreviewed` and
+`skipped`. It will not tell you a candidate **fits**: that word belongs to the
+fit review, which reads the candidate against your build with a model, and a
+string match cannot earn it. Two tests exist for the sole purpose of stopping it
+ever saying so.
+
+### Why this needs a payment rail, in two lines
+
+The useful price for "is this new tool worth your attention" is a fraction of a
+cent, and card fees exceed the value of the thing being sold. The product is not
+*nicer* on a micropayment rail, it is impossible without one.
+
+And a grade is cached with its full transcript free forever, so one agent's cent
+does not buy one answer. It funds a commons nobody could bill for directly.
+
+### Not built, and said so
+
+The released Bazantic CLI has **no marketplace discovery command**, so ingest is
+still whatever gets pointed at the feed. Nothing has been settled through the
+gateway even once. And 70 of every 100 points on every grade in the feed are
+unmeasured until an `ANTHROPIC_API_KEY` exists.
 
 ## The grade
 

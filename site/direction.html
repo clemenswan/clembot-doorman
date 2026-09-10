@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Doorman: should I adopt this server?</title>
-<meta name="robots" content="noindex">
-<meta name="description" content="A live run of the doorman adoption flow. Grades a real MCP server, prices the measurement, and decides.">
-<meta name="scorecard-api" content="https://scorecard.wanessalabs.com">
+<title>Where this is headed | clembot doorman</title>
+<meta name="description" content="A subscription that keeps an agent stack current: what runs today, what is specified, and why it needs a payment rail.">
+<link rel="icon" href="/favicon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <style>
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -859,515 +859,366 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
   .js .reveal, .js .header .reveal { opacity: 1; transform: none; }
 }
 
-/* widget-only: this file is a fragment on its own page, so it owns the frame */
-body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
-#flow { margin: 0; }
-.widget-foot {
-  max-width: 62rem; margin: var(--sp-5, 1.25rem) auto 0; padding: 0 var(--sp-5, 1.25rem);
-  font-size: .8125rem; color: var(--text-muted); text-align: center;
-}
-.widget-foot a { color: inherit; }
+/* secondary pages have no hero canvas, so the first section needs its own air */
+#hero-direction { padding-top: var(--sp-9, 3rem); }
+#hero-direction h1 { max-width: 22ch; }
+.next-head { margin-top: var(--sp-9, 3rem); }
 </style>
 </head>
 <body>
-<!-- The driver owns the site's masthead and nav as well as the flow. Stubbed so
-     its init does not throw; hidden because a widget has no chrome of its own. -->
-<header id="masthead" hidden></header>
-<nav id="nav" hidden></nav>
-<div class="ink" id="flow">
-  <div class="stage">
-    <div class="wrap">
-      <div class="stage-head">
-        <div>
-          <p class="eyebrow">Run it</p>
-          <h2>Watch the doorman work</h2>
-          <p>
-            Seven steps, and the question is <b>should I adopt this</b>. It defaults
-            to a server that fails, because a demo that only shows the happy path is
-            not a demo of a gate. Change the URL to run it against anything you like,
-            including your own. The step tagged <span class="tag tag-live">live</span>
-            is a genuine call to the deployed scorecard, so its verdict is a real audit
-            and not a scripted one. <span class="tag tag-flow">flow</span> is the
-            orchestration around it, and <span class="tag tag-planned">unpaid</span>
-            is the Bazantic payment hop. The gateway is live and priced; this demo
-            takes the free path through it rather than spending your money.
-          </p>
-        </div>
-        <div class="runbar">
-          <label for="mcp-url" class="visually-hidden" style="position:absolute;left:-9999px">MCP server URL</label>
-          <input type="url" id="mcp-url" value="https://webzum.com/api/mcp" spellcheck="false">
-          <button class="run" id="run-btn" type="button">Run the flow</button>
-          <button class="run ghost" id="reset-btn" type="button" hidden>Reset</button>
-        </div>
-      </div>
-
-      <div class="diagram" id="diagram" data-running="false">
-        <svg viewBox="0 0 1040 168" role="img"
-             aria-label="Clembot dispatches the doorman, which calls the scorecard API through the Bazantic gateway, and the grade returns to Clembot.">
-          <title>Orchestration path: clembot to doorman to Bazantic gateway to scorecard, and back.</title>
-
-          <!-- connectors -->
-          <g class="dg-link-group">
-            <line class="dg-link" x1="190" y1="52" x2="282" y2="52"/>
-            <polygon class="dg-arrow" points="282,52 274,48 274,56"/>
-            <text class="dg-link-label" x="236" y="38">dispatch</text>
-
-            <line class="dg-link" x1="460" y1="52" x2="552" y2="52"/>
-            <polygon class="dg-arrow" points="552,52 544,48 544,56"/>
-            <text class="dg-link-label" x="506" y="38">402</text>
-
-            <line class="dg-link" x1="730" y1="52" x2="822" y2="52"/>
-            <polygon class="dg-arrow" points="822,52 814,48 814,56"/>
-            <text class="dg-link-label" x="776" y="38">settle</text>
-
-            <!-- return path, scorecard back to clembot -->
-            <path class="dg-link" d="M915 92 L915 134 L105 134 L105 92"/>
-            <polygon class="dg-arrow" points="105,92 101,100 109,100"/>
-            <text class="dg-link-label" x="510" y="150">grade · report · recipe</text>
-          </g>
-
-          <!-- packets -->
-          <circle class="dg-packet p1" data-live="true" cx="196" cy="52" r="3.5" style="--dx:80px"/>
-          <circle class="dg-packet p2" cx="466" cy="52" r="3.5" style="--dx:80px"/>
-          <circle class="dg-packet p3" cx="736" cy="52" r="3.5" style="--dx:80px"/>
-          <circle class="dg-packet back" cx="890" cy="134" r="3.5" style="--dx:-770px"/>
-
-          <!-- nodes -->
-          <g class="dg-node" data-node="clembot">
-            <rect x="20" y="20" width="170" height="64" rx="10"/>
-            <text class="dg-name" x="38" y="48">clembot</text>
-            <text class="dg-role" x="38" y="68">orchestrator</text>
-          </g>
-          <g class="dg-node" data-node="doorman">
-            <rect x="290" y="20" width="170" height="64" rx="10"/>
-            <text class="dg-name" x="308" y="48">doorman</text>
-            <text class="dg-role" x="308" y="68">subagent · 1 mcp tool</text>
-          </g>
-          <g class="dg-node" data-node="bazantic">
-            <rect x="560" y="20" width="170" height="64" rx="10"/>
-            <text class="dg-name" x="578" y="48">Bazantic</text>
-            <text class="dg-role" x="578" y="68">gateway · x402</text>
-          </g>
-          <g class="dg-node" data-node="scorecard">
-            <rect x="830" y="20" width="170" height="64" rx="10"/>
-            <text class="dg-name" x="848" y="48">scorecard</text>
-            <text class="dg-role" x="848" y="68">openapi · d1 · probes</text>
-          </g>
-        </svg>
-      </div>
-
-      <div class="flow" id="flow-steps">
-
-        <article class="step" data-state="idle" data-step="0" data-node="clembot">
-          <div class="step-who"><span class="dot"></span>clembot</div>
-          <div>
-            <h3>A candidate arrives <span class="tag tag-flow">flow</span></h3>
-            <p class="say">Someone proposes adding an MCP server to the build. The question is not whether it works. It is whether it makes this agent better, and what it costs to find out.</p>
-          </div>
-          <div class="out" data-out></div>
-        </article>
-
-        <article class="step" data-state="idle" data-step="1" data-node="clembot">
-          <div class="step-who"><span class="dot"></span>doorman doctor</div>
-          <div>
-            <h3>What you already have <span class="tag tag-flow">flow</span></h3>
-            <p class="say">Free, local, read only, and it reads your build before it reads the candidate: which servers you already run, which subagents hold MCP tools, and whether the gate is installed <b>and wired</b>, which are two different states and both of them quiet.</p>
-          </div>
-          <div class="out" data-out></div>
-        </article>
-
-        <article class="step" data-state="idle" data-step="2" data-node="doorman">
-          <div class="step-who"><span class="dot"></span>doorman</div>
-          <div>
-            <h3>The cheap check first <span class="tag tag-flow">flow</span></h3>
-            <p class="say">Before spending your own compute on a measurement, spend a cent on the question the static layer can answer alone: does this thing tell your agent to do something you did not ask for. The doorman holds <code>Read</code> and exactly one MCP tool, and that tool is the scorecard.</p>
-          </div>
-          <div class="out" data-out></div>
-        </article>
-
-        <article class="step" data-state="idle" data-step="3" data-node="bazantic">
-          <div class="step-who"><span class="dot"></span>bazantic</div>
-          <div>
-            <h3>Pay for the call <span class="tag tag-planned">unpaid here</span></h3>
-            <p class="say">
-              <b>The gateway is live</b>, at <code>clembot-doorman.bazgateway.com</code>,
-              with <code>POST /grade</code> priced at one cent on Base mainnet and every
-              read at zero. <b>The doorman's spend cap is complete</b>: it reads that
-              price from the service rather than assuming it, reserves against a hard
-              per-run and per-day limit, and refuses to run a paid call without the
-              reservation. This demo still takes the <b>free path</b>, because a page
-              that spends a visitor's money to show a green tick is not a demo. No paid
-              call has been made through the gateway yet, and that is stated rather
-              than dressed up.
-            </p>
-          </div>
-          <div class="out" data-out></div>
-        </article>
-
-        <article class="step" data-state="idle" data-step="4" data-node="scorecard">
-          <div class="step-who"><span class="dot"></span>scorecard</div>
-          <div>
-            <h3>The verdict <span class="tag tag-live">live</span></h3>
-            <p class="say">Three layers, weighted 30 / 50 / 20. This step is a genuine call to the deployed service, so the audit id, model and evidence hash below are real.</p>
-            <div class="verdict" id="verdict" hidden>
-              <div class="verdict-top">
-                <span class="v-band" id="v-band" data-band="A">A</span>
-                <span class="v-score"><span id="v-score">0</span> / 100</span>
-                <span class="v-meta"><span id="v-model">model</span><br><span id="v-sha">hash</span></span>
-              </div>
-              <div class="verdict-layers">
-                <div class="vl" data-measured="false" id="vl-static-row">
-                  <span class="vl-name">Static</span><span class="vl-track"><span class="vl-fill" id="vl-static"></span></span><span class="vl-val" id="vl-static-v">not measured</span>
-                </div>
-                <div class="vl" data-measured="false" id="vl-beh-row">
-                  <span class="vl-name">Behavioral</span><span class="vl-track"><span class="vl-fill" id="vl-beh"></span></span><span class="vl-val" id="vl-beh-v">not measured</span>
-                </div>
-                <div class="vl" data-measured="false" id="vl-gui-row">
-                  <span class="vl-name">Guidance</span><span class="vl-track"><span class="vl-fill" id="vl-gui"></span></span><span class="vl-val" id="vl-gui-v">not measured</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="out" data-out></div>
-        </article>
-
-        <article class="step" data-state="idle" data-step="5" data-node="clembot">
-          <div class="step-who"><span class="dot"></span>clembot</div>
-          <div>
-            <h3>What the measurement would cost <span class="tag tag-flow">flow</span></h3>
-            <p class="say">The answer you actually wanted is two throwaway sandboxes, identical except one install layer, driving your harness on a real task. That is not cheap, so it gets priced <b>before</b> it runs and the turn cap is derived from the budget rather than the budget hoped for afterwards.</p>
-          </div>
-          <div class="out" data-out></div>
-        </article>
-
-        <article class="step" data-state="idle" data-step="6" data-node="clembot">
-          <div class="step-who"><span class="dot"></span>clembot</div>
-          <div>
-            <h3>The decision <span class="tag tag-flow">flow</span></h3>
-            <p class="say">Adopt, decline, or say the runs disagreed. A security finding outranks every number in the table: a tool that steers your agent does not get adopted for being fast.</p>
-            <div class="roster" id="roster" hidden>
-              <div class="agent" data-granted="false">
-                <span class="a-name">research-agent</span>
-                <span class="a-tools" id="ra-tools"></span>
-              </div>
-              <div class="agent" data-granted="false">
-                <span class="a-name">code-reviewer</span>
-                <span class="a-tools"><span class="chip">Read</span> <span class="chip">Grep</span> <span class="chip none">no MCP</span></span>
-              </div>
-              <div class="agent" data-granted="false">
-                <span class="a-name">doorman</span>
-                <span class="a-tools"><span class="chip">Read</span> <span class="chip">mcp__scorecard__grade</span></span>
-              </div>
-            </div>
-          </div>
-          <div class="out" data-out></div>
-        </article>
-
-
-
-      </div>
-    </div>
+<header class="header">
+  <div class="wrap masthead-inner">
+    <a class="brand" href="/">clembot doorman</a>
+    <nav id="nav" aria-label="sections">
+      <ul>
+        <li><a href="/#flow">The demo</a></li>
+        <li><a href="/#audits">The board</a></li>
+        <li><a href="/#bazantic">Bazantic</a></li>
+        <li><a href="https://github.com/clemenswan/clembot-doorman">Repo</a></li>
+      </ul>
+    </nav>
   </div>
+</header>
+
+<main id="main">
+
+<section id="hero-direction">
+  <div class="wrap">
+    <p class="eyebrow reveal in">Where this is headed</p>
+    <h1 class="reveal in d1">A subscription that keeps an agent stack current</h1>
+    <p class="section-intro reveal in d2">
+      Adding a capability to an agent is one line of JSON, and after that line a
+      server you have never audited describes its own tools to your agent. The
+      first half of this project made that decision measurable. The second half
+      makes it <b>continuous</b>: new tools appear every week, and the question
+      is not whether one is good, it is whether one is good <em>for the build
+      you already have</em>.
+    </p>
+    <p class="section-intro reveal in d2">
+      This page is the direction, with the line between what runs today and what
+      is specified drawn where it actually falls rather than where it would look
+      best.
+    </p>
+  </div>
+</section>
+
+<section id="shape">
+  <div class="wrap">
+    <p class="eyebrow reveal in">The shape of the decision</p>
+    <h2 class="reveal in d1">Seven stages, and only one of them costs money</h2>
+    <p class="section-intro reveal in d2">
+      Every stage can end the run. Three of them end it for free. The expensive
+      one is deliberately last, and it is the only one that does not run on your
+      machine.
+    </p>
+
+    <div class="audits reveal in d2">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Stage</th>
+            <th scope="col">What it answers</th>
+            <th scope="col">Runs</th>
+            <th scope="col">Cost</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="server" data-label="Stage">doctor<small>L0</small></td>
+            <td data-label="What it answers">What does this build already have, and is the gate installed <b>and wired</b></td>
+            <td data-label="Runs">your machine</td>
+            <td class="stat" data-label="Cost">free</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Stage">feed<small>shared</small></td>
+            <td data-label="What it answers">What has been graded lately, one row per server</td>
+            <td data-label="Runs">ours</td>
+            <td class="stat" data-label="Cost">free</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Stage">watch<small>private</small></td>
+            <td data-label="What it answers">Which of those are new to <em>this</em> build, and which are already installed or blocked</td>
+            <td data-label="Runs">your machine</td>
+            <td class="stat" data-label="Cost">free</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Stage">fit review</td>
+            <td data-label="What it answers">redundant, fits, needs-new-subagent, or out-of-scope. Two of those stop the run</td>
+            <td data-label="Runs">your machine, your key</td>
+            <td class="stat" data-label="Cost">tokens</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Stage">report<small>L1</small></td>
+            <td data-label="What it answers">What it actually implements: protocol, schemas, annotations</td>
+            <td data-label="Runs">your machine</td>
+            <td class="stat" data-label="Cost">free</td>
+          </tr>
+          <tr class="is-ours">
+            <td class="server" data-label="Stage">grade <span class="ours-tag">paid</span><small>L2</small></td>
+            <td data-label="What it answers">Is it safe and competent. Does it tell your agent to do something you did not ask for</td>
+            <td data-label="Runs"><b>ours</b></td>
+            <td class="stat" data-label="Cost"><b>$0.01</b></td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Stage">eval<small>L3</small></td>
+            <td data-label="What it answers">Does it actually make <em>your</em> agent better, measured against a real task</td>
+            <td data-label="Runs">your machine, your key</td>
+            <td class="stat" data-label="Cost">$3.57 typical</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="notes reveal in">
+      <strong>The order is the argument.</strong> The A/B at the bottom is the
+      measurement anyone actually wants, and it is the expensive one: three runs
+      per arm on Sonnet is <b>$54.47</b> worst case and <b>$272.34</b> on Opus,
+      which is refused outright at a $5 ceiling. So a cent spent above it is not
+      a fee, it is the gate on a fifty dollar spend. That is also the only stage
+      that can honestly be sold, because it is the only one running on somebody
+      else's computer.
+    </p>
+  </div>
+</section>
+
+<div class="ink">
+  <section id="kinds">
+    <div class="wrap">
+      <p class="eyebrow reveal in">Not everything can be measured the same way</p>
+      <h2 class="reveal in d1">Three kinds of candidate, and one of them can be graded</h2>
+      <p class="section-intro reveal in d2">
+        A candidate arrives as a link. What it <em>is</em> decides what can
+        honestly be said about it, and the detector refuses to guess: a path
+        that is neither a url nor a markdown file raises rather than sending a
+        directory to a grader.
+      </p>
+
+      <div class="audits reveal in d2">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Kind</th>
+              <th scope="col">Recognised from</th>
+              <th scope="col">Behavioural grade</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="server" data-label="Kind">MCP server</td>
+              <td data-label="Recognised from">a url that is not a repo, a gist or a markdown file</td>
+              <td data-label="Behavioural grade"><b>yes</b>, it has tools to drive</td>
+            </tr>
+            <tr>
+              <td class="server" data-label="Kind">Skill</td>
+              <td data-label="Recognised from">a <code>.md</code> file, a gist, a <code>blob/</code> or <code>raw/</code> link</td>
+              <td data-label="Behavioural grade">scanned, never graded</td>
+            </tr>
+            <tr>
+              <td class="server" data-label="Kind">Repo</td>
+              <td data-label="Recognised from"><code>github.com/owner/repo</code></td>
+              <td data-label="Behavioural grade">scanned, never graded</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="notes reveal in">
+        <strong>A skill gets <code>behavioral: "n/a - no tools to probe"</code>.</strong>
+        Not a null, and not a zero. There is nothing to drive, so no behavioural
+        grade can exist, and the report says which of those it is rather than
+        leaving a gap for a reader to fill in wrongly. The same rule runs
+        through everything here: an unmeasured layer is <code>null</code> and
+        weights renormalise over what actually ran, because zeroing a layer
+        nobody measured fails an honest partial audit.
+      </p>
+    </div>
+  </section>
 </div>
 
-<p class="widget-foot">
-  A live call to <a href="https://scorecard.wanessalabs.com">scorecard.wanessalabs.com</a>.
-  The grade, the audit id and the evidence hash are real.
-  <a href="https://clembot-doorman.wanessalabs.com">clembot-doorman.wanessalabs.com</a>
-</p>
-<script>
+<section id="subscription">
+  <div class="wrap">
+    <p class="eyebrow reveal in">The direction</p>
+    <h2 class="reveal in d1">Split it, and the private half never leaves your machine</h2>
+    <p class="section-intro reveal in d2">
+      A weekly digest of interesting repositories tells everybody the same
+      thing. This is the version that knows what you already run. Getting there
+      without collecting anyone's stack means splitting the work in two.
+    </p>
 
-(function () {
-  'use strict';
+    <div class="audits reveal in d2">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Half</th>
+            <th scope="col">Where it runs</th>
+            <th scope="col">Who pays</th>
+            <th scope="col">Cost of the next subscriber</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="server" data-label="Half">The grade<small>shared, cached, public tape</small></td>
+            <td data-label="Where it runs">ours</td>
+            <td data-label="Who pays">whoever asked first, once</td>
+            <td class="stat" data-label="Cost of the next subscriber"><b>$0.00</b></td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Half">The fit<small>your roster, your servers, your allowlist</small></td>
+            <td data-label="Where it runs">your machine</td>
+            <td data-label="Who pays">you, in tokens</td>
+            <td class="stat" data-label="Cost of the next subscriber">their own</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    <p class="notes reveal in">
+      <strong>Nothing about your build is sent anywhere.</strong>
+      <code>doorman watch</code> makes exactly one request, a <code>GET</code>
+      for the feed, and that request says nothing about who is asking. Your
+      agent roster, your installed servers and your allowlist are read locally
+      and stay there. The privacy is not a policy, it is the shape of the thing.
+    </p>
 
-  var API = (function () {
-    var q = new URLSearchParams(location.search).get('api');
-    if (q) return q.replace(/\/+$/, '');
-    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') return 'http://127.0.0.1:8799';
-    var meta = document.querySelector('meta[name="scorecard-api"]');
-    return meta && meta.content ? meta.content.replace(/\/+$/, '') : '';
-  })();
+    <p class="notes reveal in">
+      <strong>And it will not claim more than it measured.</strong> What runs in
+      <code>watch</code> today is a mechanical overlap check: it can tell you
+      that you already have something, and that something hard-failed. It cannot
+      tell you whether a server you do not have would help, so it never says
+      <code>fits</code>. Two tests exist for the sole purpose of stopping it
+      ever doing so, because that word belongs to the fit review and a string
+      match cannot earn it.
+    </p>
+  </div>
+</section>
 
-  function $(id) { return document.getElementById(id); }
-  function esc(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
-  function sleep(ms) { return new Promise(function (r) { setTimeout(r, reduce ? 0 : ms); }); }
+<div class="ink">
+  <section id="rail">
+    <div class="wrap">
+      <p class="eyebrow reveal in">Why this needs a payment rail</p>
+      <h2 class="reveal in d1">Two arguments, and neither is about crypto</h2>
 
-  /* ── reveal: a scroll sweep, which cannot miss ────────────────────── */
-  var pending = [].slice.call(document.querySelectorAll('.reveal'))
-    .filter(function (el) { return !el.closest('.header'); });
+      <div class="cards reveal in d2">
+        <article class="card">
+          <h3>A check too cheap to bill any other way</h3>
+          <p>
+            The useful price for "is this new tool worth your attention" is a
+            fraction of a cent. Card fees exceed the value of the thing being
+            sold, so the product cannot exist on that rail at all. It is not
+            that a micropayment rail is nicer here. It is that the service is
+            impossible without one.
+          </p>
+        </article>
+        <article class="card">
+          <h3>The paid call funds a public good</h3>
+          <p>
+            A grade is cached and its full transcript is free and needs no
+            token, forever. So the first agent to ask about a server pays a
+            cent, and every agent after it reads that verdict and its evidence
+            for nothing. One micropayment does not buy one answer. It funds a
+            commons that nobody could bill for directly.
+          </p>
+        </article>
+      </div>
 
-  function sweep() {
-    if (!pending.length) return;
-    var limit = window.innerHeight * 0.94;
-    pending = pending.filter(function (el) {
-      if (el.getBoundingClientRect().top < limit) { el.classList.add('in'); return false; }
-      return true;
-    });
-  }
-  if (reduce) { pending.forEach(function (el) { el.classList.add('in'); }); pending = []; }
+      <p class="notes reveal in">
+        <strong>What is missing is on the other side.</strong> A subscription
+        that tracks new listings needs a source of new listings, and the
+        released Bazantic CLI has no marketplace discovery command:
+        <code>gateway list</code> returns your own gateways, not the catalogue.
+        That is the one dependency in this design that does not exist yet, and
+        it is stated here rather than drawn as though it did.
+      </p>
+    </div>
+  </section>
+</div>
 
-  var masthead = $('masthead');
-  var navLinks = [].slice.call(document.querySelectorAll('#nav a'));
-  var targets = navLinks.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+<section id="built">
+  <div class="wrap">
+    <p class="eyebrow reveal in">The line, drawn where it falls</p>
+    <h2 class="reveal in d1">Built, and not built</h2>
+    <p class="section-intro reveal in d2">
+      Everything in the first table can be run today by anyone reading this.
+      Everything in the second is specified and honest about being specified.
+    </p>
 
-  function onScroll() {
-    sweep();
-    masthead.setAttribute('data-stuck', String(window.scrollY > 8));
-    var best = null, bestTop = -Infinity;
-    for (var i = 0; i < targets.length; i++) {
-      var top = targets[i].getBoundingClientRect().top - 90;
-      if (top <= 0 && top > bestTop) { bestTop = top; best = targets[i]; }
-    }
-    navLinks.forEach(function (a) {
-      if (best && a.getAttribute('href') === '#' + best.id) a.setAttribute('aria-current', 'true');
-      else a.removeAttribute('aria-current');
-    });
-  }
-  var ticking = false;
-  window.addEventListener('scroll', function () {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(function () { onScroll(); ticking = false; });
-  }, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
-  onScroll();
+    <div class="audits reveal in d2">
+      <table>
+        <thead>
+          <tr><th scope="col">Working today</th><th scope="col">How to check</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="server" data-label="Working today">The feed<small>one row per server, newest grade</small></td>
+            <td data-label="How to check"><code>GET scorecard.wanessalabs.com/feed</code>, free, no account</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Working today"><code>doorman watch</code><small>the private half</small></td>
+            <td data-label="How to check">clone the repo, run it against your own project</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Working today"><code>doorman doctor</code><small>reads your build</small></td>
+            <td data-label="How to check">free, local, read only</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Working today">The static grade<small>and the injection scan</small></td>
+            <td data-label="How to check">24 servers on the board, every one linking its tape</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Working today">The gateway<small>live and priced</small></td>
+            <td data-label="How to check">a 402 price probe costs nothing and returns the real price</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Working today">The gate<small>fails closed, exit 2</small></td>
+            <td data-label="How to check">29 adversarial tests, offline, dependency free</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  /* ── the flow ─────────────────────────────────────────────────────── */
-  var steps = [].slice.call(document.querySelectorAll('.step'));
-  var runBtn = $('run-btn');
-  var resetBtn = $('reset-btn');
-  var urlInput = $('mcp-url');
-  var verdict = $('verdict');
-  var roster = $('roster');
-  var running = false;
+    <h3 class="next-head reveal in">Specified, not built</h3>
+    <div class="audits reveal in">
+      <table>
+        <thead>
+          <tr><th scope="col">Not built</th><th scope="col">What is actually missing</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="server" data-label="Not built">The behavioural layer<small>70 of every 100 points</small></td>
+            <td data-label="What is actually missing">An API key. The probes are written and tested; they have never met a live model. Every published grade says so.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Not built">Marketplace ingest</td>
+            <td data-label="What is actually missing">A discovery API on the gateway side. Today the feed contains what was pointed at it.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Not built">Recurring settlement</td>
+            <td data-label="What is actually missing">Nobody has paid through the gateway even once. The rail is live; the meter has never turned.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Not built">On-chain anchoring</td>
+            <td data-label="What is actually missing">A stub that returns <code>anchored: false</code> and a null tx, on purpose, so nothing downstream can mistake it for real.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-  var diagram = $('diagram');
-  var dgNodes = {};
-  [].slice.call(document.querySelectorAll('.dg-node')).forEach(function (n) {
-    dgNodes[n.getAttribute('data-node')] = n;
-  });
+    <p class="notes reveal in">
+      <strong>How to check this page is honest:</strong> the four ordered tests
+      behind it are written down, with the observed output of each, in
+      <a href="https://github.com/clemenswan/clembot-doorman/blob/main/RUNBOOK.md">RUNBOOK.md</a>.
+      Three of the four cost nothing to run. If any row above is wrong, that is
+      a bug and it is worth reporting.
+    </p>
 
-  /* Light the diagram node that owns the step being run, so the picture and
-     the list are the same event rather than two decorations. */
-  function lightNode(name) {
-    Object.keys(dgNodes).forEach(function (k) {
-      dgNodes[k].setAttribute('data-on', String(k === name));
-    });
-  }
-  function clearNodes() {
-    Object.keys(dgNodes).forEach(function (k) { dgNodes[k].removeAttribute('data-on'); });
-  }
+    <p class="section-intro reveal in">
+      <a class="btn" href="/">Back to the demo</a>
+      <a class="btn btn-ghost" href="https://github.com/clemenswan/clembot-doorman">Read the source</a>
+    </p>
+  </div>
+</section>
 
-  function setStep(i, state) {
-    steps[i].setAttribute('data-state', state);
-    if (state === 'active') lightNode(steps[i].getAttribute('data-node'));
-  }
-  function out(i, html) { steps[i].querySelector('[data-out]').innerHTML = html; }
+</main>
 
-  function resetFlow() {
-    steps.forEach(function (s) { s.setAttribute('data-state', 'idle'); s.querySelector('[data-out]').innerHTML = ''; });
-    verdict.hidden = true;
-    roster.hidden = true;
-    [].slice.call(roster.querySelectorAll('.agent')).forEach(function (a) { a.setAttribute('data-granted', 'false'); });
-    ['static', 'beh', 'gui'].forEach(function (k) {
-      $('vl-' + k + '-row').setAttribute('data-measured', 'false');
-      $('vl-' + k + '-v').textContent = 'not measured';
-      $('vl-' + k).style.width = '0';
-    });
-    resetBtn.hidden = true;
-    runBtn.textContent = 'Run the flow';
-    clearNodes();
-    diagram.setAttribute('data-running', 'false');
-  }
-
-  function setLayer(key, pct) {
-    var row = $('vl-' + key + '-row'), val = $('vl-' + key + '-v'), fill = $('vl-' + key);
-    if (typeof pct === 'number') {
-      row.setAttribute('data-measured', 'true');
-      val.textContent = pct.toFixed(1) + '%';
-      requestAnimationFrame(function () { fill.style.width = Math.max(0, Math.min(100, pct)) + '%'; });
-    } else {
-      row.setAttribute('data-measured', 'false');
-      val.textContent = 'not measured';
-      fill.style.width = '0';
-    }
-  }
-
-  /*
-   * The grading step is real. It reads the deployed scorecard for an existing
-   * audit of this server; if there is none it queues one and says so, rather
-   * than inventing a verdict to keep the animation moving.
-   */
-  async function gradeLive(url) {
-    if (!API) return { ok: false, why: 'no scorecard configured on this page' };
-    try {
-      var r = await fetch(API + '/grade?server=' + encodeURIComponent(url), { cache: 'no-store' });
-      if (r.status === 200) {
-        var g = await r.json();
-        if (g && g.grade) return { ok: true, grade: g };
-      }
-      // Not graded yet. Queue it honestly and report that it is queued.
-      var q = await fetch(API + '/grade', {
-        method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ url: url, needed_for: 'decide whether to adopt this server' })
-      });
-      var qj = await q.json();
-      if (q.status === 202) {
-        return { ok: false, queued: true, id: (qj.audits || [])[0] || {} };
-      }
-      return { ok: false, why: qj.error || ('HTTP ' + q.status) };
-    } catch (e) {
-      return { ok: false, why: e.message };
-    }
-  }
-
-  async function run() {
-    if (running) return;
-    running = true;
-    resetFlow();
-    runBtn.disabled = true;
-    runBtn.textContent = 'Running';
-    diagram.setAttribute('data-running', 'true');
-    var url = urlInput.value.trim();
-
-    // 0 - a candidate is proposed
-    setStep(0, 'active');
-    await sleep(520);
-    out(0, 'candidate:<br>' + esc(url) + '<br>question: <span class="ok">would this make the build better?</span>');
-    await sleep(400);
-    setStep(0, 'done');
-
-    // 1 - doctor. Free, local, read-only, and it reads YOUR build first.
-    setStep(1, 'active');
-    await sleep(500);
-    out(1, 'harness: <span class="ok">claude-code</span><br>mcp servers already running: 3<br>' +
-           '27 agents, <span class="ok">1</span> holds MCP tools<br>gate: installed <span class="ok">and wired</span>');
-    await sleep(400);
-    setStep(1, 'done');
-
-    // 2 - the doorman asks
-    setStep(2, 'active');
-    await sleep(500);
-    out(2, 'tool: <span class="ok">mcp__scorecard__grade</span><br>' +
-           'cheapest layer first: <span class="ok">static</span><br>cost to ask: $0.01');
-    await sleep(420);
-    setStep(2, 'done');
-
-    // 3 - the gateway. Live and priced, but this page does not pay. The copy
-    // beside it says so, and the output must not imply a settlement happened.
-    setStep(3, 'active');
-    await sleep(460);
-    out(3, '<span class="warn">402 payment required</span><br>10000 base units &middot; $0.01 &middot; base mainnet<br>' +
-           '<span class="warn">not paid here: free path taken</span>');
-    await sleep(560);
-    setStep(3, 'done');
-
-    // 4 - the verdict, for real
-    setStep(4, 'active');
-    out(4, 'calling the deployed scorecard<br><span class="warn">grading</span>');
-    var res = await gradeLive(url);
-
-    if (res.ok) {
-      var g = res.grade;
-      verdict.hidden = false;
-      $('v-band').textContent = g.grade;
-      $('v-band').setAttribute('data-band', g.grade);
-      $('v-score').textContent = typeof g.score === 'number' ? g.score.toFixed(2) : '--';
-      $('v-model').textContent = g.model || 'unknown model';
-      $('v-sha').textContent = (g.evidence_sha256 || '').slice(0, 12) || 'unhashed';
-      var L = g.layers || {};
-      setLayer('static', L.static_pct);
-      setLayer('beh', L.behavioral_pct);
-      setLayer('gui', L.guidance_pct);
-      out(4, 'verdict <span class="ok">' + esc(g.grade) + '</span> from the live scorecard<br>' +
-             'audit ' + esc(String(g.audit_id || '').slice(0, 8)) +
-             (g.hard_fail ? '<br><span class="bad">hard fail: ' + esc(g.hard_fail) + '</span>' : ''));
-      await sleep(850);
-      setStep(4, 'done');
-    } else if (res.queued) {
-      out(4, '<span class="warn">no audit yet, so one was queued</span><br>' +
-             'audit ' + esc(String(res.id.audit_id || '').slice(0, 8)) + '<br>' +
-             'a probe runner has to claim it, so this is not instant');
-      setStep(4, 'done');
-      out(5, '<span class="warn">waiting on the grade</span><br>nothing is priced or decided until it lands');
-      return stop();
-    } else {
-      out(4, '<span class="bad">could not grade: ' + esc(res.why || 'unknown') + '</span><br>' +
-             'the flow stops here rather than inventing a verdict');
-      setStep(4, 'done');
-      return stop();
-    }
-
-    // A security finding outranks every number. Before this branch existed the
-    // flow granted the tool no matter what the grade said, so running it against
-    // a hard-failing server showed the doorman letting it through. That is the
-    // opposite of what the gate does.
-    var blocked = !!g.hard_fail || g.grade === 'F';
-
-    // 5 - price the measurement BEFORE running it. Figures come from
-    // cli/cost.mjs estimateEval({runs: 3}), not from a copywriter.
-    setStep(5, 'active');
-    await sleep(540);
-    if (blocked) {
-      out(5, '3 runs per arm on claude-sonnet-5<br>' +
-             'worst case <span class="warn">$54.47</span> &middot; typical $3.57<br>' +
-             '<span class="bad">not running it</span><br>one cent already answered the question');
-    } else {
-      out(5, '3 runs per arm on claude-sonnet-5<br>' +
-             'worst case <span class="warn">$54.47</span> &middot; typical $3.57<br>' +
-             'opus would be $272.34: <span class="bad">refused</span> at a $5 ceiling<br>' +
-             'turn cap derived from the budget');
-    }
-    await sleep(700);
-    setStep(5, 'done');
-
-    // 6 - the decision, and it is allowed to be no
-    setStep(6, 'active');
-    await sleep(520);
-    if (blocked) {
-      out(6, '<span class="bad">DECLINE</span><br>' +
-             'the gate refuses it at exit 2<br>' +
-             'spent <span class="ok">$0.01</span>, avoided <span class="ok">$54.47</span>');
-    } else {
-      roster.hidden = false;
-      $('ra-tools').innerHTML = '<span class="chip">Read</span> <span class="chip">Grep</span> ' +
-        '<span class="chip new">' + esc(shortName(url)) + '</span>';
-      roster.querySelector('.agent').setAttribute('data-granted', 'true');
-      out(6, '<span class="ok">ADOPT</span>, scoped to one agent<br>' +
-             'unchanged: code-reviewer, doorman<br>context added elsewhere: <span class="ok">none</span>');
-    }
-    await sleep(420);
-    setStep(6, 'done');
-
-    stop();
-  }
-
-  function stop() {
-    clearNodes();
-    diagram.setAttribute('data-running', 'false');
-    runBtn.disabled = false;
-    runBtn.textContent = 'Run again';
-    resetBtn.hidden = false;
-    running = false;
-  }
-
-  function shortName(url) {
-    try {
-      var h = new URL(url).hostname.split('.');
-      return 'mcp__' + (h.length > 2 ? h[1] : h[0]) + '__*';
-    } catch (e) { return 'mcp__server__*'; }
-  }
-
-  runBtn.addEventListener('click', run);
-  resetBtn.addEventListener('click', function () { if (!running) resetFlow(); });
-})();
-
-</script>
 </body>
 </html>
