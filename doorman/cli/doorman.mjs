@@ -5,6 +5,7 @@
  *   doorman report <link>              L1, static implementation report. No key needed.
  *   doorman eval <link> --task <file>  L3, two-arm benchmark in a throwaway sandbox.
  *   doorman watch [path]               poll the feed for candidates new to THIS build.
+ *   doorman discover                   sweep a public directory for candidates. Curate, never enqueue.
  *
  * Zero runtime dependencies, per the requirement in package.json. That is why
  * the YAML loader and the arg parser are in-tree rather than installed.
@@ -14,6 +15,7 @@ import { report } from './report.mjs';
 import { evaluate } from './eval.mjs';
 import { doctor, renderDoctor } from './doctor.mjs';
 import { watch, renderWatch, readState, writeState, DEFAULT_API, DEFAULT_STATE } from './watch.mjs';
+import { discover, renderDiscover, writeCandidates } from './discover.mjs';
 
 const VERSION = '0.1.0';
 
@@ -105,6 +107,26 @@ async function main() {
     if (!d.ok) { console.error(`doctor: ${d.why}`); process.exitCode = 1; return; }
     if (args.json) { console.log(JSON.stringify(d, null, 2)); return; }
     console.log(renderDoctor(d));
+    return;
+  }
+
+  if (cmd === 'discover') {
+    const pages = Number(args.pages) > 0 ? Number(args.pages) : 1;
+    const out = args.out || 'candidates/smithery.json';
+    // Reading the feed is free and only used to avoid re-proposing what is
+    // already graded. --no-feed skips it for an offline sweep.
+    const feedApi = args['no-feed'] ? null : (args.api || DEFAULT_API).replace(/\/+$/, '');
+    let r;
+    try {
+      r = await discover({ pages, feedApi });
+    } catch (e) {
+      console.error(`discover: ${e.message}`);
+      process.exitCode = e.code === 3 ? 3 : 1;
+      return;
+    }
+    writeCandidates(out, r);
+    if (args.json) console.log(JSON.stringify(r, null, 2));
+    else console.log(renderDiscover(r, out));
     return;
   }
 
