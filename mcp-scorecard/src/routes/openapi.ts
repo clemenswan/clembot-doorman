@@ -230,6 +230,32 @@ export function openApiSpec(origin: string): Record<string, unknown> {
           },
         },
       },
+      '/feed': {
+        get: {
+          operationId: 'getFeed',
+          tags: ['grading'],
+          summary: 'Newly graded candidates, one row per server',
+          description:
+            'A poll surface for anyone tracking what has been graded lately. ' +
+            'Returns the NEWEST grade per server rather than one row per ' +
+            'audit, so a re-graded server appears once and shows its current ' +
+            'verdict. Free.\n\n' +
+            'Poll it by passing the previous response\'s `next_since` back as ' +
+            '`since`. An empty page means nothing new: keep the cursor you had ' +
+            'rather than starting again.\n\n' +
+            'Rows are NOT filtered. The list includes this deployment\'s own ' +
+            'servers and a deliberately hostile test fixture, both flagged ' +
+            '(`self_graded`, `is_fixture`) so a client can drop them and know ' +
+            'that it did. Any layer reported null was not measured, which is a ' +
+            'different claim from scoring zero.',
+          parameters: [
+            { name: 'since', in: 'query', description: 'ISO timestamp; return only grades completed after it.',
+              schema: { type: 'string', format: 'date-time' } },
+            { name: 'limit', in: 'query', schema: { type: 'integer', maximum: 200, default: 50 } },
+          ],
+          responses: { 200: { description: 'Newest grade per server, newest first.' } },
+        },
+      },
       '/api/ledger': {
         get: {
           operationId: 'getLedger',

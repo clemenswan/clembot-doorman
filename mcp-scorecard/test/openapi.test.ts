@@ -133,7 +133,7 @@ describe('the public document', () => {
    * by-product. Adding one should be a deliberate edit to this line.
    */
   const PUBLIC_OPS = [
-    'getAllowlist', 'getAudit', 'getBadge', 'getLatestGrade',
+    'getAllowlist', 'getAudit', 'getBadge', 'getFeed', 'getLatestGrade',
     'getLedger', 'getTranscripts', 'health', 'requestGrade',
   ];
   const PRIVATE_OPS = ['claimPendingWork', 'postResult'];

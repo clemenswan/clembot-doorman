@@ -104,7 +104,7 @@ export const PAID_ROUTES: Array<{ method: string; path: string }> = [
 export const NEVER_PAID = [
   '/', '/health', '/openapi.json', '/openapi-3.0.json',
   '/grade/:id', '/grade/:id/transcripts', '/grade?server=',
-  '/allowlist/:owner', '/badge/*.svg', '/api/ledger',
+  '/allowlist/:owner', '/badge/*.svg', '/api/ledger', '/feed',
 ];
 
 export function paymentsOn(env: PaymentEnv): boolean {

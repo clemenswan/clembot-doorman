@@ -12,7 +12,8 @@
  *   GET  /badge/{server}.svg badge SVG
  *   GET  /api/pending        runners claim work here
  *   POST /api/result         runners post finished audits back
- *   GET  /api/ledger         demo site polls this (no streaming, free tier)
+ *   GET  /api/ledger      demo site polls this (no streaming, free tier)
+ *   GET  /feed            newly graded candidates, for a subscriber to poll
  *   POST /mcp                the scorecard AS an MCP server, one tool: grade
  *   GET  /price              what an audit costs, free to ask
  *   GET  /openapi.json       Bazantic import surface (3.1), runner routes filtered out
@@ -29,6 +30,7 @@ import { handleAllowlist } from './routes/allowlist.js';
 import { handleBadge } from './routes/badge.js';
 import { handlePending, handleResult } from './routes/runner.js';
 import { handleLedger } from './routes/ledger.js';
+import { handleFeed } from './routes/feed.js';
 import { handleMcp } from './routes/mcp.js';
 import { publicOpenApiSpec, publicOpenApiSpec30 } from './routes/openapi.js';
 import { type PaymentEnv, handlePrice, paymentGate } from './routes/payment.js';
@@ -100,6 +102,10 @@ export default {
       if (path === '/openapi-3.0.json') {
         return json(publicOpenApiSpec30(url.origin));
       }
+
+      // Free, like every other read. The expensive half of a subscription is
+      // the audit, and that has already been paid for by whoever asked first.
+      if (path === '/feed' && req.method === 'GET') return handleFeed(url, env);
 
       if (path === '/grade' && req.method === 'POST') return handleGrade(req, env);
       if (path === '/grade' && req.method === 'GET') return handleGetLatest(url, env);

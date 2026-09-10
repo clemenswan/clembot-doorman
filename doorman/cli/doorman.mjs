@@ -4,6 +4,7 @@
  *
  *   doorman report <link>              L1, static implementation report. No key needed.
  *   doorman eval <link> --task <file>  L3, two-arm benchmark in a throwaway sandbox.
+ *   doorman watch [path]               poll the feed for candidates new to THIS build.
  *
  * Zero runtime dependencies, per the requirement in package.json. That is why
  * the YAML loader and the arg parser are in-tree rather than installed.
@@ -12,6 +13,7 @@
 import { report } from './report.mjs';
 import { evaluate } from './eval.mjs';
 import { doctor, renderDoctor } from './doctor.mjs';
+import { watch, renderWatch, readState, writeState, DEFAULT_API, DEFAULT_STATE } from './watch.mjs';
 
 const VERSION = '0.1.0';
 
@@ -103,6 +105,40 @@ async function main() {
     if (!d.ok) { console.error(`doctor: ${d.why}`); process.exitCode = 1; return; }
     if (args.json) { console.log(JSON.stringify(d, null, 2)); return; }
     console.log(renderDoctor(d));
+    return;
+  }
+
+  if (cmd === 'watch') {
+    const root = args._[1] || process.cwd();
+    const api = (args.api || DEFAULT_API).replace(/\/+$/, '');
+    const stateFile = args.state || DEFAULT_STATE;
+    // --since beats the state file, and --all ignores both. Neither writes a
+    // cursor: a one-off look must not move a subscription's place in the feed.
+    const oneOff = Boolean(args.since || args.all);
+    const since = args.all ? null : (args.since || readState(stateFile).since);
+    const limit = Number(args.limit) > 0 ? Number(args.limit) : 50;
+
+    let r;
+    try {
+      r = await watch({ root, api, since, limit });
+    } catch (e) {
+      console.error(`watch: ${e.message}`);
+      process.exitCode = e.code === 3 ? 3 : 1;
+      return;
+    }
+
+    if (args.json) console.log(JSON.stringify(r, null, 2));
+    else console.log(renderWatch(r));
+
+    // Only advance the cursor when this was a real poll AND the feed moved.
+    // An empty page leaves it alone, so nothing can be skipped by a run that
+    // happened to arrive between two grades.
+    if (!oneOff && !args['dry-run'] && r.next_since) {
+      writeState(stateFile, { since: r.next_since, seen: r.candidates.length, updated: new Date().toISOString() });
+      if (!args.json) console.log(`\ncursor saved to ${stateFile}`);
+    } else if (oneOff && !args.json) {
+      console.log('\nOne-off look: the saved cursor was not moved.');
+    }
     return;
   }
 
