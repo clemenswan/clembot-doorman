@@ -16,6 +16,7 @@
   doorman needs [path]               read this build's own prompt history, propose servers.
  *   doorman watch [path]               poll the feed for candidates new to THIS build.
  *   doorman discover                   sweep a public directory for candidates. Curate, never enqueue.
+ *   doorman notify refresh|consume     the SessionStart push. Called by the hook, not by hand.
  *
  * Zero runtime dependencies, per the requirement in package.json. That is why
  * the YAML loader and the arg parser are in-tree rather than installed.
@@ -29,6 +30,8 @@ import { discover, renderDiscover, writeCandidates } from './discover.mjs';
 import { needs as readNeeds, render as renderNeedsCli } from './needs.mjs';
 import { install, renderInstall } from './install.mjs';
 import { allow, renderAllow, SCOPES } from './allow.mjs';
+import { refreshNotify, consumeDigest, DEFAULT_DIGEST } from './notify.mjs';
+import { join } from 'node:path';
 
 const VERSION = '0.1.0';
 
@@ -57,6 +60,12 @@ doorman ${VERSION} — measure a candidate, do not just read it
       A need nothing graded covers is printed as a GAP rather than dropped, and
       a match is only ever worth-measuring. Nothing here drove anything, so
       nothing here claims a server will work. Only eval answers that.
+
+  doorman notify refresh [--root DIR]   |   doorman notify consume [--digest FILE]
+      The push half, and the SessionStart hook is what calls it. refresh polls
+      the feed and leaves a short digest on disk; consume prints that digest
+      and deletes it. Nothing is announced on the first run, nothing is written
+      when nothing is new, and a digest is shown exactly once.
 
   doorman report <link> [--out DIR] [--needed-for TEXT]
       L1. The static implementation report: protocol, schemas, annotations, and
@@ -245,6 +254,42 @@ async function main() {
     } else if (oneOff && !args.json) {
       console.log('\nOne-off look: the saved cursor was not moved.');
     }
+    return;
+  }
+
+  // The push half. Two verbs, and neither is meant to be typed by a human:
+  // the SessionStart hook calls `consume`, then `refresh` detached.
+  if (cmd === 'notify') {
+    const sub = args._[1];
+    const root = args.root || process.cwd();
+
+    if (sub === 'consume') {
+      const file = args.digest || join(root, DEFAULT_DIGEST);
+      const text = consumeDigest(file);
+      if (text) console.log(text);
+      // Nothing to say is exit 0 and silence, not an error. See rule 1 in
+      // notify.mjs: a notifier that speaks every session gets ignored.
+      return;
+    }
+
+    if (sub === 'refresh') {
+      const api = (args.api || DEFAULT_API).replace(/\/+$/, '');
+      try {
+        const r = await refreshNotify({ root, api, limit: Number(args.limit) > 0 ? Number(args.limit) : 50 });
+        if (args.json) console.log(JSON.stringify(r, null, 2));
+        else if (r.firstRun) console.log('First run: cursor established, nothing announced.');
+        else console.log(r.wrote ? `digest written to ${r.digest}` : 'nothing new, no digest written');
+      } catch (e) {
+        // Could not measure is 3, same as watch. This runs detached from a
+        // hook, so the exit code lands in .doorman/notify.log and nowhere else.
+        console.error(`notify refresh: ${e.message}`);
+        process.exitCode = e.code === 3 ? 3 : 1;
+      }
+      return;
+    }
+
+    console.error('notify needs a subcommand: consume or refresh');
+    process.exitCode = 2;
     return;
   }
 

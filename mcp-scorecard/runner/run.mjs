@@ -21,6 +21,7 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { runAudit } from './audit.mjs';
+import { chooseProvider } from './gemini.mjs';
 
 const args = parseArgs(process.argv.slice(2));
 const log = (m) => console.log(`${new Date().toISOString().slice(11, 19)} ${m}`);
@@ -58,20 +59,24 @@ mcp-scorecard probe runner
 
 async function once() {
   if (!args.server) fail('--once needs --server <url>');
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!args['static-only'] && !apiKey) {
+  const pick = chooseProvider({ model: args.model });
+  if (!args['static-only'] && !pick.ok) {
     fail(
-      'ANTHROPIC_API_KEY is not set.\n' +
-      'Either export it, or run with --static-only to grade the static layer alone.\n' +
+      pick.why + '\n' +
+      'Or run with --static-only to grade the static layer alone.\n' +
       'Nothing is fabricated when the key is missing: the run stops here.',
     );
   }
+  const apiKey = pick.ok ? pick.apiKey : undefined;
 
   const job = {
     audit_id: 'local-' + Date.now(),
     server_url: args.server,
     needed_for: args['needed-for'],
-    model: args.model ?? 'claude-sonnet-5',
+    // The model NAME and the client that produces it are chosen together, so a
+    // grade cannot be stamped `claude-sonnet-5` while Gemini actually ran it.
+    model: pick.ok ? pick.model : (args.model ?? 'claude-sonnet-5'),
+    provider: pick.ok ? pick.provider : 'anthropic',
     temperature: 0,
     runs: Number(args.runs ?? 3),
   };
@@ -100,13 +105,26 @@ async function once() {
       `${result.evidence_sha256}  ${job.server_url}\n`,
     );
     log(`wrote evidence bundle to ${args.out}`);
+  } else {
+    // SAY IT OUT LOUD. `--once` does not post, by design, and without --out it
+    // keeps nothing either, so a grade that just spent real model tokens exists
+    // only in this terminal. That is exactly how the first complete audit of
+    // deepwiki was lost on 2026-09-11: A 91.59 across all three layers, printed
+    // and gone, while the feed kept serving a static-only A 85.71.
+    //
+    // Free-tier Gemini is 20 requests PER MODEL and one audit is many requests,
+    // so re-running to recover a discarded grade can cost the whole day's quota.
+    log('NOT SAVED and NOT PUBLISHED: --once prints only.');
+    log('  Pass --out DIR to keep the evidence bundle,');
+    log('  or use --poll against a queued audit to publish it to the feed.');
   }
 }
 
 async function pollForever() {
   const api = (args.api ?? process.env.SCORECARD_API ?? '').replace(/\/+$/, '');
   const token = process.env.RUNNER_TOKEN;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const pick = chooseProvider({ model: args.model });
+  const apiKey = pick.ok ? pick.apiKey : undefined;
   if (!api) fail('--poll needs --api <url> or SCORECARD_API');
   if (!token) fail('--poll needs RUNNER_TOKEN in the environment');
 
@@ -115,10 +133,11 @@ async function pollForever() {
   // grade record say so: the behavioural layer comes back null, the weights
   // renormalise, and the provenance section states that no probes were run.
   const staticOnly = Boolean(args['static-only']);
-  if (!staticOnly && !apiKey) {
+  if (!staticOnly && !pick.ok) {
     fail(
-      'ANTHROPIC_API_KEY is not set, so behavioural probes cannot run.\n' +
-      'Either export it, or pass --static-only to grade the static layer alone.\n' +
+      pick.why + '\n' +
+      'Behavioural probes cannot run without one.\n' +
+      'Either set a key, or pass --static-only to grade the static layer alone.\n' +
       'Polling without either would claim work and then fail every audit.',
     );
   }
@@ -155,8 +174,17 @@ async function pollForever() {
           log(`claimed ${job.audit_id} for ${job.server_url}`);
           let payload;
           try {
+            // The MODEL is the runner's to decide, not the queue's: this
+            // process holds the key and knows which provider it can actually
+            // reach. Stamping the job with both together is what keeps the
+            // `model` recorded on a grade true of the client that produced it.
+            if (!jobStaticOnly && pick.ok) {
+              job.model = pick.model;
+              job.provider = pick.provider;
+            }
             payload = await runAudit(job, {
-              apiKey, log, skipBehavioral: jobStaticOnly, skipGuidance: noGuidance,
+              apiKey, log, provider: pick.ok ? pick.provider : undefined,
+              skipBehavioral: jobStaticOnly, skipGuidance: noGuidance,
             });
           } catch (e) {
             log(`audit failed: ${e.message}`);

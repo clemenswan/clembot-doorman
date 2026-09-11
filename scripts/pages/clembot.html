@@ -103,9 +103,8 @@
         <a class="btn btn-ghost" href="#why-doorman">Why It Needed Doorman</a>
         <a class="btn btn-ghost" href="/how-it-works.html">See Defense Funnel</a>
       </p>
-    </div>
-    <div class="hero-telemetry reveal d2">
-      <div class="hero-hud-card" role="region" aria-label="Clembot Swarm Telemetry">
+
+      <div class="hero-hud-card reveal d2" role="region" aria-label="Clembot Swarm Telemetry">
         <div class="hud-head">
           <div class="hud-status"><span class="hud-dot"></span><span>Swarm Mesh Active</span></div>
           <span class="hud-tag">27 SUBAGENTS</span>
@@ -137,11 +136,12 @@
         </div>
       </div>
     </div>
+    <div class="hero-canvas-spacer" aria-hidden="true"></div>
   </div>
 </div>
 
 <!-- ── SECTION 1: THE STORY OF CLEMBOT ─────────────────────────────── -->
-<section id="story" style="padding-top: 0;">
+<section id="story">
   <div class="wrap">
     <p class="eyebrow reveal">The Evolution</p>
     <h2 class="reveal d1">From Single Scripts to an Autonomous Agency</h2>
@@ -176,74 +176,100 @@
         Twenty-seven subagents operating across five functional departments:
       </p>
 
-      <div class="org reveal d2" style="margin-top: var(--sp-6);">
-        <!-- Orchestration -->
-        <div class="org-group reveal">
-          <p class="org-label">01 · Orchestration <span>1 Agent</span></p>
-          <ul class="org-list">
-            <li>
-              <span class="org-name">Marketing Dispatcher</span>
-              <p style="margin: 4px 0 0; font-size: 0.8125rem; color: var(--ink-body);">Ingests client briefs, breaks down milestones, schedules editorial deadlines, and dispatches sub-tasks across content and research teams.</p>
-            </li>
-          </ul>
+      <!-- ORGANIZATIONAL CHART -->
+      <div class="org-chart reveal d2">
+        <!-- ROOT NODE: EXECUTIVE DISPATCHER -->
+        <div class="org-root-node">
+          <span class="org-root-badge">Division 01 · Executive Orchestrator</span>
+          <h3 class="org-root-title">Marketing Dispatcher</h3>
+          <p class="org-root-desc">
+            Single entrypoint for client briefs. Deconstructs goals into deliverables, schedules editorial calendars, and dispatches sub-tasks across all operational departments.
+          </p>
         </div>
 
-        <!-- Content -->
-        <div class="org-group reveal">
-          <p class="org-label">02 · Content Division <span>8 Agents</span></p>
-          <ul class="org-list">
-            <li><span class="org-name">Content Writer</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Drafts comprehensive long-form articles, technical tutorials, and case studies.</p></li>
-            <li><span class="org-name">LinkedIn Drafter</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Transforms technical insights into high-engagement founder and executive posts.</p></li>
-            <li><span class="org-name">Carousel Drafter</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Structures multi-slide visual educational breakdowns and swipe decks.</p></li>
-            <li><span class="org-name">Social Strategist</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Optimizes viral hooks, audience positioning, and posting cadences.</p></li>
-            <li><span class="org-name">Campaign Architect</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Maps launch sequences, email nurturing paths, and announcement rhythms.</p></li>
-            <li><span class="org-name">distributor</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Reformats and syndicates core messaging across Medium, Substack, and forums.</p></li>
-            <li><span class="org-name">thoughts-publisher</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Captures quick-take founder opinions and daily technical observations.</p></li>
-            <li><span class="org-name">Publisher</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Performs final editorial linting, tone-of-voice checks, and triggers publication.</p></li>
-          </ul>
-        </div>
+        <!-- STEM & BUS CONNECTOR -->
+        <div class="org-stem" aria-hidden="true"></div>
+        <div class="org-bus" aria-hidden="true"></div>
 
-        <!-- Research & Intake -->
-        <div class="org-group reveal">
-          <p class="org-label">03 · Research &amp; Intake <span>8 Agents</span></p>
-          <ul class="org-list">
-            <li><span class="org-name">Market Analyst</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Monitors market sentiment, competitor shifts, and industry breakthroughs.</p></li>
-            <li><span class="org-name">SEO Specialist</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Builds topic authority maps, analyzes search intent, and optimizes internal linking.</p></li>
-            <li><span class="org-name">feed-fetcher</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Aggregates live RSS streams, industry newsletters, and social channels.</p></li>
-            <li><span class="org-name">follow-resolver</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Tracks key opinion leaders, developer communities, and ecosystem updates.</p></li>
-            <li><span class="org-name">follows-digester</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Filters out social noise, extracting high-signal quotes and technical milestones.</p></li>
-            <li><span class="org-name">post-summarizer</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Condenses 5,000-word research papers and whitepapers into 3-bullet briefs.</p></li>
-            <li><span class="org-name">url-unfurler</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Extracts OpenGraph previews, canonical URLs, and structured citations.</p></li>
-            <li><span class="org-name">share-poster</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Packages finalized assets into platform-ready publication bundles.</p></li>
-          </ul>
-        </div>
+        <!-- 4 OPERATIONAL DIVISIONS GRID -->
+        <div class="org-grid">
+          <!-- 1. Content Division -->
+          <div class="org-dept-col">
+            <div class="org-dept-header">
+              <span class="org-dept-tag">Division 02</span>
+              <div class="org-dept-title">
+                <span>Content</span>
+                <span class="org-dept-count">8 Agents</span>
+              </div>
+            </div>
+            <div class="org-agent-card"><div class="org-agent-name">Content Writer</div><div class="org-agent-desc">Long-form deep dives &amp; tutorials</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">LinkedIn Drafter</div><div class="org-agent-desc">Founder executive thought-leadership</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Carousel Drafter</div><div class="org-agent-desc">Multi-slide educational swipe decks</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Social Strategist</div><div class="org-agent-desc">Viral hooks &amp; posting cadences</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Campaign Architect</div><div class="org-agent-desc">Launch sequences &amp; announcement paths</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">distributor</div><div class="org-agent-desc">Syndication across Medium &amp; Substack</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">thoughts-publisher</div><div class="org-agent-desc">Daily quick-take technical insights</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Publisher</div><div class="org-agent-desc">Final editorial linting &amp; release</div></div>
+          </div>
 
-        <!-- Design -->
-        <div class="org-group reveal" style="border: 2px solid var(--ink-accent);">
-          <p class="org-label" style="color: var(--ink-accent);">04 · Design Division <span>1 Agent · 15 MCP Tools</span></p>
-          <ul class="org-list">
-            <li>
-              <span class="org-name">Design Director</span> <span class="org-mcp">15 MCP TOOLS</span>
-              <p style="margin: 4px 0 0; font-size: 0.8125rem; color: var(--ink-body);">
-                The creative hub generating UI components, diagrams, social cards, and brand assets.
-                <strong>This is the only agent in Clembot provisioned with external MCP tools</strong>—making it
-                the sole attack surface that required protection!
-              </p>
-            </li>
-          </ul>
-        </div>
+          <!-- 2. Research & Intake -->
+          <div class="org-dept-col">
+            <div class="org-dept-header">
+              <span class="org-dept-tag">Division 03</span>
+              <div class="org-dept-title">
+                <span>Research &amp; Intake</span>
+                <span class="org-dept-count">8 Agents</span>
+              </div>
+            </div>
+            <div class="org-agent-card"><div class="org-agent-name">Market Analyst</div><div class="org-agent-desc">Market sentiment &amp; competitor tracking</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">SEO Specialist</div><div class="org-agent-desc">Search intent &amp; topic authority maps</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">feed-fetcher</div><div class="org-agent-desc">RSS &amp; industry channel ingestion</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">follow-resolver</div><div class="org-agent-desc">KOL &amp; developer community monitors</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">follows-digester</div><div class="org-agent-desc">High-signal quote &amp; milestone extraction</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">post-summarizer</div><div class="org-agent-desc">Condenses 5k-word whitepapers</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">url-unfurler</div><div class="org-agent-desc">OpenGraph &amp; canonical URL verification</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">share-poster</div><div class="org-agent-desc">Platform-ready publication bundles</div></div>
+          </div>
 
-        <!-- Engineering -->
-        <div class="org-group reveal">
-          <p class="org-label">05 · Engineering &amp; Operations <span>6 Agents</span></p>
-          <ul class="org-list">
-            <li><span class="org-name">Deploy Bot</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Deploys sites to Cloudflare Pages, verifies DNS, and purges edge caches.</p></li>
-            <li><span class="org-name">Repo Sync</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Manages git branches, worktrees, and prepares release tags.</p></li>
-            <li><span class="org-name">Build Inspector</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Lints frontend code, enforces style tokens, and checks asset sizes.</p></li>
-            <li><span class="org-name">Test Runner</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Executes unit test suites and automated Playwright responsive audits.</p></li>
-            <li><span class="org-name">Cloud Ops</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Monitors health endpoints, gateway latency, and x402 payment ledgers.</p></li>
-            <li><span class="org-name">Doc Scribe</span><p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--ink-body);">Maintains RUNBOOK.md, API specs, and technical developer guides.</p></li>
-          </ul>
+          <!-- 3. Design Division (GATED ATTACK SURFACE) -->
+          <div class="org-dept-col">
+            <div class="org-dept-header is-protected">
+              <span class="org-dept-tag" style="color: var(--ink-accent);">Division 04 · Gated Surface</span>
+              <div class="org-dept-title">
+                <span>Design</span>
+                <span class="org-dept-count" style="color: var(--ink-accent); font-weight: 700;">1 Agent · 15 MCPs</span>
+              </div>
+            </div>
+            <div class="org-agent-card is-target">
+              <div class="org-agent-name">
+                <span>Design Director</span>
+                <span style="font-size: 0.625rem; background: var(--ink-accent); color: var(--ink-surface); padding: 1px 5px; border-radius: 2px;">15 MCPs</span>
+              </div>
+              <div class="org-agent-desc" style="color: #ffffff;">
+                Generates UI components, posters, diagrams, and media. <strong>The sole agent provisioned with external MCP tools</strong>—guarded by Clembot Doorman!
+              </div>
+            </div>
+            <div style="background: rgba(34, 211, 238, 0.08); border: 1px dashed var(--ink-accent); border-radius: var(--radius-sm); padding: 8px 10px; font-size: 0.6875rem; color: #ffffff;">
+              🛡️ <strong>Sentinel Gate:</strong> All 15 MCP tools intercepted before execution via <code>mcp-gate.sh</code>.
+            </div>
+          </div>
+
+          <!-- 4. Engineering & Operations -->
+          <div class="org-dept-col">
+            <div class="org-dept-header">
+              <span class="org-dept-tag">Division 05</span>
+              <div class="org-dept-title">
+                <span>Engineering &amp; Ops</span>
+                <span class="org-dept-count">6 Agents</span>
+              </div>
+            </div>
+            <div class="org-agent-card"><div class="org-agent-name">Deploy Bot</div><div class="org-agent-desc">Cloudflare Pages &amp; edge purging</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Repo Sync</div><div class="org-agent-desc">Git worktrees, branching &amp; release tags</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Build Inspector</div><div class="org-agent-desc">Token enforcement &amp; asset checks</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Test Runner</div><div class="org-agent-desc">Playwright responsive &amp; unit suites</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Cloud Ops</div><div class="org-agent-desc">Health monitoring &amp; Base x402 ledgers</div></div>
+            <div class="org-agent-card"><div class="org-agent-name">Doc Scribe</div><div class="org-agent-desc">Maintains RUNBOOK.md &amp; API specs</div></div>
+          </div>
         </div>
       </div>
     </div>
@@ -310,17 +336,99 @@
 
 </main>
 
-<footer>
+<footer class="site-footer ink">
   <div class="wrap">
-    <p>
-      <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> Doorman · built by <a href="/wanessa-labs.html">Wanessa Labs</a> ·
-      powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a> ·
-      <a href="/how-it-works.html">How It Works</a> ·
-      <a href="/bazantic.html">Bazantic Integration</a> ·
-      <a href="/judges.html">For Judges</a> ·
-      <a href="/guide.html">Developer Guide</a> ·
-      <a href="/direction.html">Roadmap</a> ·
-      <a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub</a>
-    </p>
+    <div class="footer-inner">
+      <div class="footer-main">
+        <!-- Brand & Logo -->
+        <div class="footer-brand">
+          <a class="footer-brand-lockup" href="/" aria-label="Clembot Doorman Home">
+            <img class="footer-brand-logo" src="/mark-256.png" width="44" height="44" alt="Clembot Doorman Logo" decoding="async">
+            <div class="footer-brand-title">
+              <span class="footer-brand-name">clembot<i>/</i>doorman</span>
+              <span class="footer-brand-sub">Agent Tool Security Gateway</span>
+            </div>
+          </a>
+          <p class="footer-desc">
+            Autonomous agent tool-security gateway and package manager. Pre-execution verification, sandbox fitness audits, and continuous tool governance for multi-agent teams.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge badge-live"><span class="badge-dot"></span> Base Mainnet</span>
+            <span class="footer-badge">x402 Micropayments</span>
+            <span class="footer-badge">ETHOnline 2026</span>
+          </div>
+        </div>
+
+        <!-- Col 1: Platform & Defense -->
+        <div class="footer-col">
+          <p class="footer-col-title">Platform &amp; Defense</p>
+          <ul class="footer-col-links">
+            <li><a href="/how-it-works.html">How It Works</a></li>
+            <li><a href="/how-it-works.html#funnel-pyramid">Layer 0–3 Verification</a></li>
+            <li><a href="/bazantic.html">Bazantic Gateway</a></li>
+            <li><a href="/clembot.html#roster">Sentinel Gate Hook</a></li>
+            <li><a href="/#flow">Interactive Simulator</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 2: Audits & Evidence -->
+        <div class="footer-col">
+          <p class="footer-col-title">Audits &amp; Evidence</p>
+          <ul class="footer-col-links">
+            <li><a href="/#audits">24-Server Live Board</a></li>
+            <li><a href="/#finding">The WebZum Finding</a></li>
+            <li><a href="/#audits">Replay Transcripts</a></li>
+            <li><a href="/guide.html#probes">100-Point Audit Rubric</a></li>
+            <li><a href="/#refuses">Refusal Ledger (402)</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: ETHOnline 2026 -->
+        <div class="footer-col">
+          <p class="footer-col-title">ETHOnline 2026</p>
+          <ul class="footer-col-links">
+            <li><a href="/judges.html">Judging &amp; Criteria</a></li>
+            <li><a href="/judges.html#bazantic-track">Agentify an API Track</a></li>
+            <li><a href="/judges.html#base-track">Base Micropayments</a></li>
+            <li><a href="/bazantic.html#alignment">Architectural Alignment</a></li>
+            <li><a href="/direction.html">Post-Hackathon Roadmap</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Studio & Ecosystem -->
+        <div class="footer-col">
+          <p class="footer-col-title">Studio &amp; Ecosystem</p>
+          <ul class="footer-col-links">
+            <li><a href="/wanessa-labs.html">Wanessa Labs Studio</a></li>
+            <li><a href="/clembot.html">Clembot Agency (27 Agents)</a></li>
+            <li><a href="/guide.html">Developer Walkthrough</a></li>
+            <li><a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub Repository <span class="ext">↗</span></a></li>
+            <li><a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic Platform <span class="ext">↗</span></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar / Colophon -->
+      <div class="footer-bottom">
+        <div class="footer-bottom-copy">
+          <p>
+            &copy; 2026 <a href="/wanessa-labs.html">Wanessa Labs</a> · Built for ETHOnline 2026 · Powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a>
+          </p>
+          <p>
+            Protected by the Clembot Sentinel Gate. Released as open source under the MIT License.
+          </p>
+        </div>
+        <div class="footer-bottom-right">
+          <div class="footer-network-status">
+            <span class="net-dot"></span>
+            <span>Base Mainnet · Chain 8453</span>
+          </div>
+          <a class="footer-top-btn" href="#masthead" aria-label="Scroll back to top of page">
+            <span>Back to top</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </footer>

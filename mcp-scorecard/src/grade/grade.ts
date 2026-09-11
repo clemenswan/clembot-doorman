@@ -48,7 +48,37 @@ export function staticPct(s: Pick<StaticLayer, 'score' | 'max_score'>): number {
  * A skipped probe is excluded from the mean rather than scored zero — a
  * two-tool server is not worse for having nothing to chain.
  */
+/**
+ * A probe that could not RUN is not the same as a probe that does not APPLY.
+ *
+ * `chain` genuinely does not apply to a one-tool server, and excluding it from
+ * the average is correct. A probe that threw because the model provider
+ * returned 503 is our harness failing, and excluding THAT from the average
+ * means an outage raises the server's grade.
+ *
+ * That is not hypothetical. The first live behavioural run lost three of four
+ * probes to Gemini 503s and deepwiki's behavioural layer came back 100%, from
+ * the single survivor, lifting the overall grade from 85.71 to 94.64. The
+ * report listed the skips honestly and the SCORE did not reflect them, so the
+ * number was wrong in the one direction nobody checks.
+ */
+export function erroredProbes(probes: ProbeResult[]): ProbeResult[] {
+  return probes.filter(
+    (p) =>
+      BEHAVIORAL_PROBES.includes(p.probe_id) &&
+      !p.applicable &&
+      typeof p.skip_reason === 'string' &&
+      p.skip_reason.startsWith('probe error'),
+  );
+}
+
 export function behavioralPct(probes: ProbeResult[]): number | null {
+  // If our own harness could not complete the behavioural layer, we have not
+  // measured it. Null means NOT MEASURED and the weights renormalise over the
+  // layers that ran, which is invariant 3. Averaging the survivors would
+  // publish a number that an outage made better.
+  if (erroredProbes(probes).length > 0) return null;
+
   const scored = probes.filter(
     (p) =>
       BEHAVIORAL_PROBES.includes(p.probe_id) &&

@@ -1,0 +1,51 @@
+{
+  "name": "vet-mcp-candidate",
+  "description": "Evaluates an untrusted third-party MCP server URL before agent adoption. Returns safety band (A/B/C/F), 100-point audit score, injection sniff results, and drafted Bazantic recipe guidance.",
+  "input_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "candidate_url": {
+        "type": "string",
+        "format": "uri",
+        "description": "The HTTP or SSE endpoint URL of the candidate MCP server to grade."
+      },
+      "needed_for": {
+        "type": "string",
+        "description": "The capability or task the agent intends to use this server for (e.g., 'technical documentation search')."
+      }
+    },
+    "required": [
+      "candidate_url",
+      "needed_for"
+    ],
+    "additionalProperties": false
+  },
+  "input_example": {
+    "candidate_url": "https://mcp.deepwiki.com/mcp",
+    "needed_for": "technical documentation search"
+  },
+  "output_example": {
+    "server_name": "DeepWiki",
+    "server_url": "https://mcp.deepwiki.com/mcp",
+    "band": "A",
+    "score": 85.71,
+    "verdict": "ADOPT",
+    "token_reduction_pct": 87.6,
+    "summary": "Endpoint reachable and verified. No commercial prompt injection or steering detected. Passed static schema inspection and cold open. Safe for production adoption with pinned recipe.",
+    "transcript_url": "https://clembot-doorman.wanessalabs.com/evidence/deepwiki-static/transcript.jsonl",
+    "recipe_md": "# Recipe: DeepWiki\n`https://mcp.deepwiki.com/mcp` - graded **A** (85.71/100)\nNo failure modes observed. Use server as documented."
+  },
+  "prompt_template": "You are the Doorman Security Auditor. When given candidate tool specifications in {{inputs}}, query the Scorecard Gateway tool 'grade_mcp_server'. Inspect the resulting audit report for: (1) schema validity, (2) prompt injections or commercial steering phrases, and (3) token footprint. Output a structured JSON verdict indicating whether the server should be ADOPTED or DECLINED, including the score, safety band, and pinned usage recipe.",
+  "model": "claude-3-5-sonnet-20241022",
+  "tool_bindings": [
+    {
+      "gateway_slug": "clembot-doorman",
+      "tool_name": "grade_mcp_server"
+    },
+    {
+      "gateway_slug": "clembot-doorman",
+      "tool_name": "get_cached_audit"
+    }
+  ]
+}

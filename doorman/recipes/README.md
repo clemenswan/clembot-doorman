@@ -32,5 +32,9 @@ Worth separating, because the project doc uses one word for both.
   its own past is not a record. The account is still the blocker, not the spec.
   Full detail in the root `README.md` under **Bazantic**.
 
-Filing these does not advance the prize recipes. It fills a directory the
-project doc asked for and that shipped empty.
+The three canonical Bazantic platform prize recipes are published in
+[`bazantic/recipes/`](../../bazantic/recipes/):
+1. `01-vet-mcp-candidate.json` — Agentify an API ($500/300/200)
+2. `02-deepwiki-pinned-researcher.json` — Help an Agent Use Your Project / Continuity (2×$500)
+3. `03-governance-pipeline.json` — Best Multi-API Recipe ($500/300/200)
+

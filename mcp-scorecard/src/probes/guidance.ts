@@ -49,6 +49,37 @@ export interface GuidanceMeasurement {
   /** The recipe made it WORSE. guidancePct floors at 0 and would hide this. */
   regression: boolean;
   /**
+   * The per-run scores behind `guided_pct`, and behind `baseline_pct`.
+   *
+   * THE MEAN ALONE IS NOT ENOUGH, and this is not a theoretical concern. The
+   * first real guidance measurement recorded guided runs of `[67, 100, 67]`:
+   * the recipe rule worked ONE TIME IN THREE and never partially. That
+   * averages to 78 and reads exactly like a steady partial improvement, which
+   * is a different claim about the server and a different decision for a
+   * reader. `[78, 78, 78]` would produce the same mean, the same 33.33% layer
+   * and the same final grade.
+   *
+   * It also decided a band. The run before scored `100` guided, so the same
+   * server graded A 91.59 then B 78.26 on nothing but which way the coin
+   * landed, because `guidancePct` divides by headroom and multiplies any
+   * wobble by `100 / (100 - baseline)`: threefold here, tenfold at a baseline
+   * of 90.
+   */
+  baseline_runs?: number[];
+  guided_runs?: number[];
+  /**
+   * Did every guided run agree?
+   *
+   * Deliberately unanimity rather than a spread threshold. Any threshold here
+   * would be a number invented to make this look tidy, and the observed data
+   * is bimodal (67 or 100, never between), so "did they agree" is the question
+   * the data can actually answer. False does NOT invalidate the score: the
+   * measurement is real and discarding it would be the mirror of scoring an
+   * unmeasured layer zero. It means the mean is hiding a coin flip and the
+   * reader needs to see the runs.
+   */
+  unanimous?: boolean;
+  /**
    * The full guided Cold Open result, transcripts included.
    *
    * Deliberately returned SEPARATELY rather than appended to the audit's
@@ -126,12 +157,20 @@ export async function measureGuidance(args: {
   const guided_pct = typeof guided.score === 'number' ? guided.score : null;
   if (guided_pct === null) return none('the guided pass produced no score');
 
+  const guided_runs = guided.runs.map((r) => r.score).filter((s): s is number => typeof s === 'number');
+  const baseline_runs = baseline.runs.map((r) => r.score).filter((s): s is number => typeof s === 'number');
+
   return {
     measured: true,
     rules_given: rules.length,
     baseline_pct: baseline.score,
     guided_pct,
     regression: guided_pct < baseline.score,
+    baseline_runs,
+    guided_runs,
+    // One run cannot disagree with itself, so unanimity is only a claim worth
+    // making when there is more than one run to compare.
+    unanimous: guided_runs.length > 1 ? new Set(guided_runs).size === 1 : undefined,
     guided,
   };
 }

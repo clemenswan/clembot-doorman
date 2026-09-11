@@ -5,7 +5,7 @@
   "homepage": "https://clembot-doorman.wanessalabs.com",
   "type": "module",
   "bin": {
-    "doorman": "./doorman/cli/doorman.mjs"
+    "doorman": "doorman/cli/doorman.mjs"
   },
   "scripts": {
     "doctor": "node doorman/cli/doorman.mjs doctor",
@@ -18,7 +18,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/clemenswan/clembot-doorman.git"
+    "url": "git+https://github.com/clemenswan/clembot-doorman.git"
   },
   "comment": [
     "Root package so the CLI installs from a clone:",

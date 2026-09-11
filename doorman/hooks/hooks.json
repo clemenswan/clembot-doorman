@@ -25,6 +25,28 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-notify.sh",
+            "timeout": 10
+          }
+        ]
+      }
     ]
-  }
+  },
+  "$comment2": [
+    "SessionStart is the PUSH surface, and it is a different kind of hook from",
+    "the gate above. The gate is a security control: offline, dependency-free,",
+    "and it fails CLOSED with exit 2. The notifier fails OPEN and silent, always",
+    "exits 0, and prints nothing on every error path, because a notification",
+    "that can break a session start is worse than no notification.",
+    "",
+    "It makes no network call. It prints a digest already on disk and fires a",
+    "detached refresh for next time, so the cost on a normal session is one",
+    "file test. The 10s timeout is for a slow disk, not for a fetch."
+  ]
 }

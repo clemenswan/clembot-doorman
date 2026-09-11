@@ -92,6 +92,14 @@
     <div class="hero-copy">
       <p class="eyebrow reveal">Applied AI Research &amp; Autonomous Systems</p>
       <h1 class="reveal d1">56 Projects, 283 Shipments, and the Evolution of Clembot</h1>
+      <div class="hero-founder-lockup reveal d2" style="display: flex; align-items: center; gap: 10px; margin-bottom: var(--sp-4);">
+        <a href="#founder" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; padding: 4px 12px 4px 4px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-full); transition: border-color .15s ease;">
+          <img src="/clemenswan-headshot.png" alt="Clemens Wan" width="28" height="28" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover; background: #ffffff;">
+          <span style="font-family: var(--font-label); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary);">
+            Studio Lead: <strong style="color: var(--text-primary); font-weight: 700;">Clemens Wan</strong> &middot; Systems Architect
+          </span>
+        </a>
+      </div>
       <p class="story reveal d2">
         <b>Wanessa Labs</b> is an applied AI engineering studio founded by <b>Clemens Wan</b>.
         Over 7 months of continuous shipping (March – September 2026), Wanessa Labs has logged <b>283 verified updates</b> across <b>56 active projects in 7 tracks</b>.
@@ -101,11 +109,11 @@
         <a class="btn" href="#clembot-evolution">The Clembot Evolution</a>
         <a class="btn btn-ghost" href="#tracks">56 Projects (7 Tracks)</a>
         <a class="btn btn-ghost" href="#velocity">Shipping Velocity &amp; Logs</a>
+        <a class="btn btn-ghost" href="#founder">About Clemens</a>
         <a class="btn btn-ghost" href="https://wanessalabs.com" target="_blank" rel="noopener noreferrer">wanessalabs.com ↗</a>
       </p>
-    </div>
-    <div class="hero-telemetry reveal d2">
-      <div class="hero-hud-card" role="region" aria-label="Wanessa Labs Studio Engine">
+
+      <div class="hero-hud-card reveal d2" role="region" aria-label="Wanessa Labs Studio Engine">
         <div class="hud-head">
           <div class="hud-status"><span class="hud-dot"></span><span>Studio Timeline Active</span></div>
           <span class="hud-tag">7-MONTH RUN</span>
@@ -137,11 +145,12 @@
         </div>
       </div>
     </div>
+    <div class="hero-canvas-spacer" aria-hidden="true"></div>
   </div>
 </div>
 
 <!-- ── STATS BAR ───────────────────────────────────────────────────── -->
-<section id="stats" style="padding-top: 0;">
+<section id="stats" style="padding: var(--sp-12) 0 var(--sp-8);">
   <div class="wrap">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4);" class="reveal d2">
       <div class="tldr-card" style="margin: 0; padding: var(--sp-4);">
@@ -180,78 +189,78 @@
     <div class="refuse-grid reveal d2">
       <!-- Step 1 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 01 · Local-First Foundations</div>
-        <h3 style="font-size: 1.1875rem;">Local Clembot LLM</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 01 · Local-First Foundations</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Local Clembot LLM</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           The journey began by building an Ollama adapter that routes agent harness calls to a local LLaMA 3 model,
           cutting session costs and keeping sensitive client context off the public cloud.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Ollama · LLaMA 3 · TypeScript · Production
         </p>
       </article>
 
       <!-- Step 2 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 02 · Team Orchestration</div>
-        <h3 style="font-size: 1.1875rem;">Clembot Slack &amp; Notion Sync</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 02 · Team Orchestration</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Clembot Slack &amp; Notion Sync</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           Clembot split into specialized functional subagents (Marketing, Product, Sales) that post their activities
           to Slack channels automatically while Notion databases track gathered market signals.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Claude Code · Slack API · Notion SDK
         </p>
       </article>
 
       <!-- Step 3 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 03 · State &amp; Optimization</div>
-        <h3 style="font-size: 1.1875rem;">Memory with Events &amp; Token Thrift</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 03 · State &amp; Optimization</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Memory with Events &amp; Token Thrift</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           To avoid agent amnesia between runs, Wanessa Labs engineered event-driven state synchronization and Token Thrift—a schema
           minimization layer that prunes unused parameters and prevents context window starvation.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Event Ledger · Token Thrift · Gauntlet Loop
         </p>
       </article>
 
       <!-- Step 4 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 04 · Native Desktop Voice</div>
-        <h3 style="font-size: 1.1875rem;">Clembot-dictate (v1.0 &rarr; v1.3.0)</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 04 · Native Desktop Voice</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Clembot-dictate (v1.0 &rarr; v1.3.0)</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           Shipped a standalone Windows desktop app with a dedicated sidecar client for offline voice dictation and clipboard cleanup,
           evolving through 4 major releases to add safe clipboard undo and entry categorization.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Sidecar Client · Local Whisper · Python / C#
         </p>
       </article>
 
       <!-- Step 5 -->
-      <article class="refuse" style="border-top: 3px solid var(--s-red);">
-        <div class="tldr-badge" style="background: rgba(220, 38, 38, 0.15); color: var(--s-red); margin-bottom: var(--sp-3);">Phase 05 · The Vulnerability Spike</div>
-        <h3 style="font-size: 1.1875rem; color: var(--s-red);">27 Subagents &amp; Commercial Injection</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+      <article class="refuse" style="border-top: 3px solid #f87171;">
+        <div class="tldr-badge" style="background: rgba(248, 113, 113, 0.15); color: #f87171; border-color: rgba(248, 113, 113, 0.3); margin-bottom: var(--sp-3);">Phase 05 · The Vulnerability Spike</div>
+        <h3 style="font-size: 1.1875rem; color: #f87171;">27 Subagents &amp; Commercial Injection</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           As Clembot expanded across 5 divisions (Orchestration, Content, Research, Design, Engineering), the Design Director subagent
           was given 15 third-party MCP tools. An untrusted provider (<span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="webzum">WebZum</span>) injected commercial steering prompts, corrupting agent responses.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--s-red); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: #f87171; margin: 0;">
           Finding: Prompt Injection · 87% Token Waste · Rogue Upgrades
         </p>
       </article>
 
       <!-- Step 6 -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="background: var(--accent); color: var(--surface); margin-bottom: var(--sp-3);">Phase 06 · The Inflow Gate</div>
-        <h3 style="font-size: 1.1875rem; color: var(--accent);">Clembot Doorman &amp; Bazantic</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="background: rgba(34, 211, 238, 0.15); color: var(--ink-accent); border-color: rgba(34, 211, 238, 0.3); margin-bottom: var(--sp-3);">Phase 06 · The Inflow Gate</div>
+        <h3 style="font-size: 1.1875rem; color: var(--ink-accent);">Clembot Doorman &amp; Bazantic</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           Wanessa Labs engineered Clembot Doorman: an offline bash hook (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span>) failing closed in &lt; 5ms,
-          analyzing prompt history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>), and compiling pinned Bazantic Markdown recipes (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span>) via <a href="/bazantic.html"><b>Bazantic.com</b></a>.
+          analyzing prompt history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>), and compiling pinned Bazantic Markdown recipes (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span>) via <a href="/bazantic.html" style="color: var(--ink-accent);"><b>Bazantic.com</b></a>.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Result: Zero-Trust Security Gate · ETHOnline 2026 · 428 Tests
         </p>
       </article>
@@ -260,7 +269,7 @@
 </section>
 
 <!-- ── SECTION 2: THE 56 PROJECTS ACROSS 7 TRACKS ──────────────────── -->
-<section id="tracks" style="padding-top: 0;">
+<section id="tracks">
   <div class="wrap">
     <p class="eyebrow reveal">Studio Portfolio</p>
     <h2 class="reveal d1">56 Projects Across 7 Dedicated Tracks</h2>
@@ -542,9 +551,9 @@
 
     <div class="refuse-grid reveal d2">
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 01</div>
-        <h3>Depth Over Flash</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 01</div>
+        <h3 style="color: #ffffff;">Depth Over Flash</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           We reject the generic AI aesthetic—no neon gradients, no exaggerated drop shadows, and no floating cards with zero substance.
           We design interfaces with tactile border depth, intentional typographic rhythm (Bricolage Grotesque, Archivo, Barlow Condensed),
           and physical paper/ink contrast.
@@ -552,27 +561,27 @@
       </article>
 
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 02</div>
-        <h3>Zero-Trust Local First</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 02</div>
+        <h3 style="color: #ffffff;">Zero-Trust Local First</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           A security gate that relies on an external server is vulnerable the moment the network drops.
           Our security hook runs locally in Bash with zero dependencies in under 5ms, failing closed before a single byte leaves the machine.
         </p>
       </article>
 
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 03</div>
-        <h3>Append-Only Decision Logs</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 03</div>
+        <h3 style="color: #ffffff;">Append-Only Decision Logs</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           We never invent grades or claim capabilities we have not implemented. If a layer didn't run, we state it as unmeasured rather than 0.
           Every claim resolves to a verifiable transcript tape, and our entire 283-update decision log is public.
         </p>
       </article>
 
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 04</div>
-        <h3>Deterministic Continuity via Recipes</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 04</div>
+        <h3 style="color: #ffffff;">Deterministic Continuity via Recipes</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           Agents suffer from drift and hallucination across turns. By synthesizing pinned Bazantic recipes, we reduce schema token bloat
           by 87% and guarantee deterministic invocation arguments.
         </p>
@@ -582,26 +591,73 @@
 </section>
 
 <!-- ── SECTION 5: ABOUT CLEMENS WAN ────────────────────────────────── -->
-<section id="founder" style="padding-top: 0;">
+<section id="founder">
   <div class="wrap">
     <p class="eyebrow reveal">About the Founder</p>
-    <h2 class="reveal d1">Clemens Wan</h2>
+    <h2 class="reveal d1">Systems Architect &amp; Studio Lead</h2>
     <p class="section-intro reveal d2">
-      Systems architect and developer advocate working on advanced agentic coding, decentralized infrastructure,
-      and agent security systems. Clemens designs software with an emphasis on production resilience, developer ergonomics,
-      and honest metrics.
+      Wanessa Labs was founded by Clemens Wan to investigate agentic software architectures, zero-trust tool security,
+      and honest metrics in autonomous execution.
     </p>
 
-    <div class="tldr-card reveal d2">
-      <div class="tldr-badge">Get in Touch</div>
-      <p class="tldr-lead">
-        Explore our code, inspect our audit tapes, or connect with the lab.
-      </p>
-      <div style="display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-4);">
-        <a class="btn" href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
-        <a class="btn btn-ghost" href="/clembot.html">Inside Clembot (27 Agents)</a>
-        <a class="btn btn-ghost" href="/bazantic.html">Bazantic Integration</a>
-        <a class="btn btn-ghost" href="/judges.html">ETHOnline Judging Guide</a>
+    <div class="founder-card reveal d2">
+      <div class="founder-layout">
+        <!-- Portrait Column -->
+        <div class="founder-media">
+          <div class="founder-portrait-frame">
+            <img src="/clemenswan-headshot.png" alt="Clemens Wan — Systems Architect &amp; Founder of Wanessa Labs" class="founder-photo" width="200" height="200" loading="lazy" decoding="async">
+          </div>
+          <div class="founder-caption">
+            <span class="founder-caption-name">Clemens Wan</span>
+            <span class="founder-caption-role">Founder &middot; Systems Architect</span>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); margin-top: 2px;">@clemenswan</span>
+          </div>
+        </div>
+
+        <!-- Details Column -->
+        <div class="founder-info">
+          <div class="tldr-badge" style="margin-bottom: var(--sp-2);">Studio Founder &middot; Wanessa Labs</div>
+          <h3 class="founder-name-heading">Clemens Wan</h3>
+          <p class="founder-bio">
+            Systems architect and developer advocate working on advanced agentic coding, decentralized infrastructure,
+            and agent security systems. Clemens designs software with an emphasis on production resilience, developer ergonomics,
+            and honest metrics.
+          </p>
+          <p class="founder-bio">
+            Over the 7-month run of Wanessa Labs (March – September 2026), he has steered 56 projects, published 283 append-only decision logs,
+            and engineered Clembot Doorman as an offline-first zero-trust gateway for ETHOnline 2026.
+          </p>
+
+          <div class="founder-meta-chips">
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Role</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">Founder &amp; Systems Architect</div>
+            </div>
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Agency Scale</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">27 Agents &middot; 5 Divisions</div>
+            </div>
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Verified Logs</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">283 Entries &middot; 56 Projects</div>
+            </div>
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Hackathon Tracks</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">ETHOnline 2026 &middot; Bazantic &amp; Base</div>
+            </div>
+          </div>
+
+          <div class="founder-actions">
+            <a class="btn" href="https://github.com/clemenswan" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 7px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              <span>GitHub (@clemenswan)</span>
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">Doorman Repo ↗</a>
+            <a class="btn btn-ghost" href="/clembot.html">Inside Clembot (27 Agents)</a>
+            <a class="btn btn-ghost" href="/bazantic.html">Bazantic Integration</a>
+            <a class="btn btn-ghost" href="https://wanessalabs.com" target="_blank" rel="noopener noreferrer">wanessalabs.com ↗</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -609,18 +665,100 @@
 
 </main>
 
-<footer>
+<footer class="site-footer ink">
   <div class="wrap">
-    <p>
-      <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> Doorman · built by <a href="/wanessa-labs.html">Wanessa Labs</a> ·
-      powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a> ·
-      <a href="/how-it-works.html">How It Works</a> ·
-      <a href="/bazantic.html">Bazantic Integration</a> ·
-      <a href="/judges.html">For Judges</a> ·
-      <a href="/guide.html">Developer Guide</a> ·
-      <a href="/direction.html">Roadmap</a> ·
-      <a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub</a>
-    </p>
+    <div class="footer-inner">
+      <div class="footer-main">
+        <!-- Brand & Logo -->
+        <div class="footer-brand">
+          <a class="footer-brand-lockup" href="/" aria-label="Clembot Doorman Home">
+            <img class="footer-brand-logo" src="/mark-256.png" width="44" height="44" alt="Clembot Doorman Logo" decoding="async">
+            <div class="footer-brand-title">
+              <span class="footer-brand-name">clembot<i>/</i>doorman</span>
+              <span class="footer-brand-sub">Agent Tool Security Gateway</span>
+            </div>
+          </a>
+          <p class="footer-desc">
+            Autonomous agent tool-security gateway and package manager. Pre-execution verification, sandbox fitness audits, and continuous tool governance for multi-agent teams.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge badge-live"><span class="badge-dot"></span> Base Mainnet</span>
+            <span class="footer-badge">x402 Micropayments</span>
+            <span class="footer-badge">ETHOnline 2026</span>
+          </div>
+        </div>
+
+        <!-- Col 1: Platform & Defense -->
+        <div class="footer-col">
+          <p class="footer-col-title">Platform &amp; Defense</p>
+          <ul class="footer-col-links">
+            <li><a href="/how-it-works.html">How It Works</a></li>
+            <li><a href="/how-it-works.html#funnel-pyramid">Layer 0–3 Verification</a></li>
+            <li><a href="/bazantic.html">Bazantic Gateway</a></li>
+            <li><a href="/clembot.html#roster">Sentinel Gate Hook</a></li>
+            <li><a href="/#flow">Interactive Simulator</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 2: Audits & Evidence -->
+        <div class="footer-col">
+          <p class="footer-col-title">Audits &amp; Evidence</p>
+          <ul class="footer-col-links">
+            <li><a href="/#audits">24-Server Live Board</a></li>
+            <li><a href="/#finding">The WebZum Finding</a></li>
+            <li><a href="/#audits">Replay Transcripts</a></li>
+            <li><a href="/guide.html#probes">100-Point Audit Rubric</a></li>
+            <li><a href="/#refuses">Refusal Ledger (402)</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: ETHOnline 2026 -->
+        <div class="footer-col">
+          <p class="footer-col-title">ETHOnline 2026</p>
+          <ul class="footer-col-links">
+            <li><a href="/judges.html">Judging &amp; Criteria</a></li>
+            <li><a href="/judges.html#bazantic-track">Agentify an API Track</a></li>
+            <li><a href="/judges.html#base-track">Base Micropayments</a></li>
+            <li><a href="/bazantic.html#alignment">Architectural Alignment</a></li>
+            <li><a href="/direction.html">Post-Hackathon Roadmap</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Studio & Ecosystem -->
+        <div class="footer-col">
+          <p class="footer-col-title">Studio &amp; Ecosystem</p>
+          <ul class="footer-col-links">
+            <li><a href="/wanessa-labs.html">Wanessa Labs Studio</a></li>
+            <li><a href="/clembot.html">Clembot Agency (27 Agents)</a></li>
+            <li><a href="/guide.html">Developer Walkthrough</a></li>
+            <li><a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub Repository <span class="ext">↗</span></a></li>
+            <li><a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic Platform <span class="ext">↗</span></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar / Colophon -->
+      <div class="footer-bottom">
+        <div class="footer-bottom-copy">
+          <p>
+            &copy; 2026 <a href="/wanessa-labs.html">Wanessa Labs</a> · Built for ETHOnline 2026 · Powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a>
+          </p>
+          <p>
+            Protected by the Clembot Sentinel Gate. Released as open source under the MIT License.
+          </p>
+        </div>
+        <div class="footer-bottom-right">
+          <div class="footer-network-status">
+            <span class="net-dot"></span>
+            <span>Base Mainnet · Chain 8453</span>
+          </div>
+          <a class="footer-top-btn" href="#masthead" aria-label="Scroll back to top of page">
+            <span>Back to top</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </footer>
 

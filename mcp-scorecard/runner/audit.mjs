@@ -8,11 +8,12 @@
  */
 
 import {
-  SCAN_ONLY_PROBES, buildRecipe, buildReport, deriveRules, grade, handshake,
+  SCAN_ONLY_PROBES, buildRecipe, buildReport, deriveRules, erroredProbes, grade, handshake,
   hashBundle, measureGuidance, runAllProbes, toGradeInput, toStaticLayer,
   transcriptsToJsonl,
 } from './lib.mjs';
 import { AnthropicLlmClient, HttpMcpClient, runMcpscore } from './host-node.mjs';
+import { GeminiLlmClient } from './gemini.mjs';
 
 /**
  * @param {object} job          { audit_id, server_url, needed_for, model, temperature, runs }
@@ -32,6 +33,34 @@ export async function runAudit(job, opts = {}) {
   );
   if (staticLayer.hard_fail) log(`[static] HARD FAIL: ${staticLayer.hard_fail}`);
 
+  // --static-only drops the probes that need a MODEL. It does not drop the
+  // scan-only ones: injection_sniff reads strings the server already gave us,
+  // costs nothing, and is the only probe that can cap a grade at F. Skipping it
+  // for want of a key would mean the cheapest audits were the ones that stayed
+  // quiet about hostile tool descriptions.
+  const staticOnly = Boolean(opts.skipBehavioral);
+
+  /**
+   * THE MODEL RECORDED ON A GRADE MUST BE THE MODEL THAT PRODUCED IT.
+   *
+   * A static-only audit runs no model at all: mcpscore is Python, and
+   * injection_sniff is a regex pass over strings the server already sent. But
+   * `job.model` carries a default whether or not anything used it, so every
+   * static-only grade published so far claims `claude-sonnet-5` produced it.
+   *
+   * That is invariant 3 pointed at provenance instead of at a score. An
+   * unmeasured LAYER is null rather than 0; an unused MODEL has to be null
+   * rather than a plausible name, or the field stops being evidence and
+   * becomes decoration. It also makes the first Gemini grade indistinguishable
+   * from a Claude one in the feed, which is the exact comparison the whole
+   * project tells people to make.
+   *
+   * Declared HERE, above the zero-tools early exit, because that exit also
+   * builds a grade. Leaving it below put a const in its own temporal dead zone
+   * on the one path least likely to be exercised by hand.
+   */
+  const gradedBy = modelThatGraded(staticOnly, job.model);
+
   // --- Handshake & inventory ---------------------------------------------
   const mcp = new HttpMcpClient(job.server_url);
   const inventory = await handshake(mcp, job.server_url, staticLayer.server_name);
@@ -40,7 +69,7 @@ export async function runAudit(job, opts = {}) {
   // Free exit for a dead server. No point paying for probes against nothing.
   if (inventory.tools.length === 0) {
     const g = grade({
-      server_url: job.server_url, model: job.model, static: staticLayer,
+      server_url: job.server_url, model: gradedBy, static: staticLayer,
       probes: [], guidance: null,
     });
     return finish({
@@ -55,15 +84,12 @@ export async function runAudit(job, opts = {}) {
 
   // --- Probes -------------------------------------------------------------
   //
-  // --static-only drops the probes that need a MODEL. It does not drop the
-  // scan-only ones: injection_sniff reads strings the server already gave us,
-  // costs nothing, and is the only probe that can cap a grade at F. Skipping it
-  // for want of a key would mean the cheapest audits were the ones that stayed
-  // quiet about hostile tool descriptions.
-  const staticOnly = Boolean(opts.skipBehavioral);
+  // The provider is decided by the CALLER and carried on the job, so the model
+  // recorded on the grade and the client that produced it cannot disagree.
+  const Client = (opts.provider ?? job.provider) === 'gemini' ? GeminiLlmClient : AnthropicLlmClient;
   const llm = staticOnly
     ? refusingLlm(job)
-    : new AnthropicLlmClient({
+    : new Client({
         apiKey: opts.apiKey,
         model: job.model,
         temperature: job.temperature ?? 0,
@@ -107,7 +133,7 @@ export async function runAudit(job, opts = {}) {
   const provisional = {
     server_url: job.server_url,
     needed_for: job.needed_for,
-    model: job.model,
+    model: gradedBy,
     static: staticLayer,
     probes,
     guidance: null,
@@ -138,6 +164,37 @@ export async function runAudit(job, opts = {}) {
     log(`[guidance] not measured: ${guidance.skip_reason}`);
   }
 
+  // AN AUDIT THAT COULD NOT FINISH MUST NOT PUBLISH A PASSING GRADE.
+  //
+  // `behavioralPct` returns null when a probe errored, and null renormalises
+  // the weights over the layers that ran. That is right for a layer nobody
+  // ATTEMPTED (a deliberate --static-only run) and wrong for one that was
+  // attempted and failed, because the evidence we lost was not neutral.
+  //
+  // Measured, on the run that prompted this: ambiguity 100, bad_input 70,
+  // chain 0, cold_open lost to a 503. Counting what ran gives C 67.56.
+  // Renormalising as though the layer was never attempted gives A 85.71,
+  // eighteen points in the server's favour, off the back of our own outage.
+  //
+  // So: fail the audit. The runner's claim logic retries it (MAX_ATTEMPTS 3),
+  // which is exactly what a transient 503 deserves, and nothing misleading is
+  // published in the meantime.
+  const failed = erroredProbes(probes);
+  if (failed.length > 0) {
+    const names = failed.map((p) => p.probe_id).join(', ');
+    const why = failed[0].skip_reason ?? 'probe error';
+    log(`[grade] NOT PUBLISHED: ${failed.length} behavioural probe(s) could not run (${names})`);
+    return {
+      audit_id: job.audit_id,
+      status: 'failed',
+      error:
+        `${failed.length} behavioural probe(s) could not run (${names}). ` +
+        'No grade was published: the layer was attempted and did not complete, so ' +
+        'renormalising over the layers that did would report a score the missing ' +
+        `evidence would have changed. First failure: ${why}`,
+    };
+  }
+
   const g = grade({
     ...provisional,
     // Null means NOT MEASURED, and the weights renormalise over the layers
@@ -146,6 +203,18 @@ export async function runAudit(job, opts = {}) {
   });
 
   return finish({ job, g, probes, guidance, inventory, staticLayer, started, log });
+}
+
+/**
+ * The model to record on a grade, given whether one actually ran.
+ *
+ * Exported so the tests can drive THIS function rather than a copy of its
+ * logic. A test that re-implements the rule it is checking pins the copy and
+ * cannot fail when the original changes, which is the one shape of test this
+ * repo has already been burned by.
+ */
+export function modelThatGraded(staticOnly, jobModel) {
+  return staticOnly ? null : (jobModel ?? null);
 }
 
 /**

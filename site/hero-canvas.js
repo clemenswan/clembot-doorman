@@ -238,8 +238,18 @@
       }
     }
 
+    function getGate1X() {
+      var panel = host.querySelector('.hero-panel');
+      if (panel && getComputedStyle(panel).display !== 'none') {
+        var pRect = panel.getBoundingClientRect();
+        var cRect = canvas.getBoundingClientRect();
+        return pRect.left - cRect.left;
+      }
+      return width * 0.62;
+    }
+
     function spawnItem(init) {
-      var gate1X = width * 0.46;
+      var gate1X = getGate1X();
       var startX = init ? Math.random() * width * 0.9 : -40 - Math.random() * 120;
       var isHostile = Math.random() < 0.22; // 22% hostile/redundant
       var isDuplicate = Math.random() < 0.18; // 18% duplicate
@@ -285,36 +295,36 @@
     }
 
     function render(dt) {
-      var gate1X = width * 0.46;
-      var gate2X = width * 0.74;
+      var gate1X = getGate1X();
+      var gate2X = gate1X + (width - gate1X) * 0.52;
 
-      // Draw Gate 1: Phase 1 Local Free Fit ($0.00)
+      // Draw Gate 1: Phase 1 Local Free Fit ($0.00) - Same line as home page threshold
       ctx.save();
-      ctx.strokeStyle = 'rgba(47, 107, 79, 0.45)';
+      ctx.strokeStyle = '#2f6b4f';
       ctx.lineWidth = 2;
-      ctx.setLineDash([6, 6]);
-      ctx.beginPath();
-      ctx.moveTo(gate1X, 20);
-      ctx.lineTo(gate1X, height - 20);
-      ctx.stroke();
       ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(gate1X, 0);
+      ctx.lineTo(gate1X, height);
+      ctx.stroke();
 
-      // Gate 1 Badge
-      ctx.fillStyle = 'rgba(47, 107, 79, 0.12)';
-      ctx.fillRect(gate1X - 60, 16, 120, 24);
-      ctx.strokeStyle = 'rgba(47, 107, 79, 0.6)';
-      ctx.strokeRect(gate1X - 60, 16, 120, 24);
+      // Gate 1 Badge - positioned cleanly on the threshold line at the top
+      ctx.fillStyle = 'rgba(47, 107, 79, 0.14)';
+      ctx.fillRect(gate1X - 64, 16, 128, 24);
+      ctx.strokeStyle = '#2f6b4f';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(gate1X - 64, 16, 128, 24);
       ctx.fillStyle = '#2f6b4f';
       ctx.font = '600 11px "Barlow Condensed", sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('PHASE 1: LOCAL FIT ($0)', gate1X, 32);
+      ctx.fillText('PHASE 1: LOCAL FIT ($0.00)', gate1X, 32);
 
       // Draw Gate 2: Phase 2 Base Scorecard ($0.01)
       ctx.strokeStyle = 'rgba(16, 185, 129, 0.85)';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(gate2X, 20);
-      ctx.lineTo(gate2X, height - 20);
+      ctx.moveTo(gate2X, 0);
+      ctx.lineTo(gate2X, height);
       ctx.stroke();
 
       // Gate 2 Laser Glow
@@ -965,14 +975,21 @@
         z: -60,
         hash: '0x' + (Math.floor(Math.random() * 0xffffff)).toString(16),
         verified: false,
-        snapY: -80
+        snapY: -100
       });
-      var cx = width > 900 ? width * 0.68 : width * 0.5;
-      emitParticles(cx, height * 0.5, 25, '#10b981', 5, 1.2);
+      var panel = host.querySelector('.hero-panel');
+      var cx = panel && getComputedStyle(panel).display !== 'none'
+        ? (panel.getBoundingClientRect().left - canvas.getBoundingClientRect().left + panel.getBoundingClientRect().width * 0.5)
+        : (width > 900 ? width * 0.74 : width * 0.5);
+      emitParticles(cx, height * 0.45, 25, '#10b981', 5, 1.2);
     }
 
     function render(dt) {
-      var cx = width > 900 ? width * 0.68 : width * 0.5;
+      var panel = host.querySelector('.hero-panel');
+      if (!panel || getComputedStyle(panel).display === 'none' || width <= 900) {
+        return;
+      }
+      var cx = panel.getBoundingClientRect().left - canvas.getBoundingClientRect().left + panel.getBoundingClientRect().width * 0.5;
       var cy = height * 0.52;
 
       railOffset = (railOffset + dt * 50) % 60;
@@ -1007,6 +1024,57 @@
         ctx.stroke();
       }
 
+      function drawRailBlock(wx, wy, wz, bw, bh, bd, fillColor, strokeColor) {
+        var hw = bw / 2, hh = bh / 2, hd = bd / 2;
+        var verts = [
+          { x: wx - hw, y: wy - hh, z: wz - hd },
+          { x: wx + hw, y: wy - hh, z: wz - hd },
+          { x: wx + hw, y: wy - hh, z: wz + hd },
+          { x: wx - hw, y: wy - hh, z: wz + hd },
+          { x: wx - hw, y: wy + hh, z: wz - hd },
+          { x: wx + hw, y: wy + hh, z: wz - hd },
+          { x: wx + hw, y: wy + hh, z: wz + hd },
+          { x: wx - hw, y: wy + hh, z: wz + hd }
+        ];
+
+        var p = [];
+        for (var v = 0; v < verts.length; v++) {
+          p.push(project(verts[v].x, verts[v].y, verts[v].z, cx, cy, 0.35, 0, fov));
+        }
+
+        var faces = [
+          [0, 1, 2, 3], // top
+          [3, 2, 6, 7], // front
+          [1, 5, 6, 2], // right
+          [4, 0, 3, 7]  // left
+        ];
+
+        for (var f = 0; f < faces.length; f++) {
+          var face = faces[f];
+          var p0 = p[face[0]], p1 = p[face[1]], p2 = p[face[2]];
+          var cross = (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
+          if (cross > 0) {
+            ctx.beginPath();
+            ctx.moveTo(p0.x, p0.y);
+            for (var k = 1; k < face.length; k++) {
+              ctx.lineTo(p[face[k]].x, p[face[k]].y);
+            }
+            ctx.closePath();
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = 1.25;
+            ctx.stroke();
+          }
+        }
+
+        return {
+          x: (p[0].x + p[1].x + p[2].x + p[3].x) / 4,
+          y: (p[0].y + p[1].y + p[2].y + p[3].y) / 4,
+          scale: (p[2].scale + p[3].scale) / 2
+        };
+      }
+
       for (var i = blocks.length - 1; i >= 0; i--) {
         var b = blocks[i];
         b.z += dt * 50;
@@ -1020,17 +1088,15 @@
           }
         }
 
-        var bp = project(0, 25 + b.snapY, b.z, cx, cy, 0.35, 0, fov);
-
-        var fillColor = b.verified ? 'rgba(47, 107, 79, 0.75)' : 'rgba(217, 119, 6, 0.6)';
+        var fillColor = b.verified ? 'rgba(47, 107, 79, 0.85)' : 'rgba(217, 119, 6, 0.7)';
         var strokeColor = b.verified ? '#10b981' : '#d97706';
 
-        draw3DCube(ctx, bp.x, bp.y, 0, 32 * bp.scale, 0.35, 0, fillColor, strokeColor, fov);
+        var topPt = drawRailBlock(0, 30 + b.snapY, b.z, 90, 18, 45, fillColor, strokeColor);
 
         ctx.fillStyle = '#ffffff';
-        ctx.font = '600 ' + Math.max(8, Math.floor(10 * bp.scale)) + 'px "Barlow Condensed", sans-serif';
+        ctx.font = '600 ' + Math.max(8, Math.floor(10 * topPt.scale)) + 'px "Barlow Condensed", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(b.hash, bp.x, bp.y + 4);
+        ctx.fillText(b.hash, topPt.x, topPt.y + 4);
 
         if (b.z > 600) {
           blocks.splice(i, 1);
@@ -1210,6 +1276,10 @@
 
   function loop(currentTime) {
     if (!running) return;
+    if (getComputedStyle(canvas).display === 'none' || width <= 900) {
+      rafId = requestAnimationFrame(loop);
+      return;
+    }
     var dt = Math.min((currentTime - lastTime) / 1000, 0.08);
     lastTime = currentTime;
 
@@ -1221,6 +1291,7 @@
   }
 
   function renderStatic() {
+    if (getComputedStyle(canvas).display === 'none' || width <= 900) return;
     ctx.clearRect(0, 0, width, height);
     activeScene.render(0.016);
   }

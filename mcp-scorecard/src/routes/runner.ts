@@ -90,6 +90,9 @@ export interface ResultPayload {
     score: number;
     hard_fail?: string | null;
     layers?: { static?: { pct: number | null }; behavioral?: { pct: number | null }; guidance?: { pct: number | null } };
+    // Nullable on purpose: a static-only audit reaches no model, and the field
+    // has to be able to say so rather than carry a default.
+    model?: string | null;
     mcpscore_version?: string;
   };
   grade_json?: unknown;
@@ -135,6 +138,12 @@ export async function handleResult(req: Request, env: Env): Promise<Response> {
   await env.DB.prepare(
     "UPDATE audits SET status = 'complete', grade = ?, score = ?, static_pct = ?, " +
     'behavioral_pct = ?, guidance_pct = ?, hard_fail = ?, server_name = COALESCE(?, server_name), ' +
+    // model comes from the RESULT, because only the runner knows which model it
+    // actually reached. This UPDATE used to set every layer and leave `model`
+    // at the enqueue-time default, so the field described configuration rather
+    // than what happened, and a Gemini-graded audit would have been published
+    // as claude-sonnet-5.
+    'model = ?, ' +
     'mcpscore_version = ?, grade_json = ?, report_md = ?, recipe_md = ?, evidence_sha256 = ?, ' +
     'completed_at = ? WHERE id = ?',
   ).bind(
@@ -145,6 +154,9 @@ export async function handleResult(req: Request, env: Env): Promise<Response> {
     g.layers?.guidance?.pct ?? null,
     g.hard_fail ?? null,
     p.server_name ?? null,
+    // Null when no model ran. An unmeasured layer is null rather than 0; an
+    // unused model is null rather than a plausible name.
+    g.model ?? null,
     g.mcpscore_version ?? null,
     p.grade_json ? JSON.stringify(p.grade_json) : null,
     p.report_md ?? null,

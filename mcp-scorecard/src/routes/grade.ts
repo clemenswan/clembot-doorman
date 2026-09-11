@@ -291,7 +291,13 @@ export async function enqueueAudit(
     env.DB.prepare(
       'INSERT INTO audits (id, server_url, server_name, needed_for, status, model, created_at) ' +
       'VALUES (?, ?, ?, ?, ?, ?, ?)',
-    ).bind(id, a.url, a.name ?? null, a.needed_for ?? null, 'queued', env.PROBE_MODEL, now),
+      // model is NULL at enqueue. Nothing has graded this yet, and writing the
+      // configured default here published a model name on every audit whether
+      // or not one ever ran: a static-only grade came out claiming
+      // `claude-sonnet-5` produced it while `behavioral_pct` was null in the
+      // same row. It is set from the RESULT, by the runner that actually held
+      // the key, in the completion UPDATE.
+    ).bind(id, a.url, a.name ?? null, a.needed_for ?? null, 'queued', null, now),
     env.DB.prepare(
       'INSERT INTO pending (id, server_url, needed_for, requested_by, paid_allowed, created_at) ' +
       'VALUES (?, ?, ?, ?, ?, ?)',

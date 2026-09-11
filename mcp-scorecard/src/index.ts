@@ -14,6 +14,7 @@
  *   POST /api/result         runners post finished audits back
  *   GET  /api/ledger      demo site polls this (no streaming, free tier)
  *   GET  /feed            newly graded candidates, for a subscriber to poll
+ *   POST /popularity/subject what to count a server by on npm/GitHub/Smithery
  *   POST /mcp                the scorecard AS an MCP server, one tool: grade
  *   GET  /price              what an audit costs, free to ask
  *   GET  /openapi.json       Bazantic import surface (3.1), runner routes filtered out
@@ -34,6 +35,8 @@ import { handleFeed } from './routes/feed.js';
 import { handleMcp } from './routes/mcp.js';
 import { publicOpenApiSpec, publicOpenApiSpec30 } from './routes/openapi.js';
 import { type PaymentEnv, handlePrice, paymentGate } from './routes/payment.js';
+import { handleLinkSubject } from './routes/popularity.js';
+import { sweepPopularity } from './popularity-sweep.js';
 
 export interface Env extends PaymentEnv {
   DB: D1Database;
@@ -44,6 +47,12 @@ export interface Env extends PaymentEnv {
   RUNNER_TOKEN?: string;
   /** Authorises a PAID audit on POST /grade. Unset = static-only for everyone. */
   GRADE_TOKEN?: string;
+  /**
+   * Optional. Raises GitHub's 60/hour unauthenticated limit to 5,000. Without
+   * it the star sweep simply records nothing on the calls that 403, which the
+   * feed reports as not measured rather than as zero stars.
+   */
+  GITHUB_TOKEN?: string;
 }
 
 export const CORS = {
@@ -135,6 +144,13 @@ export default {
       if (path === '/api/result' && req.method === 'POST') return handleResult(req, env);
       if (path === '/api/ledger' && req.method === 'GET') return handleLedger(url, env);
 
+      // Which npm package or GitHub repo a graded server should be counted by.
+      // Authenticated: a wrong mapping publishes a stranger's download count as
+      // this server's popularity, which is a data-integrity write, not a read.
+      if (path === '/popularity/subject' && req.method === 'POST') {
+        return handleLinkSubject(req, env);
+      }
+
       return err('not found: ' + path, 404);
     } catch (e) {
       // Never leak a stack trace to a caller. The message is enough to act on.
@@ -142,5 +158,32 @@ export default {
       console.error('unhandled', message);
       return err('internal error: ' + message, 500);
     }
+  },
+
+  /**
+   * Daily popularity sweep. Reads three public counters for every mapped
+   * server and appends one observation each.
+   *
+   * A THROW HERE MUST NOT BE SILENT. A cron failure has no caller to return
+   * 500 to, so the only evidence it ran at all is the log line and the ledger
+   * row. Without those, a sweep that has been failing for a week looks
+   * identical to a feed where nothing happens to be trending.
+   */
+  async scheduled(_event: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil((async () => {
+      try {
+        const r = await sweepPopularity(env);
+        const detail = r.observed + ' observed, ' +
+          (Object.keys(r.failed).length ? JSON.stringify(r.failed) + ' failed, ' : '') +
+          r.pruned + ' pruned';
+        console.log('popularity sweep: ' + detail);
+        await env.DB.prepare(
+          'INSERT INTO ledger (id, audit_id, event, detail, amount_usd, created_at) ' +
+          'VALUES (?, NULL, ?, ?, NULL, ?)',
+        ).bind(crypto.randomUUID(), 'popularity', detail, new Date().toISOString()).run();
+      } catch (e) {
+        console.error('popularity sweep failed', e instanceof Error ? e.message : String(e));
+      }
+    })());
   },
 };

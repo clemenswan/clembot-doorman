@@ -105,9 +105,8 @@
         <a class="btn btn-ghost" href="#rail">Cryptographic Trust Rail</a>
         <a class="btn btn-ghost" href="/#flow">Try Simulator</a>
       </p>
-    </div>
-    <div class="hero-telemetry reveal d2">
-      <div class="hero-hud-card" role="region" aria-label="Cryptographic Trust Rail Telemetry">
+
+      <div class="hero-hud-card reveal d2" role="region" aria-label="Cryptographic Trust Rail Telemetry">
         <div class="hud-head">
           <div class="hud-status"><span class="hud-dot"></span><span>Trust Rail Online</span></div>
           <span class="hud-tag">BLAKE3 &amp; ERC-4337</span>
@@ -139,6 +138,7 @@
         </div>
       </div>
     </div>
+    <div class="hero-canvas-spacer" aria-hidden="true"></div>
   </div>
 </div>
 
@@ -492,17 +492,99 @@
   </div>
 </main>
 
-<footer>
+<footer class="site-footer ink">
   <div class="wrap">
-    <p>
-      <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> Doorman · built by <a href="/wanessa-labs.html">Wanessa Labs</a> ·
-      powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a> ·
-      <a href="/how-it-works.html">How It Works</a> ·
-      <a href="/bazantic.html">Bazantic Integration</a> ·
-      <a href="/judges.html">For Judges</a> ·
-      <a href="/guide.html">Developer Guide</a> ·
-      <a href="/direction.html">Roadmap</a> ·
-      <a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub</a>
-    </p>
+    <div class="footer-inner">
+      <div class="footer-main">
+        <!-- Brand & Logo -->
+        <div class="footer-brand">
+          <a class="footer-brand-lockup" href="/" aria-label="Clembot Doorman Home">
+            <img class="footer-brand-logo" src="/mark-256.png" width="44" height="44" alt="Clembot Doorman Logo" decoding="async">
+            <div class="footer-brand-title">
+              <span class="footer-brand-name">clembot<i>/</i>doorman</span>
+              <span class="footer-brand-sub">Agent Tool Security Gateway</span>
+            </div>
+          </a>
+          <p class="footer-desc">
+            Autonomous agent tool-security gateway and package manager. Pre-execution verification, sandbox fitness audits, and continuous tool governance for multi-agent teams.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge badge-live"><span class="badge-dot"></span> Base Mainnet</span>
+            <span class="footer-badge">x402 Micropayments</span>
+            <span class="footer-badge">ETHOnline 2026</span>
+          </div>
+        </div>
+
+        <!-- Col 1: Platform & Defense -->
+        <div class="footer-col">
+          <p class="footer-col-title">Platform &amp; Defense</p>
+          <ul class="footer-col-links">
+            <li><a href="/how-it-works.html">How It Works</a></li>
+            <li><a href="/how-it-works.html#funnel-pyramid">Layer 0–3 Verification</a></li>
+            <li><a href="/bazantic.html">Bazantic Gateway</a></li>
+            <li><a href="/clembot.html#roster">Sentinel Gate Hook</a></li>
+            <li><a href="/#flow">Interactive Simulator</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 2: Audits & Evidence -->
+        <div class="footer-col">
+          <p class="footer-col-title">Audits &amp; Evidence</p>
+          <ul class="footer-col-links">
+            <li><a href="/#audits">24-Server Live Board</a></li>
+            <li><a href="/#finding">The WebZum Finding</a></li>
+            <li><a href="/#audits">Replay Transcripts</a></li>
+            <li><a href="/guide.html#probes">100-Point Audit Rubric</a></li>
+            <li><a href="/#refuses">Refusal Ledger (402)</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: ETHOnline 2026 -->
+        <div class="footer-col">
+          <p class="footer-col-title">ETHOnline 2026</p>
+          <ul class="footer-col-links">
+            <li><a href="/judges.html">Judging &amp; Criteria</a></li>
+            <li><a href="/judges.html#bazantic-track">Agentify an API Track</a></li>
+            <li><a href="/judges.html#base-track">Base Micropayments</a></li>
+            <li><a href="/bazantic.html#alignment">Architectural Alignment</a></li>
+            <li><a href="/direction.html">Post-Hackathon Roadmap</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Studio & Ecosystem -->
+        <div class="footer-col">
+          <p class="footer-col-title">Studio &amp; Ecosystem</p>
+          <ul class="footer-col-links">
+            <li><a href="/wanessa-labs.html">Wanessa Labs Studio</a></li>
+            <li><a href="/clembot.html">Clembot Agency (27 Agents)</a></li>
+            <li><a href="/guide.html">Developer Walkthrough</a></li>
+            <li><a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub Repository <span class="ext">↗</span></a></li>
+            <li><a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic Platform <span class="ext">↗</span></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar / Colophon -->
+      <div class="footer-bottom">
+        <div class="footer-bottom-copy">
+          <p>
+            &copy; 2026 <a href="/wanessa-labs.html">Wanessa Labs</a> · Built for ETHOnline 2026 · Powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a>
+          </p>
+          <p>
+            Protected by the Clembot Sentinel Gate. Released as open source under the MIT License.
+          </p>
+        </div>
+        <div class="footer-bottom-right">
+          <div class="footer-network-status">
+            <span class="net-dot"></span>
+            <span>Base Mainnet · Chain 8453</span>
+          </div>
+          <a class="footer-top-btn" href="#masthead" aria-label="Scroll back to top of page">
+            <span>Back to top</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </footer>

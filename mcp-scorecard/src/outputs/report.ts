@@ -128,11 +128,18 @@ function row(
 function guidanceNote(m?: GuidanceMeasurement): string | undefined {
   if (!m) return undefined;
   if (!m.measured) return m.skip_reason;
+  // The runs, whenever they disagreed. A mean of 78 built from 67/100/67 is a
+  // recipe that works one time in three, and it reads identically to a steady
+  // 78 without this. Silent on a unanimous result, so the common case stays
+  // one line.
+  const spread = m.unanimous === false && m.guided_runs?.length
+    ? ' [runs ' + m.guided_runs.join('/') + ', NOT unanimous]'
+    : '';
   if (m.regression) {
-    return '**the recipe made it WORSE** (' + m.baseline_pct + ' -> ' + m.guided_pct + ')';
+    return '**the recipe made it WORSE** (' + m.baseline_pct + ' -> ' + m.guided_pct + ')' + spread;
   }
   return 'cold ' + m.baseline_pct + ' -> guided ' + m.guided_pct +
-    ' on ' + m.rules_given + ' rule(s)';
+    ' on ' + m.rules_given + ' rule(s)' + spread;
 }
 
 function failureSection(g: GradeResult, budget: number): string[] {

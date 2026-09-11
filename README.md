@@ -23,7 +23,7 @@
 3. **Arm with Bazantic Recipes (`recipe.md`)**  
    Turns raw, unpredictable APIs into bounded, high-performing tools via structured `recipe.md` guidance. Built and verified against the Bazantic gateway (`clembot-doorman.bazgateway.com`).
 
-![The doorman declining a server it just graded F](media/doorman-decline.gif)
+![Clembot Doorman live interactive flow and tool governance demo](media/doorman-demo.gif)
 
 *A real run against a real server. The grade, the hard fail, and the arithmetic are live values, not a mockup: `webzum.com/api/mcp` scores **89.9% on configuration** and still fails, because one tool description injects **6,290 characters of unprompted upsell and competitor steering** directly into your agent's context window. One cent through the Bazantic gateway answered a question that would have cost $54.47 to measure in an unguided LLM loop. [Run it live in the simulator](https://clembot-doorman.wanessalabs.com/#flow).*
 
@@ -318,6 +318,54 @@ Doorman is specifically designed to stop "skill sprawl" and prevent duplicate to
 
 2. **Adverse Drift Detection (`doorman watch`)**:
    When you run `doorman watch`, any candidate server already in your inventory is tagged `already-installed`. If an installed server is downgraded or caught with prompt injection on the feed, `watch` raises an immediate security alert.
+
+2a. **Push, without a daemon and without telemetry**:
+   Nobody can push to a laptop behind NAT that is asleep half the day, so the
+   push here is not a new transport. It is the poll going invisible. A
+   SessionStart hook prints a digest that is already on disk, then fires a
+   detached refresh so the next session is current. The hook makes no network
+   call: one that waited on a fetch would make every session start as slow as
+   the worst network it has seen, and offline would make them all fail.
+
+   ```text
+   ## doorman
+
+   1 newly graded server this build does not have:
+   - **A** 85.71/100, model not recorded https://mcp.deepwiki.com/mcp
+     not measured: behavioral, guidance
+   ```
+
+   Three rules, and each one is a notification product failing if broken. It
+   is **silent when nothing is new**, because a hook that reports "nothing new"
+   every morning teaches you to skip past the one morning it matters. It
+   **announces nothing on the first run**, because with no cursor the feed
+   returns everything graded so far and 26 rows is a catalogue, not news. And a
+   digest is **shown exactly once**, because the same three servers every
+   morning is how a notification becomes furniture.
+
+2b. **Popularity and trend, as a second axis (`GET /feed`, `?sort=trending`)**:
+   Every feed row carries a `popularity` block: Smithery use counts, npm weekly
+   downloads and GitHub stars, swept daily, with a median percentile and a
+   trend.
+
+   It is **never part of the score**. The grade is what happened when an agent
+   drove the server; popularity is how many people installed it without asking
+   that. A popular F is the most useful row this feed can publish, and a
+   blended number is the one thing guaranteed to bury it.
+
+   Counts are **ranked within each source and never summed across them**:
+   87,579 Smithery uses, 4,200 npm downloads and 1,100 stars are three units
+   counting three populations, and adding them makes a meaningless number that
+   still sorts confidently. `sources_measured` says how many sources backed the
+   percentile, because a server ranked on one and a server ranked on three are
+   not equally known. A trend needs two readings at least 12 hours apart, so a
+   newly tracked server reports `null` rather than zero growth, and a source
+   that could not be read is **absent rather than zero**.
+
+   **Doorman's own install counts are refused as a fourth source.** They would
+   be the best popularity signal available to anyone, and collecting them needs
+   telemetry. That would sell the guarantee that makes `watch` and `needs`
+   worth running at all: your inventory never leaves your machine.
 
 3. **Frontmatter Arithmetic (30 KB vs 640 KB)**:
    Doorman reads only YAML frontmatter (`name`, `description`) from `.claude/skills/*/SKILL.md` and `.claude/agents/*.md`. In our production vault, reading full markdown bodies was **642 KB**; reading frontmatter was **30 KB**. This allows the complete roster to be reviewed by a model in a single prompt without bloating context.
@@ -644,13 +692,20 @@ node runner/run.mjs --once --server https://mcp.deepwiki.com/mcp \
   --needed-for "look up how a public repository works" \
   --static-only --out ../evidence/deepwiki
 
-# Full behavioural run (needs a key)
-export ANTHROPIC_API_KEY=...
+# Full behavioural run (needs a key).
+# `=...` is NOT a value: read the secret in rather than pasting a placeholder,
+# which also keeps it out of shell history. A pasted "..." reaches the server
+# as a wrong token and comes back 401, which reads as a broken credential
+# rather than as a placeholder nobody substituted.
+read -rsp 'ANTHROPIC_API_KEY: ' ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
+# --once PRINTS ONLY. Add --out DIR to keep the evidence bundle, or queue the
+# audit and use --poll below to publish it to the feed.
 node runner/run.mjs --once --server https://mcp.deepwiki.com/mcp \
-  --needed-for "look up how a public repository works"
+  --needed-for "look up how a public repository works" --out out/deepwiki
 
 # Poll the queue
-export RUNNER_TOKEN=... SCORECARD_API=http://127.0.0.1:8799
+read -rsp 'RUNNER_TOKEN: ' RUNNER_TOKEN && export RUNNER_TOKEN
+export SCORECARD_API=http://127.0.0.1:8799
 node runner/run.mjs --poll
 ```
 

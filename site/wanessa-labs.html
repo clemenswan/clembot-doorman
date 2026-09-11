@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>56 Projects & 7-Month Evolution | clembot doorman</title>
-<meta name="description" content="Wanessa Labs applied AI research studio, 56 projects, and 283 verified shipments">
+<title>About Wanessa Labs | clembot doorman</title>
+<meta name="description" content="Applied AI research studio and 7-month evolution">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -72,13 +72,14 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; overflow-x: clip; }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 
 body {
   margin: 0; background: var(--bg); color: var(--text-secondary);
   font-family: var(--font-body); font-size: 17px; line-height: 1.6;
   -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
 }
 
 h1, h2, h3 { font-family: var(--font-display); color: var(--text-primary); font-weight: 700; margin: 0; text-wrap: balance; }
@@ -950,14 +951,19 @@ button.ghost {
 .flow-step h3 { margin: var(--sp-3) 0 var(--sp-2); font-size: .9375rem; }
 .flow-step p { margin: 0; font-size: .8125rem; }
 .flow-step[data-stop="true"] { background: var(--surface-raised); }
+.ink .flow-strip { background: var(--ink-border); border-color: var(--ink-border); }
+.ink .flow-step { background: var(--ink-surface); color: var(--ink-body); }
+.ink .flow-step[data-stop="true"] { background: var(--ink-raised); }
+.ink .flow-step h3 { color: #ffffff; }
+.ink .flow-step .n { color: var(--ink-muted); }
 .verify-cmd {
   margin: var(--sp-6) 0 0; padding: var(--sp-5) var(--sp-6); overflow-x: auto;
   background: var(--ink-bg); border: 1px solid var(--ink-border); border-radius: var(--radius-lg);
   font-family: var(--font-mono); font-size: .875rem; line-height: 1.7; color: var(--ink-body);
-  white-space: pre; max-width: none;
+  white-space: pre; max-width: 100%; box-sizing: border-box;
 }
-.verify-cmd b { color: var(--ink-accent); font-weight: 400; }
-.verify-cmd i { color: var(--ink-muted); font-style: normal; }
+.verify-cmd b { color: var(--ink-accent); font-weight: 600; }
+.verify-cmd i { color: #8ca396; font-style: normal; }
 .checks { list-style: none; margin: var(--sp-6) 0 0; padding: 0; max-width: var(--measure); }
 .checks li { padding: var(--sp-3) 0; border-bottom: 1px solid var(--border); font-size: .9375rem; }
 .checks li:last-child { border-bottom: 0; }
@@ -1017,6 +1023,7 @@ button.ghost {
      script sees display:none and never starts a render loop. */
   .hero-panel { display: none; }
   #gate-canvas { display: none; }
+  .page-hero-canvas { display: none; }
 }
 
 /* ── SECONDARY PAGE HERO & INTERACTIVE TELEMETRY HUD ───────────────────── */
@@ -1024,13 +1031,12 @@ button.ghost {
   position: relative;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
-  padding: clamp(48px, 8vh, 88px) 0 clamp(40px, 6vh, 64px);
+  padding: clamp(48px, 8vh, 88px) 0 clamp(56px, 8vh, 88px);
   background: var(--bg);
 }
 .page-hero .hero-panel {
-  position: absolute; top: 0; bottom: 0; right: 0; width: 42%;
+  position: absolute; top: 0; bottom: 0; right: 0; width: 38%;
   background: var(--surface-raised);
-  border-left: 1px solid var(--border);
   z-index: 0;
   pointer-events: none;
 }
@@ -1039,13 +1045,16 @@ button.ghost {
   display: block; z-index: 1; pointer-events: auto;
   cursor: crosshair;
 }
+@media (max-width: 900px) {
+  .page-hero-canvas { display: none !important; }
+}
 .page-hero .hero-grid {
   position: relative; z-index: 2; pointer-events: none;
-  display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(310px, 0.85fr);
-  gap: clamp(24px, 4.5vw, 64px); align-items: center;
+  display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(200px, 0.8fr);
+  gap: clamp(24px, 4.5vw, 48px); align-items: start;
 }
 .page-hero .hero-copy {
-  min-width: 0; max-width: 58ch; pointer-events: auto;
+  min-width: 0; max-width: 54ch; pointer-events: auto;
 }
 .page-hero .hero-copy h1 {
   font-size: clamp(2.125rem, 4.2vw, 3.25rem);
@@ -1055,6 +1064,9 @@ button.ghost {
 .page-hero .hero-copy .story {
   font-size: 1.0625rem; line-height: 1.62; color: var(--text-secondary);
   margin: 0 0 var(--sp-4);
+}
+.hero-canvas-spacer {
+  min-width: 0; min-height: 1px; pointer-events: none;
 }
 .hero-telemetry {
   min-width: 0; pointer-events: auto;
@@ -1067,6 +1079,9 @@ button.ghost {
   color: var(--ink-text);
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25);
   position: relative;
+  margin-top: var(--sp-6);
+  max-width: 54ch;
+  pointer-events: auto;
 }
 .hud-head {
   display: flex; align-items: center; justify-content: space-between;
@@ -1117,8 +1132,6 @@ button.ghost {
 }
 .hud-actions {
   display: flex; flex-direction: column; gap: var(--sp-2);
-  border-top: 1px solid var(--ink-border);
-  padding-top: var(--sp-4);
 }
 .btn-hud {
   display: inline-flex; align-items: center; justify-content: center;
@@ -1147,8 +1160,280 @@ button.ghost {
     opacity: 0.35;
   }
   .hero-hud-card {
-    margin-top: var(--sp-2);
+    margin-top: var(--sp-4);
   }
+}
+
+/* ── ARCHITECTURE PYRAMID (Layer 0 on bottom) ───────────────────────── */
+.arch-pyramid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-3);
+  margin-top: var(--sp-8);
+  position: relative;
+  width: 100%;
+}
+.pyramid-tier {
+  border: 1px solid var(--ink-border);
+  background: var(--ink-surface);
+  border-radius: var(--radius-lg);
+  padding: clamp(16px, 2.5vw, 22px) clamp(18px, 3vw, 28px);
+  position: relative;
+  transition: transform .2s var(--ease-signature), border-color .2s var(--ease-signature);
+  box-sizing: border-box;
+}
+.pyramid-tier:hover {
+  border-color: var(--ink-accent);
+}
+.pyramid-tier.tier-3 {
+  width: min(100%, 740px);
+  border-color: var(--ink-accent);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.1) 0%, var(--ink-surface) 100%);
+  box-shadow: 0 0 25px rgba(34, 211, 238, 0.08);
+}
+.pyramid-tier.tier-2 {
+  width: min(100%, 860px);
+}
+.pyramid-tier.tier-1 {
+  width: min(100%, 980px);
+}
+.pyramid-tier.tier-0 {
+  width: 100%;
+  border-bottom: 3px solid var(--ink-accent);
+  background: linear-gradient(180deg, var(--ink-surface) 0%, rgba(16, 185, 129, 0.06) 100%);
+}
+.tier-inner {
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr) auto;
+  gap: var(--sp-4);
+  align-items: center;
+}
+@media (max-width: 768px) {
+  .pyramid-tier.tier-3,
+  .pyramid-tier.tier-2,
+  .pyramid-tier.tier-1,
+  .pyramid-tier.tier-0 {
+    width: 100%;
+  }
+  .tier-inner {
+    grid-template-columns: 1fr;
+    gap: var(--sp-3);
+  }
+}
+.tier-tag-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.tier-badge {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: var(--radius-sm);
+  display: inline-block;
+  width: fit-content;
+}
+.tier-badge.l3 { background: var(--ink-accent); color: var(--ink-surface); }
+.tier-badge.l2 { background: var(--ink-red); color: #ffffff; }
+.tier-badge.l1 { background: var(--ink-amber); color: var(--ink-surface); }
+.tier-badge.l0 { background: rgba(255,255,255,0.15); color: #ffffff; }
+.tier-num {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+}
+.tier-body h3 {
+  color: #ffffff;
+  font-size: 1.0625rem;
+  margin: 0 0 var(--sp-1);
+}
+.tier-body p {
+  color: #ffffff;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  margin: 0;
+}
+.tier-action-col pre {
+  margin: 0;
+  background: var(--ink-bg);
+  border: 1px solid var(--ink-border);
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-accent);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.pyramid-step-arrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: -2px 0;
+}
+
+/* ── ORG CHART FOR CLEMBOT ─────────────────────────────────────────── */
+.org-chart {
+  margin-top: var(--sp-8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+}
+.org-root-node {
+  border: 2px solid var(--ink-accent);
+  background: var(--ink-surface);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-4) var(--sp-6);
+  text-align: center;
+  max-width: 480px;
+  width: 100%;
+  position: relative;
+  box-shadow: 0 12px 36px -10px rgba(0,0,0,0.6);
+  z-index: 3;
+}
+.org-root-badge {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: var(--ink-accent);
+  color: var(--ink-surface);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--sp-2);
+}
+.org-root-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 4px;
+}
+.org-root-desc {
+  font-size: 0.8125rem;
+  color: #ffffff;
+  line-height: 1.45;
+  margin: 0;
+}
+.org-stem {
+  width: 2px;
+  height: 28px;
+  background: var(--ink-border);
+  position: relative;
+  z-index: 1;
+}
+.org-bus {
+  width: 88%;
+  height: 2px;
+  background: var(--ink-border);
+  position: relative;
+  margin-bottom: 24px;
+}
+.org-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+  width: 100%;
+  position: relative;
+  align-items: start;
+}
+@media (max-width: 980px) {
+  .org-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .org-bus { display: none; }
+}
+@media (max-width: 580px) {
+  .org-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.org-dept-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  position: relative;
+}
+.org-dept-header {
+  border: 1px solid var(--ink-border);
+  background: var(--ink-surface);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3) var(--sp-4);
+  position: relative;
+}
+.org-dept-header.is-protected {
+  border: 2px solid var(--ink-accent);
+  background: linear-gradient(180deg, rgba(34, 211, 238, 0.12) 0%, var(--ink-surface) 100%);
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.15);
+}
+.org-dept-tag {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-accent);
+  margin-bottom: 2px;
+}
+.org-dept-title {
+  font-family: var(--font-display);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.org-dept-count {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--ink-muted);
+  font-weight: normal;
+}
+.org-agent-card {
+  border: 1px solid var(--ink-border);
+  background: var(--ink-bg);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  transition: border-color .2s;
+}
+.org-agent-card:hover {
+  border-color: var(--ink-accent);
+}
+.org-agent-card.is-target {
+  border: 1px solid var(--ink-accent);
+  background: rgba(34, 211, 238, 0.05);
+}
+.org-agent-name {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.org-agent-desc {
+  font-size: 0.6875rem;
+  color: #ffffff;
+  line-height: 1.35;
+  margin: 0;
 }
 
 section { padding: clamp(72px, 11vh, 136px) 0; }
@@ -1235,11 +1520,12 @@ section { padding: clamp(72px, 11vh, 136px) 0; }
    that did not fit rather than a deliberate row. This section has exactly four,
    so it gets two columns and a 2x2. */
 @media (min-width: 720px) {
-  #install .refuse-grid { grid-template-columns: repeat(2, 1fr); }
+  #install .refuse-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 .refuse, .judge {
   border: 1px solid var(--ink-border); border-radius: var(--radius-lg);
   padding: clamp(18px,2.4vw,26px); background: var(--ink-surface);
+  min-width: 0;
 }
 .judge { border-color: var(--border); background: var(--surface); }
 .track-badge {
@@ -1496,8 +1782,305 @@ dl.facts dt, dl.facts dd { padding-top: var(--sp-4); border-top: 1px solid var(-
 }
 .term-popover.is-ink .popover-foot code { color: var(--ink-text); }
 
-footer { padding: var(--sp-16) 0 var(--sp-24); border-top: 1px solid var(--border); }
-footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
+/* ── Site Footer ─────────────────────────────────────────────────────── */
+footer, footer.site-footer {
+  background: var(--ink-bg);
+  color: var(--ink-body);
+  border-top: 1px solid var(--ink-border);
+  padding: var(--sp-16) 0 var(--sp-10);
+  font-family: var(--font-body);
+  position: relative;
+  overflow: hidden;
+}
+
+footer.site-footer::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 15%;
+  right: 15%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--ink-accent), transparent);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.footer-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-12);
+}
+
+.footer-main {
+  display: grid;
+  grid-template-columns: 2.3fr 1fr 1fr 1fr 1.1fr;
+  gap: var(--sp-8);
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+}
+
+.footer-brand-lockup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-3);
+  text-decoration: none;
+  color: #ffffff;
+  width: fit-content;
+}
+
+.footer-brand-logo {
+  display: block;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--ink-border);
+  background: var(--ink-surface);
+  padding: 4px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+  flex: none;
+  transition: transform 0.2s var(--ease-signature), border-color 0.2s var(--ease-signature);
+}
+
+.footer-brand-lockup:hover .footer-brand-logo {
+  transform: scale(1.06);
+  border-color: var(--ink-accent);
+}
+
+.footer-brand-title {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-brand-name {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.1875rem;
+  letter-spacing: -0.03em;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.footer-brand-name i {
+  color: var(--ink-accent);
+  font-style: normal;
+}
+
+.footer-brand-sub {
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: var(--ink-accent);
+}
+
+.footer-desc {
+  font-size: 0.84375rem;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+  max-width: 38ch;
+  margin: 0;
+}
+
+.footer-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-2);
+  align-items: center;
+}
+
+.footer-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.82);
+  background: var(--ink-surface);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-full);
+  padding: 3px 9px;
+  white-space: nowrap;
+}
+
+.footer-badge.badge-live {
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #4ade80;
+}
+
+.footer-badge .badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 6px #4ade80;
+}
+
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+}
+
+.footer-col-title {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-accent);
+  margin: 0 0 var(--sp-1) 0;
+}
+
+.footer-col-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.footer-col-links li {
+  margin: 0;
+  padding: 0;
+}
+
+.footer-col-links a {
+  font-size: 0.84375rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color 0.18s var(--ease-signature), transform 0.18s var(--ease-signature);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.footer-col-links a:hover {
+  color: #ffffff;
+  transform: translateX(2px);
+}
+
+.footer-col-links a .ext {
+  font-size: 0.75rem;
+  opacity: 0.6;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--ink-border);
+  padding-top: var(--sp-6);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.footer-bottom-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.footer-bottom-copy p {
+  margin: 0;
+  color: inherit;
+  font-size: inherit;
+  max-width: none;
+}
+
+.footer-bottom-copy a {
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+}
+
+.footer-bottom-copy a:hover {
+  color: var(--ink-accent);
+  text-decoration: underline;
+}
+
+.footer-bottom-right {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-4);
+  flex-wrap: wrap;
+}
+
+.footer-network-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: rgba(255, 255, 255, 0.65);
+  background: var(--ink-surface);
+  border: 1px solid var(--ink-border);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.footer-network-status .net-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22d3ee;
+  box-shadow: 0 0 6px #22d3ee;
+}
+
+.footer-top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-sm);
+  background: var(--ink-surface);
+  transition: all 0.2s var(--ease-signature);
+}
+
+.footer-top-btn:hover {
+  color: #ffffff;
+  border-color: var(--ink-accent);
+  background: var(--ink-raised);
+}
+
+@media (max-width: 1024px) {
+  .footer-main {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-8) var(--sp-6);
+  }
+  .footer-brand {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-main {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .footer-bottom-right {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
 
 .skip { position: absolute; left: -9999px; top: 0; background: var(--accent); color: var(--on-accent); padding: var(--sp-3) var(--sp-5); z-index: 100; }
 .skip:focus { left: 0; }
@@ -1528,13 +2111,8 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
   background: var(--bg); border-bottom: 1px solid var(--border);
   padding: 0;
   transition: background .2s var(--ease-signature);
-}
-.story-rail-bar {
-  /* Six steps do not fit in 390px and the flex row does not wrap, so without
-     this the RAIL widens the document: 410px against a 390px viewport, and
-     every section on the page then scrolls sideways. Measured, not guessed.
-     The rail scrolls itself instead, which is the one case the site's own
-     no-horizontal-scroll rule allows. */
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   scrollbar-width: none;
 }
@@ -2168,6 +2746,113 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 #hero-direction h1 { max-width: 22ch; }
 #rail .refuse-grid { margin-top: var(--sp-8); }
 .next-head { margin-top: var(--sp-12, 3rem); margin-bottom: var(--sp-4, 1rem); }
+
+/* Founder showcase styles */
+.founder-card {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 3.5vw, 36px);
+  margin-top: var(--sp-6);
+}
+.founder-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: clamp(20px, 3.5vw, 40px);
+  align-items: start;
+}
+.founder-media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.founder-portrait-frame {
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 5px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.founder-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: calc(var(--radius-md) - 3px);
+  display: block;
+  background: #ffffff;
+}
+.founder-caption {
+  margin-top: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.founder-caption-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.founder-caption-role {
+  font-family: var(--font-label);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.founder-info {
+  min-width: 0;
+}
+.founder-name-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 var(--sp-2);
+  line-height: 1.2;
+}
+.founder-bio {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--sp-3);
+}
+.founder-meta-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.founder-actions {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: var(--sp-4);
+}
+@media (max-width: 680px) {
+  .founder-layout {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+  .founder-media {
+    margin-bottom: var(--sp-2);
+  }
+  .founder-portrait-frame {
+    width: 170px;
+    height: 170px;
+  }
+}
 </style>
 </head>
 <body>
@@ -2265,6 +2950,14 @@ section[id], div[id].header, div[id].stage, div[id].ink {
     <div class="hero-copy">
       <p class="eyebrow reveal in">Applied AI Research &amp; Autonomous Systems</p>
       <h1 class="reveal in d1">56 Projects, 283 Shipments, and the Evolution of Clembot</h1>
+      <div class="hero-founder-lockup reveal in d2" style="display: flex; align-items: center; gap: 10px; margin-bottom: var(--sp-4);">
+        <a href="#founder" style="display: inline-flex; align-items: center; gap: 9px; text-decoration: none; color: inherit; padding: 4px 12px 4px 4px; background: var(--surface-raised); border: 1px solid var(--border); border-radius: var(--radius-full); transition: border-color .15s ease;">
+          <img src="/clemenswan-headshot.png" alt="Clemens Wan" width="28" height="28" style="width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border); object-fit: cover; background: #ffffff;">
+          <span style="font-family: var(--font-label); font-size: 0.75rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary);">
+            Studio Lead: <strong style="color: var(--text-primary); font-weight: 700;">Clemens Wan</strong> &middot; Systems Architect
+          </span>
+        </a>
+      </div>
       <p class="story reveal in d2">
         <b>Wanessa Labs</b> is an applied AI engineering studio founded by <b>Clemens Wan</b>.
         Over 7 months of continuous shipping (March – September 2026), Wanessa Labs has logged <b>283 verified updates</b> across <b>56 active projects in 7 tracks</b>.
@@ -2274,11 +2967,11 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <a class="btn" href="#clembot-evolution">The Clembot Evolution</a>
         <a class="btn btn-ghost" href="#tracks">56 Projects (7 Tracks)</a>
         <a class="btn btn-ghost" href="#velocity">Shipping Velocity &amp; Logs</a>
+        <a class="btn btn-ghost" href="#founder">About Clemens</a>
         <a class="btn btn-ghost" href="https://wanessalabs.com" target="_blank" rel="noopener noreferrer">wanessalabs.com ↗</a>
       </p>
-    </div>
-    <div class="hero-telemetry reveal in d2">
-      <div class="hero-hud-card" role="region" aria-label="Wanessa Labs Studio Engine">
+
+      <div class="hero-hud-card reveal in d2" role="region" aria-label="Wanessa Labs Studio Engine">
         <div class="hud-head">
           <div class="hud-status"><span class="hud-dot"></span><span>Studio Timeline Active</span></div>
           <span class="hud-tag">7-MONTH RUN</span>
@@ -2310,11 +3003,12 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         </div>
       </div>
     </div>
+    <div class="hero-canvas-spacer" aria-hidden="true"></div>
   </div>
 </div>
 
 <!-- ── STATS BAR ───────────────────────────────────────────────────── -->
-<section id="stats" style="padding-top: 0;">
+<section id="stats" style="padding: var(--sp-12) 0 var(--sp-8);">
   <div class="wrap">
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--sp-4);" class="reveal in d2">
       <div class="tldr-card" style="margin: 0; padding: var(--sp-4);">
@@ -2353,78 +3047,78 @@ section[id], div[id].header, div[id].stage, div[id].ink {
     <div class="refuse-grid reveal in d2">
       <!-- Step 1 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 01 · Local-First Foundations</div>
-        <h3 style="font-size: 1.1875rem;">Local Clembot LLM</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 01 · Local-First Foundations</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Local Clembot LLM</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           The journey began by building an Ollama adapter that routes agent harness calls to a local LLaMA 3 model,
           cutting session costs and keeping sensitive client context off the public cloud.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Ollama · LLaMA 3 · TypeScript · Production
         </p>
       </article>
 
       <!-- Step 2 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 02 · Team Orchestration</div>
-        <h3 style="font-size: 1.1875rem;">Clembot Slack &amp; Notion Sync</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 02 · Team Orchestration</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Clembot Slack &amp; Notion Sync</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           Clembot split into specialized functional subagents (Marketing, Product, Sales) that post their activities
           to Slack channels automatically while Notion databases track gathered market signals.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Claude Code · Slack API · Notion SDK
         </p>
       </article>
 
       <!-- Step 3 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 03 · State &amp; Optimization</div>
-        <h3 style="font-size: 1.1875rem;">Memory with Events &amp; Token Thrift</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 03 · State &amp; Optimization</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Memory with Events &amp; Token Thrift</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           To avoid agent amnesia between runs, Wanessa Labs engineered event-driven state synchronization and Token Thrift—a schema
           minimization layer that prunes unused parameters and prevents context window starvation.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Event Ledger · Token Thrift · Gauntlet Loop
         </p>
       </article>
 
       <!-- Step 4 -->
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Phase 04 · Native Desktop Voice</div>
-        <h3 style="font-size: 1.1875rem;">Clembot-dictate (v1.0 &rarr; v1.3.0)</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Phase 04 · Native Desktop Voice</div>
+        <h3 style="font-size: 1.1875rem; color: #ffffff;">Clembot-dictate (v1.0 &rarr; v1.3.0)</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           Shipped a standalone Windows desktop app with a dedicated sidecar client for offline voice dictation and clipboard cleanup,
           evolving through 4 major releases to add safe clipboard undo and entry categorization.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Stack: Sidecar Client · Local Whisper · Python / C#
         </p>
       </article>
 
       <!-- Step 5 -->
-      <article class="refuse" style="border-top: 3px solid var(--s-red);">
-        <div class="tldr-badge" style="background: rgba(220, 38, 38, 0.15); color: var(--s-red); margin-bottom: var(--sp-3);">Phase 05 · The Vulnerability Spike</div>
-        <h3 style="font-size: 1.1875rem; color: var(--s-red);">27 Subagents &amp; Commercial Injection</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+      <article class="refuse" style="border-top: 3px solid #f87171;">
+        <div class="tldr-badge" style="background: rgba(248, 113, 113, 0.15); color: #f87171; border-color: rgba(248, 113, 113, 0.3); margin-bottom: var(--sp-3);">Phase 05 · The Vulnerability Spike</div>
+        <h3 style="font-size: 1.1875rem; color: #f87171;">27 Subagents &amp; Commercial Injection</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           As Clembot expanded across 5 divisions (Orchestration, Content, Research, Design, Engineering), the Design Director subagent
           was given 15 third-party MCP tools. An untrusted provider (<span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="webzum">WebZum</span>) injected commercial steering prompts, corrupting agent responses.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--s-red); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: #f87171; margin: 0;">
           Finding: Prompt Injection · 87% Token Waste · Rogue Upgrades
         </p>
       </article>
 
       <!-- Step 6 -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="background: var(--accent); color: var(--surface); margin-bottom: var(--sp-3);">Phase 06 · The Inflow Gate</div>
-        <h3 style="font-size: 1.1875rem; color: var(--accent);">Clembot Doorman &amp; Bazantic</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-2);">
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="background: rgba(34, 211, 238, 0.15); color: var(--ink-accent); border-color: rgba(34, 211, 238, 0.3); margin-bottom: var(--sp-3);">Phase 06 · The Inflow Gate</div>
+        <h3 style="font-size: 1.1875rem; color: var(--ink-accent);">Clembot Doorman &amp; Bazantic</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-2);">
           Wanessa Labs engineered Clembot Doorman: an offline bash hook (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span>) failing closed in &lt; 5ms,
-          analyzing prompt history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>), and compiling pinned Bazantic Markdown recipes (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span>) via <a href="/bazantic.html"><b>Bazantic.com</b></a>.
+          analyzing prompt history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>), and compiling pinned Bazantic Markdown recipes (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span>) via <a href="/bazantic.html" style="color: var(--ink-accent);"><b>Bazantic.com</b></a>.
         </p>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent); margin: 0;">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent); margin: 0;">
           Result: Zero-Trust Security Gate · ETHOnline 2026 · 428 Tests
         </p>
       </article>
@@ -2433,7 +3127,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 </section>
 
 <!-- ── SECTION 2: THE 56 PROJECTS ACROSS 7 TRACKS ──────────────────── -->
-<section id="tracks" style="padding-top: 0;">
+<section id="tracks">
   <div class="wrap">
     <p class="eyebrow reveal in">Studio Portfolio</p>
     <h2 class="reveal in d1">56 Projects Across 7 Dedicated Tracks</h2>
@@ -2715,9 +3409,9 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 
     <div class="refuse-grid reveal in d2">
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 01</div>
-        <h3>Depth Over Flash</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 01</div>
+        <h3 style="color: #ffffff;">Depth Over Flash</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           We reject the generic AI aesthetic—no neon gradients, no exaggerated drop shadows, and no floating cards with zero substance.
           We design interfaces with tactile border depth, intentional typographic rhythm (Bricolage Grotesque, Archivo, Barlow Condensed),
           and physical paper/ink contrast.
@@ -2725,27 +3419,27 @@ section[id], div[id].header, div[id].stage, div[id].ink {
       </article>
 
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 02</div>
-        <h3>Zero-Trust Local First</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 02</div>
+        <h3 style="color: #ffffff;">Zero-Trust Local First</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           A security gate that relies on an external server is vulnerable the moment the network drops.
           Our security hook runs locally in Bash with zero dependencies in under 5ms, failing closed before a single byte leaves the machine.
         </p>
       </article>
 
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 03</div>
-        <h3>Append-Only Decision Logs</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 03</div>
+        <h3 style="color: #ffffff;">Append-Only Decision Logs</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           We never invent grades or claim capabilities we have not implemented. If a layer didn't run, we state it as unmeasured rather than 0.
           Every claim resolves to a verifiable transcript tape, and our entire 283-update decision log is public.
         </p>
       </article>
 
       <article class="refuse">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">Tenet 04</div>
-        <h3>Deterministic Continuity via Recipes</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        <div class="tldr-badge" style="color: var(--ink-accent); margin-bottom: var(--sp-3);">Tenet 04</div>
+        <h3 style="color: #ffffff;">Deterministic Continuity via Recipes</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55;">
           Agents suffer from drift and hallucination across turns. By synthesizing pinned Bazantic recipes, we reduce schema token bloat
           by 87% and guarantee deterministic invocation arguments.
         </p>
@@ -2755,26 +3449,73 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 </section>
 
 <!-- ── SECTION 5: ABOUT CLEMENS WAN ────────────────────────────────── -->
-<section id="founder" style="padding-top: 0;">
+<section id="founder">
   <div class="wrap">
     <p class="eyebrow reveal in">About the Founder</p>
-    <h2 class="reveal in d1">Clemens Wan</h2>
+    <h2 class="reveal in d1">Systems Architect &amp; Studio Lead</h2>
     <p class="section-intro reveal in d2">
-      Systems architect and developer advocate working on advanced agentic coding, decentralized infrastructure,
-      and agent security systems. Clemens designs software with an emphasis on production resilience, developer ergonomics,
-      and honest metrics.
+      Wanessa Labs was founded by Clemens Wan to investigate agentic software architectures, zero-trust tool security,
+      and honest metrics in autonomous execution.
     </p>
 
-    <div class="tldr-card reveal in d2">
-      <div class="tldr-badge">Get in Touch</div>
-      <p class="tldr-lead">
-        Explore our code, inspect our audit tapes, or connect with the lab.
-      </p>
-      <div style="display: flex; gap: var(--sp-3); flex-wrap: wrap; margin-top: var(--sp-4);">
-        <a class="btn" href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub Repository</a>
-        <a class="btn btn-ghost" href="/clembot.html">Inside Clembot (27 Agents)</a>
-        <a class="btn btn-ghost" href="/bazantic.html">Bazantic Integration</a>
-        <a class="btn btn-ghost" href="/judges.html">ETHOnline Judging Guide</a>
+    <div class="founder-card reveal in d2">
+      <div class="founder-layout">
+        <!-- Portrait Column -->
+        <div class="founder-media">
+          <div class="founder-portrait-frame">
+            <img src="/clemenswan-headshot.png" alt="Clemens Wan — Systems Architect &amp; Founder of Wanessa Labs" class="founder-photo" width="200" height="200" loading="lazy" decoding="async">
+          </div>
+          <div class="founder-caption">
+            <span class="founder-caption-name">Clemens Wan</span>
+            <span class="founder-caption-role">Founder &middot; Systems Architect</span>
+            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--accent); margin-top: 2px;">@clemenswan</span>
+          </div>
+        </div>
+
+        <!-- Details Column -->
+        <div class="founder-info">
+          <div class="tldr-badge" style="margin-bottom: var(--sp-2);">Studio Founder &middot; Wanessa Labs</div>
+          <h3 class="founder-name-heading">Clemens Wan</h3>
+          <p class="founder-bio">
+            Systems architect and developer advocate working on advanced agentic coding, decentralized infrastructure,
+            and agent security systems. Clemens designs software with an emphasis on production resilience, developer ergonomics,
+            and honest metrics.
+          </p>
+          <p class="founder-bio">
+            Over the 7-month run of Wanessa Labs (March – September 2026), he has steered 56 projects, published 283 append-only decision logs,
+            and engineered Clembot Doorman as an offline-first zero-trust gateway for ETHOnline 2026.
+          </p>
+
+          <div class="founder-meta-chips">
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Role</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">Founder &amp; Systems Architect</div>
+            </div>
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Agency Scale</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">27 Agents &middot; 5 Divisions</div>
+            </div>
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Verified Logs</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">283 Entries &middot; 56 Projects</div>
+            </div>
+            <div>
+              <div style="font-family: var(--font-label); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); font-weight: 600;">Hackathon Tracks</div>
+              <div style="font-size: 0.8125rem; font-weight: 600; color: var(--text-primary); margin-top: 2px;">ETHOnline 2026 &middot; Bazantic &amp; Base</div>
+            </div>
+          </div>
+
+          <div class="founder-actions">
+            <a class="btn" href="https://github.com/clemenswan" target="_blank" rel="noopener noreferrer" style="display: inline-flex; align-items: center; gap: 7px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+              <span>GitHub (@clemenswan)</span>
+            </a>
+            <a class="btn btn-ghost" href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">Doorman Repo ↗</a>
+            <a class="btn btn-ghost" href="/clembot.html">Inside Clembot (27 Agents)</a>
+            <a class="btn btn-ghost" href="/bazantic.html">Bazantic Integration</a>
+            <a class="btn btn-ghost" href="https://wanessalabs.com" target="_blank" rel="noopener noreferrer">wanessalabs.com ↗</a>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -2782,18 +3523,100 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 
 </main>
 
-<footer>
+<footer class="site-footer ink">
   <div class="wrap">
-    <p>
-      <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> Doorman · built by <a href="/wanessa-labs.html">Wanessa Labs</a> ·
-      powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a> ·
-      <a href="/how-it-works.html">How It Works</a> ·
-      <a href="/bazantic.html">Bazantic Integration</a> ·
-      <a href="/judges.html">For Judges</a> ·
-      <a href="/guide.html">Developer Guide</a> ·
-      <a href="/direction.html">Roadmap</a> ·
-      <a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub</a>
-    </p>
+    <div class="footer-inner">
+      <div class="footer-main">
+        <!-- Brand & Logo -->
+        <div class="footer-brand">
+          <a class="footer-brand-lockup" href="/" aria-label="Clembot Doorman Home">
+            <img class="footer-brand-logo" src="/mark-256.png" width="44" height="44" alt="Clembot Doorman Logo" decoding="async">
+            <div class="footer-brand-title">
+              <span class="footer-brand-name">clembot<i>/</i>doorman</span>
+              <span class="footer-brand-sub">Agent Tool Security Gateway</span>
+            </div>
+          </a>
+          <p class="footer-desc">
+            Autonomous agent tool-security gateway and package manager. Pre-execution verification, sandbox fitness audits, and continuous tool governance for multi-agent teams.
+          </p>
+          <div class="footer-badges">
+            <span class="footer-badge badge-live"><span class="badge-dot"></span> Base Mainnet</span>
+            <span class="footer-badge">x402 Micropayments</span>
+            <span class="footer-badge">ETHOnline 2026</span>
+          </div>
+        </div>
+
+        <!-- Col 1: Platform & Defense -->
+        <div class="footer-col">
+          <p class="footer-col-title">Platform &amp; Defense</p>
+          <ul class="footer-col-links">
+            <li><a href="/how-it-works.html">How It Works</a></li>
+            <li><a href="/how-it-works.html#funnel-pyramid">Layer 0–3 Verification</a></li>
+            <li><a href="/bazantic.html">Bazantic Gateway</a></li>
+            <li><a href="/clembot.html#roster">Sentinel Gate Hook</a></li>
+            <li><a href="/#flow">Interactive Simulator</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 2: Audits & Evidence -->
+        <div class="footer-col">
+          <p class="footer-col-title">Audits &amp; Evidence</p>
+          <ul class="footer-col-links">
+            <li><a href="/#audits">24-Server Live Board</a></li>
+            <li><a href="/#finding">The WebZum Finding</a></li>
+            <li><a href="/#audits">Replay Transcripts</a></li>
+            <li><a href="/guide.html#probes">100-Point Audit Rubric</a></li>
+            <li><a href="/#refuses">Refusal Ledger (402)</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: ETHOnline 2026 -->
+        <div class="footer-col">
+          <p class="footer-col-title">ETHOnline 2026</p>
+          <ul class="footer-col-links">
+            <li><a href="/judges.html">Judging &amp; Criteria</a></li>
+            <li><a href="/judges.html#bazantic-track">Agentify an API Track</a></li>
+            <li><a href="/judges.html#base-track">Base Micropayments</a></li>
+            <li><a href="/bazantic.html#alignment">Architectural Alignment</a></li>
+            <li><a href="/direction.html">Post-Hackathon Roadmap</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Studio & Ecosystem -->
+        <div class="footer-col">
+          <p class="footer-col-title">Studio &amp; Ecosystem</p>
+          <ul class="footer-col-links">
+            <li><a href="/wanessa-labs.html">Wanessa Labs Studio</a></li>
+            <li><a href="/clembot.html">Clembot Agency (27 Agents)</a></li>
+            <li><a href="/guide.html">Developer Walkthrough</a></li>
+            <li><a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub Repository <span class="ext">↗</span></a></li>
+            <li><a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic Platform <span class="ext">↗</span></a></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bottom Bar / Colophon -->
+      <div class="footer-bottom">
+        <div class="footer-bottom-copy">
+          <p>
+            &copy; 2026 <a href="/wanessa-labs.html">Wanessa Labs</a> · Built for ETHOnline 2026 · Powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a>
+          </p>
+          <p>
+            Protected by the Clembot Sentinel Gate. Released as open source under the MIT License.
+          </p>
+        </div>
+        <div class="footer-bottom-right">
+          <div class="footer-network-status">
+            <span class="net-dot"></span>
+            <span>Base Mainnet · Chain 8453</span>
+          </div>
+          <a class="footer-top-btn" href="#masthead" aria-label="Scroll back to top of page">
+            <span>Back to top</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 15l-6-6-6 6"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
   </div>
 </footer>
 

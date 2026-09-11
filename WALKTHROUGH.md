@@ -5,6 +5,8 @@ captured from an actual run on 2026-09-11 against the live feed, not written by
 hand. Where a run produced nothing useful, that is shown too, because "nothing
 matched" is a result and hiding it would make this document a brochure.
 
+![Clembot Doorman live interactive demo walkthrough](media/doorman-demo.gif)
+
 ---
 
 ## Install both halves

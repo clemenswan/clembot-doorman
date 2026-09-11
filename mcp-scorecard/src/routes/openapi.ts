@@ -247,11 +247,38 @@ export function openApiSpec(origin: string): Record<string, unknown> {
             'servers and a deliberately hostile test fixture, both flagged ' +
             '(`self_graded`, `is_fixture`) so a client can drop them and know ' +
             'that it did. Any layer reported null was not measured, which is a ' +
-            'different claim from scoring zero.',
+            'different claim from scoring zero.\n\n' +
+            'The NEWEST grade per server wins the row, including when it ' +
+            'measured less than an earlier one: a re-grade reflects the server ' +
+            'as it is now, and the scan-only injection probe needs no model and ' +
+            'can cap a grade at F by itself, so a cheap fresh audit can carry ' +
+            'real bad news. `layers_measured` (1 to 3) says how much of the ' +
+            'rubric the row rests on, and `more_complete_audit` names an ' +
+            'earlier audit that measured strictly more, with its own model, ' +
+            'date and transcript link. Do not compare the two scores directly: ' +
+            'weights renormalise over the layers that ran, so an A from one ' +
+            'layer and an A from three are not the same claim.\n\n' +
+            'Each row also carries a `popularity` block: per-source counts from ' +
+            'Smithery, npm and GitHub, a median percentile, and a trend. It is ' +
+            'a SECOND AXIS and is never part of the score, because how many ' +
+            'people install a server is not evidence that it works. Counts are ' +
+            'ranked within each source and never summed across them. A trend ' +
+            'needs two readings at least 12 hours apart, so a newly tracked ' +
+            'server reports null rather than zero growth, and a source that ' +
+            'could not be read is absent rather than zero.',
           parameters: [
             { name: 'since', in: 'query', description: 'ISO timestamp; return only grades completed after it.',
               schema: { type: 'string', format: 'date-time' } },
             { name: 'limit', in: 'query', schema: { type: 'integer', maximum: 200, default: 50 } },
+            { name: 'sort', in: 'query',
+              description:
+                'Pass `trending` to order this page by popularity trend, ' +
+                'strongest first, with rows that have no trend kept at the ' +
+                'back in grading order. It REORDERS the page, it does not ' +
+                'select it: the page is still chosen by `since` and `limit` ' +
+                'against grading recency, so this means "of the newest grades, ' +
+                'which are moving", not "the fastest growing servers anywhere".',
+              schema: { type: 'string', enum: ['trending'] } },
           ],
           responses: { 200: { description: 'Newest grade per server, newest first.' } },
         },

@@ -16,6 +16,20 @@ compatibility_flags = ["nodejs_compat"]
 pattern = "scorecard.wanessalabs.com"
 custom_domain = true
 
+# Daily popularity sweep. Free tier allows cron triggers; this is the only
+# scheduled work in the project.
+#
+# ONCE A DAY, not hourly, and the interval is load-bearing rather than thrifty.
+# A trend is computed between two readings at least 12 hours apart, so readings
+# closer together than that produce no trend at all. Sweeping hourly would also
+# exhaust GitHub's unauthenticated 60/hour budget on the first pass and leave
+# every later source unmeasured.
+#
+# 07:00 UTC: after npm's daily download counters settle, and well away from the
+# top of the hour when Cloudflare's cron queues are busiest.
+[triggers]
+crons = ["0 7 * * *"]
+
 [[d1_databases]]
 binding = "DB"
 database_name = "mcp-scorecard"

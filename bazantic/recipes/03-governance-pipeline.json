@@ -1,0 +1,64 @@
+{
+  "name": "doorman-governance-pipeline",
+  "description": "End-to-end multi-API governance recipe: audits candidate MCP server, settles $0.01 audit micropayment on Base mainnet via x402, and registers the verified SHA-256 hash into the local offline allowlist.",
+  "input_schema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "type": "object",
+    "properties": {
+      "candidate_url": {
+        "type": "string",
+        "format": "uri",
+        "description": "URL of the candidate MCP server requiring adoption."
+      },
+      "target_subagent": {
+        "type": "string",
+        "description": "The subagent to assign the tool to (e.g., 'research-analyst', 'design-director')."
+      },
+      "spend_permit": {
+        "type": "string",
+        "description": "EIP-712 permit authorising up to $0.01 USDC on Base mainnet."
+      }
+    },
+    "required": [
+      "candidate_url",
+      "target_subagent"
+    ],
+    "additionalProperties": false
+  },
+  "input_example": {
+    "candidate_url": "https://scorecard.wanessalabs.com/mcp",
+    "target_subagent": "security-sentinel",
+    "spend_permit": "0xpermit_eip712_base_001"
+  },
+  "output_example": {
+    "status": "APPROVED",
+    "audit_id": "audit_sc_20260911_01",
+    "grade": "A",
+    "score": 98.63,
+    "base_tx": "0x8f4b7a12e4c2...3f1a",
+    "settled_usdc": "0.01",
+    "sha256_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "allowlist_entry": {
+      "client_name": "scorecard",
+      "assigned_to": "security-sentinel",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "verified_at": "2026-09-11T14:30:00Z"
+    }
+  },
+  "prompt_template": "Execute the 3-stage governance pipeline for {{inputs}}. First, invoke 'clembot-doorman/grade_mcp_server' to evaluate candidate safety. If score >= 70 and no hard fail is detected, invoke 'base-x402-gateway/settle_micropayment' using the spend permit. Upon settlement confirmation, invoke 'clembot-doorman/append_allowlist' to pin the SHA-256 hash to the subagent's allowlist. If any step fails, abort and report reasons.",
+  "model": "claude-3-5-sonnet-20241022",
+  "tool_bindings": [
+    {
+      "gateway_slug": "clembot-doorman",
+      "tool_name": "grade_mcp_server"
+    },
+    {
+      "gateway_slug": "base-x402-gateway",
+      "tool_name": "settle_micropayment"
+    },
+    {
+      "gateway_slug": "clembot-doorman",
+      "tool_name": "append_allowlist"
+    }
+  ]
+}

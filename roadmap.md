@@ -260,6 +260,66 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
 
 ## Not done, and honest about it
 
+- [x] **First complete three-layer audit PUBLISHED 2026-09-11 20:37**, audit
+      `204ac9a0`, deepwiki, `gemini-3.5-flash-lite`:
+      `static 85.71 / behavioral 91.75 / guidance 33.33 -> B 78.26`.
+      **The honest grade is a full band below the static-only A 85.71 it
+      replaced**, which is the supersede fix's premise confirmed on its first
+      real data point. Feed now reads 25 rows at one layer, 1 at three.
+- [x] **The guidance layer hid a coin flip behind a mean.** Fixed the same day.
+      The guided runs scored `[67, 100, 67]` against a baseline of
+      `[67, 67, 67]`: the recipe rule worked ONE TIME IN THREE and never
+      partially. `[78, 78, 78]` gives the same mean, the same 33.33% layer and
+      the same final grade, and means something completely different. The run
+      before scored 100 guided, so the same server, same model, same single
+      rule graded A 91.59 then B 78.26 on nothing but which way it landed:
+      `guidancePct` divides by headroom, multiplying any wobble by
+      `100/(100-baseline)`, threefold at 67 and tenfold at 90.
+      The measurement now carries `guided_runs`, `baseline_runs` and
+      `unanimous`, and the report prints the runs when they disagreed. It
+      DISCLOSES, it does not re-score: one run in three recovering is a real
+      finding, and discarding it would be the mirror of scoring an unmeasured
+      layer zero. Unanimity rather than a spread threshold, because any
+      threshold would be a number invented to make it look tidy. 7 tests,
+      5 mutants caught.
+- [ ] **Decide whether a non-unanimous guidance layer should still carry 20%.**
+      It now says so on the report, which is the minimum. Whether a coin flip
+      should move a band at all is a product call, not a bug fix, and it needs
+      more than one server's data to settle.
+
+**Two things recorded here were WRONG and are corrected above:** the guidance
+pass was never n=1 (it has always used `ctx.runs`, same as the probes), and the
+`cold_open_guided` tape was never missing. All six runs were stored; the
+`probe_id` INSIDE each JSONL line is stamped from the ProbeResult and reads
+`cold_open`, while the `cold_open_guided` label lives on the database column.
+`GET /grade/:id/transcripts?format=json` shows the column. Counting the JSONL
+field instead of the column is what produced both false findings.
+
+- [x] ~~**A cheaper re-grade silently supersedes a more complete one.**~~ Found
+      2026-09-11 by running the new push digest against the live feed, fixed
+      the same day. `/feed` takes `MAX(completed_at)` per server, so a
+      `--static-only` re-run replaced a three-layer audit and the LETTER did
+      not move: deepwiki went complete-A to one-layer-A with nothing on the
+      wire saying so. Weights renormalising over the layers that ran is
+      invariant 3 behaving correctly, and it is exactly what made the swap
+      invisible.
+      **The newest still wins the row**, deliberately: `injection_sniff` needs
+      no model and can cap a grade at F alone, so a cheap fresh audit is where
+      hostile tool descriptions get caught, and promoting an older better
+      looking audit over it would suppress the finding that costs nothing to
+      produce. What changed is that the row now carries `layers_measured` and
+      names any earlier audit that measured strictly more, in
+      `more_complete_audit`, with its own model, date and transcript link.
+      12 tests, 5 mutants caught, query verified on real D1.
+- [ ] **The complete audit of deepwiki never reached the database.** It ran
+      locally and printed `A 91.59` across all three layers; the ledger holds
+      four `graded A 85.71` entries from `runner-fixed` and `runner-25704` for
+      that server and no 91.59 anywhere, and no evidence bundle was written.
+      Cause: `--once` PRINTS ONLY, by design (`runner/run.mjs:33`), and no
+      `--out` was passed. The runner now says `NOT SAVED and NOT PUBLISHED`
+      when that combination happens. Re-run it through `--poll` and confirm it
+      posts before quoting that number again.
+
 - [ ] **The four model-driven probes have never run against a live model.** No
       `ANTHROPIC_API_KEY` was supplied. The runner refuses to fabricate. This is
       still the single biggest gap: 50 of the 100 grade points are unexercised
@@ -381,9 +441,53 @@ Clembot Doorman is built to scale from a single-project security gate into a dec
 - [x] **Public Feed & Scorecard**: 24+ live audited servers with public tape replay at `scorecard.wanessalabs.com/feed`.
 
 ### Phase 2: Continuous Feed Subscription & Adverse Drift Watch (Q4 2026)
-- [ ] **Background Watch Poller**: Automated recurring subscription daemon (`doorman watch --poll`) notifying developers when trusted tools suffer adverse security demotions.
+- [x] **Push, via a SessionStart hook.** Built 2026-09-11. The honest version of
+      push for a laptop behind NAT is not a new transport, it is the poll going
+      invisible: the hook prints a digest already on disk, then fires a detached
+      refresh so the next session is current. It makes no network call itself,
+      because a SessionStart hook that waits on a fetch makes every session
+      start as slow as the worst network it has met, and offline makes them all
+      fail. Three rules, each a notification product failing if broken: silent
+      when nothing is new, nothing announced on the first run (with no cursor
+      the feed returns all 26 rows, which is a catalogue and not news), and a
+      digest shown exactly once. Verified end to end against the deployed feed.
+- [x] **Popularity and trend as a second axis.** Built 2026-09-11. Per-server
+      observations from Smithery use counts, npm weekly downloads and GitHub
+      stars, swept daily by a Worker cron, exposed on every `/feed` row with
+      `?sort=trending` to reorder a page. It is **never part of the score**: a
+      popular F is the most useful row this feed can carry, and a blended
+      number is the one thing that would bury it. Counts are ranked within each
+      source and never summed across them, `sources_measured` rides along, and
+      a trend needs two readings 12 hours apart so a newly tracked server
+      reports null rather than zero growth.
+      **Install counts from doorman itself are refused as a fourth source.**
+      They would be the best signal available to anyone and they need
+      telemetry, which would sell the guarantee that makes `watch` and `needs`
+      worth running: your inventory never leaves your machine.
+- [ ] **Background Watch Poller**: a real daemon (`doorman watch --poll`). The
+      hook above closes most of the gap and leaves one: news is at most one
+      session stale, and the first session after install says nothing because
+      no digest exists yet.
 - [ ] **Automated Recipe Regeneration**: Live telemetry detecting when an upstream MCP server releases updated schemas, automatically testing and redrafting `recipe.md`.
 - [ ] **Webhooks & Notification Channels**: Native alerts to Slack, Discord, and GitHub PR comments when new capabilities matching project needs are published.
+- [ ] **Apply the popularity subject map.** Researched and verified 2026-09-11,
+      recorded with its evidence in `mcp-scorecard/popularity-subjects.json`,
+      NOT yet applied: it needs `RUNNER_TOKEN`.
+      read -rsp 'RUNNER_TOKEN: ' RUNNER_TOKEN && export RUNNER_TOKEN
+      node runner/link.mjs --file popularity-subjects.json
+      **3 of 26 graded servers could be mapped**, and that is the honest yield
+      rather than a shortfall: most of the graded set are hosted remote servers
+      with no npm package and no public repo whose record names them. The
+      standard applied was that the source's own record must point BACK at the
+      graded server's host. Six candidates were rejected under it, including
+      `cloudflare/mcp-server-cloudflare` (no homepage field), `awslabs/mcp`
+      (homepage names a different host) and `huggingface/hf-mcp-server`
+      (`hf.co/mcp` serves 200 with no redirect to `huggingface.co`, so the two
+      could not be evidenced as one endpoint).
+      One more, `withastro/docs`, PASSES the host check and is deliberately
+      left for a human: its stars measure the docs project, not the MCP server
+      served from it. An evidenced mapping can still count the wrong
+      population, and the host check cannot see that.
 
 ### Phase 3: Multi-Harness Native Extensibility (Q4 2026 - Q1 2027)
 - [x] **Universal Skill Ingest**: Auto-discovery across `.claude/skills`, `.agents/skills`, and `skills/` using frontmatter arithmetic (30 KB vs 640 KB).
