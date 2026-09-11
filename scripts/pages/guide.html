@@ -1,0 +1,505 @@
+<a class="skip" href="#main">Skip to content</a>
+
+<header class="masthead" id="masthead">
+  <div class="wrap">
+    <a class="wordmark" href="/"><img src="/mark-256.png" width="26" height="26" alt="" decoding="async"><span>clembot<i>/</i>doorman</span></a>
+    <nav id="nav" aria-label="Main Navigation">
+      <div class="nav-dropdown" id="nav-judging-dropdown">
+        <button type="button" class="nav-dropdown-trigger" id="judging-trigger" aria-expanded="false" aria-haspopup="true" aria-controls="judging-menu">
+          <span>Judging</span>
+          <svg class="dropdown-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1L5 5L9 1"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="judging-menu" role="menu" aria-labelledby="judging-trigger">
+          <div class="dropdown-header">
+            <span class="dropdown-eyebrow">ETHOnline 2026 Evaluation</span>
+          </div>
+          <a class="dropdown-card" href="/how-it-works.html" role="menuitem">
+            <div class="card-head">
+              <span class="card-title">How it works</span>
+              <span class="card-pill">Architecture</span>
+            </div>
+            <p class="card-desc">2-Phase Defense Funnel: local free fit review ($0) before paid external audit.</p>
+          </a>
+          <a class="dropdown-card" href="/judges.html" role="menuitem">
+            <div class="card-head">
+              <span class="card-title">ETHOnline Criteria</span>
+              <span class="card-pill">Rubric &amp; Prizes</span>
+            </div>
+            <p class="card-desc">5 core categories (Technicality to WOW), prize checklist, and 2-minute runbook.</p>
+          </a>
+          <a class="dropdown-card" href="/bazantic.html" role="menuitem">
+            <div class="card-head">
+              <span class="card-title">Bazantic Integration</span>
+              <span class="card-pill">Prize Track</span>
+            </div>
+            <p class="card-desc">Continuous tool governance: automated recipes (87% token reduction) &amp; live gateway.</p>
+          </a>
+          <a class="dropdown-card" href="/direction.html" role="menuitem">
+            <div class="card-head">
+              <span class="card-title">What's Next</span>
+              <span class="card-pill">Roadmap</span>
+            </div>
+            <p class="card-desc">Post-hackathon trajectory: cryptographic trust tokens, autonomous fit, and production rail.</p>
+          </a>
+          <div class="dropdown-foot">
+            <a href="/judges.html#runbook">2-Minute Runbook &rarr;</a>
+            <span class="dropdown-sep">&middot;</span>
+            <a href="/#flow">Live Demo &rarr;</a>
+          </div>
+        </div>
+      </div>
+      <div class="nav-dropdown" id="nav-about-dropdown">
+        <button type="button" class="nav-dropdown-trigger" id="about-trigger" aria-expanded="false" aria-haspopup="true" aria-controls="about-menu">
+          <span>About</span>
+          <svg class="dropdown-chevron" width="10" height="6" viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 1L5 5L9 1"/></svg>
+        </button>
+        <div class="nav-dropdown-menu" id="about-menu" role="menu" aria-labelledby="about-trigger">
+          <div class="dropdown-header">
+            <span class="dropdown-eyebrow">Wanessa Labs Studio</span>
+          </div>
+          <a class="dropdown-card" href="/clembot.html" role="menuitem">
+            <div class="card-head">
+              <span class="card-title">Clembot</span>
+              <span class="card-pill">27 Agents</span>
+            </div>
+            <p class="card-desc">Autonomous multi-client marketing &amp; ops engine. 5 divisions, why it needed a security gate.</p>
+          </a>
+          <a class="dropdown-card" href="/wanessa-labs.html" role="menuitem">
+            <div class="card-head">
+              <span class="card-title">Wanessa Labs</span>
+              <span class="card-pill">56 Projects · 283 Shipments</span>
+            </div>
+            <p class="card-desc">Applied AI research studio founded by Clemens Wan. 7-month evolution and shipping logs.</p>
+          </a>
+          <div class="dropdown-foot">
+            <a href="https://wanessalabs.com/whats-new/" target="_blank" rel="noopener noreferrer">What's New (Timeline) ↗</a>
+            <span class="dropdown-sep">&middot;</span>
+            <a href="https://wanessalabs.com/projects/" target="_blank" rel="noopener noreferrer">Projects (7 Tracks) ↗</a>
+          </div>
+        </div>
+      </div>
+      <a class="masthead-cta" href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">Install CLI</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<section id="hero-direction">
+  <div class="wrap">
+    <p class="eyebrow reveal">Developer Walkthrough &amp; Skill Management</p>
+    <h1 class="reveal d1">From fresh init to production protection</h1>
+    <p class="section-intro reveal d2">
+      A complete, step-by-step developer guide for initializing a new Claude Code / <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> build,
+      recommending pre-vetted <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp">MCP</span> tools from actual prompt history, and managing existing skill rosters
+      so you never spend money or tokens on redundant capabilities.
+    </p>
+  </div>
+</section>
+
+<!-- STEP 1: FRESH INIT -->
+<section id="step-init" style="padding-top: 0;">
+  <div class="wrap">
+    <p class="eyebrow reveal">Step 1 · Fresh Init &amp; Baseline Inspection</p>
+    <h2 class="reveal d1">Inspecting a net-new build with <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-doctor"><code>doorman doctor</code></span></h2>
+    <p class="section-intro reveal d2">
+      When you run <code>claude init</code> in an empty repository, Claude Code sets up project scaffolding
+      (such as <code>CLAUDE.md</code> and <code>.claude/settings.json</code>). Before installing third-party tools,
+      you need to know exactly what an agent in that directory can currently reach.
+    </p>
+
+    <div class="tldr-card reveal d2">
+      <div class="tldr-badge">Installation</div>
+      <p class="tldr-lead" style="margin-bottom: var(--sp-3);">
+        Zero runtime dependencies. Local, read-only, and costs no tokens.
+      </p>
+      <pre style="margin: 0; background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: var(--sp-4); font-family: var(--font-mono); font-size: 0.875rem; overflow-x: auto;"><code># 1. Install globally or clone locally
+git clone https://github.com/clemenswan/clembot-doorman.git
+cd clembot-doorman && npm install -g .
+
+# 2. In your new project directory, run L0 Doctor
+doorman doctor</code></pre>
+    </div>
+
+    <p class="reveal d2" style="font-size: 0.9375rem; color: var(--text-secondary); margin-bottom: var(--sp-3);">
+      <strong>Verbatim terminal output on a fresh Claude Code build:</strong>
+    </p>
+
+    <div class="terminal reveal d2" style="margin-bottom: var(--sp-8);">
+      <div class="terminal-bar">Terminal &middot; doorman doctor</div>
+      <pre><code># Your build
+
+`C:\Users\username\my-new-project`
+
+Read-only. Nothing here was executed, sent anywhere, or billed.
+
+## Harness
+
+- **Claude Code** (CLAUDE.md)
+
+## MCP servers this project can reach
+
+None declared. Nothing to grade yet, and nothing to gate.
+
+## Agents
+
+No .claude/agents/ directory.
+
+## The gate
+
+**not installed**
+
+- hook present: no
+- wired in settings.json: no
+- registry present: no
+
+---
+_doorman doctor. Static, local, free. It reports what is here; it does not
+say whether any of it works. That is doorman report and doorman eval._</code></pre>
+    </div>
+
+    <div class="tldr-card reveal d2" style="border-left-color: var(--accent);">
+      <div class="tldr-badge">Wire the Security Gate</div>
+      <p class="tldr-lead" style="margin-bottom: var(--sp-2);">
+        Run <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-doctor"><code>doorman install</code></span> to wire the deterministic offline security hook.
+      </p>
+      <p style="margin: 0; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55;">
+        This copies <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span> into your project, creates <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="allowlist">registry/allowlist.json</span>,
+        and registers the hook in <code>.claude/settings.json</code>. Any unapproved tool call or injected payload
+        is blocked locally at <strong>exit 2</strong> before the agent's context window can be compromised.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 2: NEEDS RECOMMENDER -->
+<section id="step-needs">
+  <div class="wrap">
+    <p class="eyebrow reveal">Step 2 · Prompt-Driven Recommender</p>
+    <h2 class="reveal d1">What does your build actually keep reaching for?</h2>
+    <p class="section-intro reveal d2">
+      Once you work in your project for a few sessions, don't guess which MCPs or skills to install.
+      <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span> reads your local transcript history from <code>~/.claude/projects/</code>,
+      extracts human prompts, maps them across 12 capability taxonomies, and cross-references them against
+      the free public scorecard feed.
+    </p>
+
+    <div class="trio reveal d2" style="margin-bottom: var(--sp-8);">
+      <div>
+        <div class="n">12<small>Taxonomies</small></div>
+        <h3>Concrete Disciplines</h3>
+        <p>Docs lookup, cloud deploy, live web search, browser automation, database queries, observability, payments, comms, and design.</p>
+      </div>
+      <div>
+        <div class="n">0&cent;<small>Local Privacy</small></div>
+        <h3>Prompts Never Leave</h3>
+        <p>Transcripts are parsed and matched locally on your machine. The only network call is an anonymous GET for public grades.</p>
+      </div>
+      <div>
+        <div class="n">3<small>Explicit Verdicts</small></div>
+        <h3>Honest Output</h3>
+        <p><b>UNMET</b> with vetted candidates, <b>blocked</b> with hard-fail reasons, or <b>GAP</b> when the ecosystem lacks coverage.</p>
+      </div>
+    </div>
+
+    <div class="terminal reveal d2" style="margin-bottom: var(--sp-6);">
+      <div class="terminal-bar">Terminal &middot; doorman needs .</div>
+      <pre><code>doorman needs — 42 prompts read from this build’s own history
+  history: ~/.claude/projects/C--my-new-project
+  feed: 24 graded rows
+
+UNMET    Current documentation for a library it does not know
+         14 prompts across 3 sessions  ·  matched "latest docs", "deepwiki"
+         > …can you look up the latest docs for drizzle orm…
+         > …check the documentation for cloudflare workers assets…
+         worth-measuring  DeepWiki MCP           [A (85.7)]  matched "docs"
+                          https://mcp.deepwiki.com/mcp
+         worth-measuring  Cloudflare Docs MCP    [A (94.2)]  matched "documentation"
+                          https://docs.mcp.cloudflare.com/mcp
+
+UNMET    Driving a real browser
+         6 prompts across 2 sessions  ·  matched "screenshot the page", "playwright"
+         > …take a screenshot of the landing page at 390px…
+         worth-measuring  Peek Browser MCP       [C (66.7)]  matched "screenshot"
+                          https://mcp.peek.com
+
+UNMET    Reading the live web
+         5 prompts across 1 sessions  ·  matched "search online"
+         > …search online for the error code…
+         blocked          WebZum Search          [F (49.0)]  matched "search"
+                          hard fail: injection-shaped content in tool:host_site.description
+                          https://webzum.com/api/mcp
+
+GAP      Production errors and logs
+         3 prompts across 1 sessions  ·  matched "tail the logs"
+         > …tail the logs from production…
+         nothing graded covers this. The feed has the gap, not your build.
+
+3 unmet, 1 of them with nothing graded to offer.
+
+What this is: your own prompts, counted, against capability text those
+candidates published about themselves. Nothing here was driven, so
+nothing here is a claim that a server works. `worth-measuring` means
+exactly that — run `doorman eval` with your key and find out.</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 3: EXISTING SKILLS & TOOLS -->
+<section id="step-skills" class="ink">
+  <div class="wrap">
+    <p class="eyebrow reveal">Step 3 · Roster Management</p>
+    <h2 class="reveal d1">What if your build already has a lot of skills?</h2>
+    <p class="section-intro reveal d2">
+      If you already have a rich collection of skills (e.g., in <code>.claude/skills/</code> or <code>.agents/skills/</code>),
+      the most important job of a package manager is <strong>saying no to redundant tools</strong>.
+    </p>
+
+    <div class="refuse-grid reveal d2">
+      <article class="refuse">
+        <span class="refuse-label">1. Automatic Suppression</span>
+        <h3><code>coveredBy(inv)</code> in Needs</h3>
+        <p>
+          When you run <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>, it checks your active MCP servers and tools held by subagents.
+          If a capability is already covered, it prints <code>COVERED &middot; already covered by: [tool]</code>
+          and <strong>suppresses candidate recommendations</strong> so your terminal is never cluttered with tools you already have.
+        </p>
+      </article>
+      <article class="refuse">
+        <span class="refuse-label">2. Adverse Drift Guard</span>
+        <h3><code>already-installed</code> in Watch</h3>
+        <p>
+          <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-watch"><code>doorman watch</code></span> continuously monitors the public feed. Any server your project already runs
+          is tagged <code>already-installed</code>. If an installed server is downgraded or caught with hostile prompt injection
+          in a newer audit, <code>watch</code> alerts you to revoke it from your <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="allowlist">allowlist</span>.
+        </p>
+      </article>
+      <article class="refuse">
+        <span class="refuse-label">3. Frontmatter Arithmetic</span>
+        <h3>30 KB vs 640 KB</h3>
+        <p>
+          Doorman reads only the YAML frontmatter (<code>name</code>, <code>description</code>) of your skills,
+          never the full markdown bodies. In our production vault, reading full bodies was 642 KB; reading frontmatter
+          was 30 KB. Only frontmatter fits safely in a single model turn without blowing out context.
+        </p>
+      </article>
+      <article class="refuse">
+        <span class="refuse-label">4. The Two-Phase Fit Review</span>
+        <h3>Fit First, Money Second</h3>
+        <p>
+          Before spending any tokens or paying a scorecard, <code>node scripts/vet.mjs &lt;target&gt; --dry-run</code>
+          runs the <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="fit-review">Fit Review</span>. If an existing skill already covers the task, the verdict is <code>REDUNDANT</code>,
+          cites your exact skill name, and halts at Phase 1 ($0.00 spent).
+        </p>
+      </article>
+    </div>
+
+    <div class="terminal reveal d2" style="margin-top: var(--sp-8); background: #000; border-color: var(--ink-border);">
+      <div class="terminal-bar">Terminal &middot; node scripts/vet.mjs https://github.com/example/git-mcp --dry-run</div>
+      <pre><code>  candidate  https://github.com/example/git-mcp
+  inventory  C:\Users\username\my-project — 3 agents, 22 skills, 1 mcp servers
+
+  FIT        REDUNDANT
+             Already covered by existing skill: git-pr covers reviewing and merging pull requests.
+
+  Already covered by:
+    - skill git-pr: handles GitHub pull requests and diff review locally
+
+  STOPPED before the paid grade. $0.00 spent.
+           Nothing was sent to the scorecard, and no client was built.</code></pre>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 4: RUNNING AS A SKILL -->
+<section id="step-runtime">
+  <div class="wrap">
+    <p class="eyebrow reveal">Step 4 · Agent Integration</p>
+    <h2 class="reveal d1">Can I just run Doorman as a skill or slash command?</h2>
+    <p class="section-intro reveal d2">
+      Yes. Doorman is engineered to run seamlessly inside your agent loop rather than requiring you
+      to juggle a separate terminal window.
+    </p>
+
+    <div class="arch reveal d2">
+      <div class="arch-node">
+        <div class="arch-tag">Workflow A <span>Interactive CLI</span></div>
+        <h3>The <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="vet"><code>/vet</code></span> Slash Command</h3>
+        <div class="arch-files">.claude/commands/vet.md</div>
+        <p>
+          In Claude Code, drop a command definition into <code>.claude/commands/vet.md</code> that calls
+          <code>node scripts/vet.mjs $ARG --dry-run</code>. When you encounter a tool link in chat,
+          type <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="vet"><code>/vet &lt;url&gt;</code></span>: your agent tests fit against your existing skills and reports
+          the verdict in-line.
+        </p>
+      </div>
+      <div class="arch-node">
+        <div class="arch-tag">Workflow B <span>Isolated Sandbox</span></div>
+        <h3>Dedicated <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Doorman</span> Subagent</h3>
+        <div class="arch-files">.claude/agents/doorman.md</div>
+        <p>
+          Isolate tool adoption from your coding session. The <code>doorman</code> subagent is provisioned with
+          read-only tools and access to the <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="bazantic">Bazantic</span> <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="scorecard">Scorecard</span> gateway. It audits unknown tools in a sandbox
+          and never exposes your primary codebase to unallowlisted code.
+        </p>
+      </div>
+      <div class="arch-node">
+        <div class="arch-tag">Workflow C <span>Multi-Harness</span></div>
+        <h3>Native Harness Skill</h3>
+        <div class="arch-files">.claude/skills/doorman/SKILL.md &middot; .agents/skills/doorman/SKILL.md</div>
+        <p>
+          Equip any agent harness with the Doorman skill. When the agent is tasked with adding a capability
+          (like searching the web or inspecting database schemas), it triggers <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span> or
+          <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-report"><code>doorman report</code></span> to evaluate options before asking you to install them.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STEP 5: WHAT THE DOORMAN CHECKS (PROBES & AUDIT RUBRIC) -->
+<div class="ink" id="probes">
+  <section style="padding: clamp(48px, 6vh, 72px) 0;">
+    <div class="wrap">
+      <p class="eyebrow reveal">Step 5 · What the Doorman Checks</p>
+      <h2 class="reveal d1">Six probes and a second pass</h2>
+      <p class="section-intro reveal d2">
+        Two do not always run. A probe that did not apply is recorded with its
+        reason and left out of the average, rather than counted as a failure the
+        server never earned. A seventh step is not a probe at all: it re-runs the
+        cold open with the recipe, to find out whether the recipe works.
+      </p>
+
+      <div class="probes">
+        <article class="probe reveal">
+          <div class="p-n">01</div>
+          <div><h3>Handshake and inventory</h3><p>Connect, list tools, lint the schemas. A server with no tools exits here without spending anything on probes.</p></div>
+          <p class="p-asks">Is there anything here at all?</p>
+        </article>
+        <article class="probe reveal">
+          <div class="p-n">02</div>
+          <div><h3>Cold open</h3><p>A fresh agent, the server's own descriptions, and a task built from what the subagent actually needed. Scored on first-try tool choice, first-try schema validity, completion, and how much wandering it took.</p></div>
+          <p class="p-asks">Can an agent that has never seen this succeed on the first try?</p>
+        </article>
+        <article class="probe reveal">
+          <div class="p-n">03<span class="cond">conditional</span></div>
+          <div><h3>Ambiguity gauntlet</h3><p>Fires only when two tool descriptions genuinely overlap. The task is worded in the wrong tool's vocabulary, so only a description that draws a real line will save it.</p></div>
+          <p class="p-asks">Do these two descriptions actually distinguish themselves?</p>
+        </article>
+        <article class="probe reveal">
+          <div class="p-n">04</div>
+          <div><h3>Bad input recovery</h3><p>Omit a required parameter on purpose, then measure the error. What is graded is the message, not the agent. "Invalid input" and "missing required <code>repoName</code> (string, e.g. facebook/react)" are the same failure and completely different products.</p></div>
+          <p class="p-asks">Can an agent fix itself from this error in two turns?</p>
+        </article>
+        <article class="probe reveal">
+          <div class="p-n">05<span class="cond">conditional</span></div>
+          <div><h3>Chain test</h3><p>Two steps, where the second must consume a real value the first returned. Servers that look fine tool by tool fall over here. Skipped under three tools.</p></div>
+          <p class="p-asks">Do these outputs compose, or only look like they should?</p>
+        </article>
+        <article class="probe reveal">
+          <div class="p-n">06</div>
+          <div><h3>Injection sniff</h3><p>Scan-only. Reads every description an agent sees before choosing a tool, looking for content shaped like an instruction rather than documentation. It never calls a tool: we do not execute a server to find out whether it is hostile.</p></div>
+          <p class="p-asks">Is this documentation, or is it giving my agent orders?</p>
+        </article>
+        <article class="probe reveal">
+          <div class="p-n">07<span class="cond">second pass</span></div>
+          <div><h3>Guidance delta</h3><p>The same cold task again, with the drafted recipe in the agent's system prompt. Scored as recovered headroom, so a server that was already strong is not punished for having little room to improve. It is kept out of the behavioural average: folding it in would pay a server twice for one recovery.</p></div>
+          <p class="p-asks">We told it exactly what went wrong. Did that fix it?</p>
+        </article>
+      </div>
+
+      <div class="notes reveal" style="margin-top: var(--sp-8);">
+        <p><strong>Two findings cap a grade at F outright:</strong> injection-shaped content in the advertised strings, and a transport that is not TLS. A hard fail overrides everything else, and a hard-failed server with a 90 percent static result is still an F.</p>
+        <p><strong>A layer that did not run is not a zero.</strong> Its weight is removed and the others renormalise. Scoring an unmeasured layer as zero would drag every honest partial audit into a failing band, which is a way of lying with arithmetic.</p>
+        <p><strong>The guidance delta is not a generalisation claim.</strong> The recipe is written from the failures of the run it is then measured against, so of course it fixes that run. What it honestly answers is narrower and more useful: we told the agent, in plain language, exactly what went wrong, and did that fix it? A server that recovers can be put safely behind a recipe. A server that still fails with the correction sitting in front of it cannot be saved by documentation, and that is the finding worth having. The interesting result here is a <em>low</em> score.</p>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- STEP 6: VERIFICATION MATRIX -->
+<section id="step-status">
+  <div class="wrap">
+    <p class="eyebrow reveal">Step 6 · Production Status</p>
+    <h2 class="reveal d1">How built out is this?</h2>
+    <p class="section-intro reveal d2">
+      Here is the honest status of what is tested and running vs. what requires configuration:
+    </p>
+
+    <div class="audits reveal d2">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">Component</th>
+            <th scope="col">Status</th>
+            <th scope="col">Test Suite &amp; Live Proof</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="server" data-label="Component">Static Scanner<small><span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-report"><code>doorman report</code></span></small></td>
+            <td data-label="Status"><span class="band ok">Production Ready</span></td>
+            <td data-label="Proof">Live SSE handshake, tool schema validation, 6-pattern injection detection. Caught WebZum 6,290-char injection in real-time.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Component">Needs Recommender<small><span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span></small></td>
+            <td data-label="Status"><span class="band ok">Production Ready</span></td>
+            <td data-label="Proof">Parses real JSONL transcripts, deduplicates resumed sessions, matches 12 capability taxonomies against live feed.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Component">Harness Doctor<small><span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-doctor"><code>doorman doctor</code></span></small></td>
+            <td data-label="Status"><span class="band ok">Production Ready</span></td>
+            <td data-label="Proof">Zero-dependency scanner for Claude Code, Cursor, Windsurf, Copilot, Gemini. Audits agent-to-tool exposure ratios.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Component">Security Gate<small><span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span></small></td>
+            <td data-label="Status"><span class="band ok">Production Ready</span></td>
+            <td data-label="Proof">180-line offline Bash hook. Passed 29/29 tests in <code>test-gate.sh</code>. Blocks rogue tools and enforces 5s timeout.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Component"><span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="fit-review">Fit Review</span><small>fit-review.mjs</small></td>
+            <td data-label="Status"><span class="band ok">Production Ready</span></td>
+            <td data-label="Proof">Compares candidates against skill frontmatter. Enforces temperature 0, strict JSON schema, and hallucination rejection.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Component">Budget Ledger<small>budget.mjs</small></td>
+            <td data-label="Status"><span class="band ok">Production Ready</span></td>
+            <td data-label="Proof">Enforces per-run ($1) and per-day ($5) caps in USDC on Base; auto-releases unspent reserves on error.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Component"><span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="bazantic">Bazantic</span> Gateway<small><span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="x402">x402</span> &amp; <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp">MCP</span></small></td>
+            <td data-label="Status"><span class="band ok">Live in Production</span></td>
+            <td data-label="Proof"><code>clembot-doorman.bazgateway.com</code> returns live x402 challenge ($0.01 USDC on Base) + MCP SSE tool stream.</td>
+          </tr>
+          <tr>
+            <td class="server" data-label="Component">Multi-Directory Ingest<small>.agents/skills</small></td>
+            <td data-label="Status"><span class="band warn">Configuration Detail</span></td>
+            <td data-label="Proof">Reads <code>.claude/skills/*/SKILL.md</code> by default. Configure <code>DOORMAN_INVENTORY_ROOT</code> for alternate directory layouts.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top: var(--sp-12); text-align: center;">
+      <a class="btn" href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">View GitHub Repository</a>
+      <a class="btn btn-ghost" href="/#flow">Try Interactive Simulator</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>
+      <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> Doorman · built by <a href="/wanessa-labs.html">Wanessa Labs</a> ·
+      powered by <a href="https://bazantic.com" target="_blank" rel="noopener noreferrer">Bazantic</a> ·
+      <a href="/how-it-works.html">How It Works</a> ·
+      <a href="/bazantic.html">Bazantic Integration</a> ·
+      <a href="/judges.html">For Judges</a> ·
+      <a href="/guide.html">Developer Guide</a> ·
+      <a href="/direction.html">Roadmap</a> ·
+      <a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">GitHub</a>
+    </p>
+  </div>
+</footer>

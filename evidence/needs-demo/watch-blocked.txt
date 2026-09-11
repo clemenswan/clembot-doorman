@@ -1,0 +1,114 @@
+doorman watch  https://scorecard.wanessalabs.com/feed
+  inventory: 0 agents, 3 skills, 0 mcp servers, 0 known urls
+  cursor:    (first run: everything graded so far)
+
+NEW TO THIS BUILD  (not yet reviewed against it)  (22)
+  A   86.96  https://zip1.io/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/65eeb1ca-22f8-4b86-9d50-b0e0ebf20f8b/transcripts
+  A    91.8  https://mcp.exa.ai/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/9aebac9b-1548-43df-8288-436ebe5d06ec/transcripts
+  A   85.71  https://mcp.deepwiki.com/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/03737f6a-0a34-46d0-be12-a60781d1ade6/transcripts
+  A      87  https://mcp.openzeppelin.com/contracts/stylus/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/dc1fcb5b-8e27-4b73-bba4-659035ec618c/transcripts
+  A      87  https://mcp.openzeppelin.com/contracts/stellar/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/5854e381-7411-4d8b-9bb6-360cb6b4d36e/transcripts
+  A      85  https://mcp.openzeppelin.com/contracts/cairo/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/a2865925-e8cb-48d5-9268-7075dac0b05b/transcripts
+  A      87  https://mcp.openzeppelin.com/contracts/solidity/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/6563ed63-250b-4874-a0f0-96b817259e90/transcripts
+  B   80.22  https://mcp.resemble.ai/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/9c1b7f3b-77a0-4db7-9b77-83d2ae85ce34/transcripts
+  A   89.19  https://mcp.tweetsave.org/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/c0dee65a-a69c-4ec0-a1be-7128a7f802a0/transcripts
+  A   85.53  https://mcp.remote-mcp.com
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/98652f2a-65e7-40dd-94f6-654238706f29/transcripts
+  C   66.67  https://mcp.peek.com
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/db3167b5-f58c-4cda-b857-5b417d09d749/transcripts
+  A   92.62  https://subwayinfo.nyc/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/24a7165d-bc5b-49cb-a36d-30ae1014677b/transcripts
+  A   89.22  https://mcp.ferryhopper.com/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/91163a86-5d13-4af7-b0fa-29200baa5f80/transcripts
+  A   85.14  https://www.context-awesome.com/api/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/cd28b32a-f909-45a0-aee8-7a589990e7e3/transcripts
+  A   90.14  https://api.findadomain.dev/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/4064ea7c-8fd1-42c3-a1c5-d88d10afa0a6/transcripts
+  A   90.24  https://www.javadocs.dev/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/9781f40d-e950-4826-8e5d-733402078c35/transcripts
+  B   84.51  https://api.manifold.markets/v0/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/45340b43-b451-47a7-9925-b1ab8fa31a43/transcripts
+  A   88.06  https://gitmcp.io/docs
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/c7bf2fc1-d380-47d9-8359-0462ff1f229f/transcripts
+  A   88.29  https://hf.co/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/b01ec0c7-9738-4811-a63e-a9ee6e4cf413/transcripts
+  A   88.57  https://docs.mcp.cloudflare.com/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/f5cd1f1b-9e46-4a84-951b-200c9febe550/transcripts
+  A   88.73  https://mcp.docs.astro.build/mcp
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/7f1a66ed-1ab9-48ec-a1a0-3b91d625e1bd/transcripts
+  A   89.86  https://knowledge-mcp.global.api.aws
+        new to this build, and it passed the static layer
+        2 of 3 layers NOT measured on this grade
+        tape: https://scorecard.wanessalabs.com/grade/9cd66424-2126-466f-965d-143ee3b6534e/transcripts
+
+BLOCKED  (do not adopt)  (1)
+  F      49  https://webzum.com/api/mcp
+        injection-shaped content in 1 location(s): tool:host_site.description
+
+SKIPPED  (3)
+  A   98.63  https://scorecard.wanessalabs.com/mcp
+        graded by the operator of the feed, about themselves
+  A   98.63  https://mcp-scorecard.wanessalabs-042.workers.dev/mcp
+        graded by the operator of the feed, about themselves
+  F      49  https://planted-bad-mcp.wanessalabs-042.workers.dev/mcp
+        a deliberately hostile test fixture, not a candidate
+
+This was a mechanical overlap check, not a fit review. It knows what
+you already have. It does not know whether any of these would help,
+and it has not spent anything to find out.
+
+  doorman report <url>     what it implements, free
+  doorman eval <url> --task <file>   whether it makes YOUR agent better
+
+One-off look: the saved cursor was not moved.

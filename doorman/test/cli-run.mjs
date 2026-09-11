@@ -310,7 +310,7 @@ it('reports a directory that has no harness without inventing one', async () => 
   const fs = await import('node:fs/promises');
   const path = await import('node:path');
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-'));
-  const d = await doctor(dir);
+  const d = await doctor(dir, { env: { ...process.env, HOME: dir, USERPROFILE: dir } });
   truthy(d.ok);
   eq(d.harnesses, []);
   eq(d.servers, []);

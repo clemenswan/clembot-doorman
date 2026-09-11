@@ -1,0 +1,29 @@
+
+doorman needs — 3 prompts read from this build’s own history
+  history: ~/.claude/projects/demo-fullstack
+  feed: 26 graded rows
+
+UNMET    Deploying, and reading back what deployed
+         1 prompts across 1 sessions  ·  matched "cloudflare"
+         > …eck if we need to deploy this worker on cloudflare and run wrangler?
+         worth-measuring  docs-ai-search  [A (88.57)]  matched "cloudflare"
+                          https://docs.mcp.cloudflare.com/mcp
+         worth-measuring  mcp-typescript server on vercel  [A (85.14)]  matched "vercel"
+                          https://www.context-awesome.com/api/mcp
+
+GAP      Issues, pull requests and repository state
+         1 prompts across 1 sessions  ·  matched "github"
+         > fetch recent pull requests on github and check the pr diff
+         nothing graded covers this. The feed has the gap, not your build.
+
+GAP      Querying the database directly
+         1 prompts across 1 sessions  ·  matched "supabase"
+         > run a migration and sql query on our supabase database
+         nothing graded covers this. The feed has the gap, not your build.
+
+3 unmet, 2 of them with nothing graded to offer.
+
+What this is: your own prompts, counted, against capability text those
+candidates published about themselves. Nothing here was driven, so
+nothing here is a claim that a server works. `worth-measuring` means
+exactly that — run `doorman eval` with your key and find out.

@@ -38,7 +38,38 @@ set -uo pipefail
 # in, which in a worktree or a submodule is the wrong repo entirely.
 HOOK_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd -- "$HOOK_DIR/../.." && pwd)"
-REGISTRY_DIR="${DOORMAN_REGISTRY_DIR:-$REPO_ROOT/registry}"
+
+# THE USER'S TRUST LIST OUTRANKS THE ONE WE SHIPPED. Three sources, in order:
+#
+#   1. $DOORMAN_REGISTRY_DIR   explicit, and what every test passes
+#   2. the PROJECT's registry/ the user's list, which we never write
+#   3. beside this script      the default we shipped
+#
+# Order 2 before 3 is what makes invariant 24 structurally true rather than
+# merely observed. As a plugin, this script lives inside the plugin directory
+# and a plugin UPDATE replaces that directory wholesale. If the gate read its
+# allowlist from beside itself, an update would silently replace the user's
+# trust list with our three entries, which is the single most destructive
+# thing this project could do. It cannot now: an update rewrites path 3 and
+# path 2 is not in the plugin at all.
+#
+# A USER-LEVEL list sits between the two, and it exists because the plugin does.
+# A plugin installs at user scope and gates every project on the machine, while
+# a project registry gates one. Without a user level, trusting a server you use
+# everywhere means copying the same file into every repo you own, and the ones
+# you forget fail closed on servers you already trusted. That is a rule nobody
+# can follow, and an unfollowable rule gets switched off.
+REGISTRY_DIR="${DOORMAN_REGISTRY_DIR:-}"
+if [ -z "$REGISTRY_DIR" ]; then
+  USER_REGISTRY="${DOORMAN_HOME:-${HOME:-$USERPROFILE}}/.doorman/registry"
+  if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && [ -f "$CLAUDE_PROJECT_DIR/registry/allowlist.json" ]; then
+    REGISTRY_DIR="$CLAUDE_PROJECT_DIR/registry"
+  elif [ -f "$USER_REGISTRY/allowlist.json" ]; then
+    REGISTRY_DIR="$USER_REGISTRY"
+  else
+    REGISTRY_DIR="$REPO_ROOT/registry"
+  fi
+fi
 ALLOWLIST="$REGISTRY_DIR/allowlist.json"
 DENYLIST="$REGISTRY_DIR/denylist.json"
 
@@ -118,12 +149,24 @@ lookup_decision() {
 
 # Deny wins over allow, always. A server present in both lists is a mistake,
 # and the safe reading of a mistake is "deny".
-deny_decision="$(lookup_decision "$DENYLIST" "$server" 2>/dev/null || true)"
-if [ "$deny_decision" = "deny" ] || [ "$deny_decision" = "allow" ]; then
-  block "doorman: '$server' is on the DENYLIST. Blocking.
-Reason and evidence: registry/denylist.json
+#
+# DENIALS ACCUMULATE ACROSS REGISTRIES; ALLOWS DO NOT. Choosing a narrower
+# registry is a deliberate scoping decision about what you trust, so a user or
+# project allowlist replacing the shipped one is correct. Doing the same to a
+# denylist is not: it silently discards a refusal that was earned by an audit.
+# Writing a user allowlist did exactly that here, and a server that had been
+# explicitly denied came back as merely UNKNOWN. It still blocked, because the
+# gate fails closed, but "unknown" is one allow away from running and "denied"
+# is not, so the distinction is the whole safety margin.
+for dl in "$DENYLIST" "$REPO_ROOT/registry/denylist.json"; do
+  [ -r "$dl" ] || continue
+  deny_decision="$(lookup_decision "$dl" "$server" 2>/dev/null || true)"
+  if [ "$deny_decision" = "deny" ] || [ "$deny_decision" = "allow" ]; then
+    block "doorman: '$server' is on a DENYLIST. Blocking.
+Reason and evidence: $dl
 This server was graded and failed. Do not work around this by calling it another way."
-fi
+  fi
+done
 
 allow_decision="$(lookup_decision "$ALLOWLIST" "$server" 2>/dev/null || true)"
 
@@ -141,8 +184,16 @@ An ungraded MCP server is not a trusted one. Nothing about '$tool_name' has
 been verified: not its tool descriptions, not its error handling, not whether
 its descriptions contain instructions aimed at you.
 
-To grade it:   /vet <server-url>
-Then re-run this call once registry/allowlist.json lists '$server'."
+Measure it (free, no key):   doorman report <server-url>
+Trust it without measuring:  doorman allow $server
+Or ask:                      /doorman
+
+The second one records a DECISION, not a measurement: the entry is written
+with a null grade because nothing graded it. That is a legitimate choice for
+a server you already run, and it is not the same as this server being safe.
+
+A url is not always available: a connector only ever tells this gate the name
+'$server', which is why \`doorman allow\` takes the name."
     ;;
   *)
     block "doorman: '$server' has an unrecognised decision '$allow_decision'. Blocking."

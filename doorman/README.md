@@ -21,10 +21,58 @@ BLOCKED by doorman
 
 ## Install
 
+### As a Claude Code plugin
+
+```bash
+claude plugin marketplace add clemenswan/clembot-doorman
+claude plugin install clembot-doorman
+```
+
+Then, in Claude Code, `/doorman`. That is the whole quickstart: with no
+arguments it reports what is gating this build, which trust list is in force,
+and how many trusted servers were **graded** versus allowed by you. The branches
+are `/doorman allow <server>`, `/doorman check <url>` and `/doorman needs`.
+`/vet <url>` is still there for the full grading path.
+
+**Check what actually loaded.** A manifest can pass `claude plugin validate` and
+still ship components that never register, which is what this plugin did on its
+first build:
+
+```bash
+claude plugin details clembot-doorman
+#   Skills (3)  doorman, doorman-guide, vet
+#   Agents (1)  doorman
+#   Hooks (1)   PreToolUse
+#   MCP servers (1)  scorecard
+```
+
+An `Agents (0)` or `Skills (0)` there means the plugin is broken, not quiet.
+
+This is the shorter path and it removes the two steps that went wrong most
+often: wiring the hook into `settings.json` without `jq`, and file modes, which
+shipped wrong twice. The plugin carries the gate, the `doorman` subagent,
+`/vet`, and the one MCP server the subagent is allowed to call.
+
+**It deliberately does not carry a registry.** A plugin update replaces the
+plugin directory wholesale, so anything shipped inside it is something an
+update can overwrite, and your trust list is not ours to overwrite. The gate
+looks for `$CLAUDE_PROJECT_DIR/registry/allowlist.json` first and only falls
+back to the default beside itself, so the list you curate lives outside the
+plugin and survives every update.
+
+Until you have a registry of your own, the shipped default is in force: three
+graded entries, and everything else blocked. `/vet <server-url>` is how entries
+get added, and `doorman doctor` will tell you which list is actually being read.
+
+### As files, for a harness that has no plugins
+
 ```bash
 git clone <this repo> && cd doorman
 ./install.sh /path/to/your-project
 ```
+
+Cursor, VS Code and anything else that reads `.mcp.json` take this path. It is
+also the right path if you want the registry copied in so you can edit it.
 
 It copies four things, then **drives the installed gate and checks four
 outcomes**:
@@ -148,6 +196,55 @@ you pass `--write`, and even then it refuses to allowlist anything that hard-
 failed, whatever the service says.
 
 The gate reads the file you accepted. That is the point of it being a file.
+
+## What should I install in the first place?
+
+The gate answers "may my agent call this". It does not answer the question you
+have on day one, which is what to install at all.
+
+```bash
+doorman needs .
+```
+
+It reads the prompts already typed into this build, counts them against twelve
+capability buckets, subtracts what you already have, and matches what is left
+against the graded feed.
+
+```
+UNMET    Deploying, and reading back what deployed
+         1 prompts across 1 sessions  ·  matched "cloudflare"
+         > can you check if we need to deploy this worker on cloudflare and run wrangler?
+         worth-measuring  docs-ai-search  [A (88.57)]  matched "cloudflare"
+                          https://docs.mcp.cloudflare.com/mcp
+
+GAP      Querying the database directly
+         1 prompts across 1 sessions  ·  matched "supabase"
+         nothing graded covers this. The feed has the gap, not your build.
+```
+
+Three things about that output are deliberate:
+
+- **`worth-measuring`, never `fits`.** Nothing was driven. A match means the
+  candidate's own published text claims the capability you keep asking for.
+  That is a reason to measure it, not evidence that it works. `doorman eval`
+  is the stage that answers the second question, with your key, on your machine.
+- **A `GAP` is printed, not dropped.** "Nothing graded covers this" is a hole in
+  our catalogue, and it is more useful to you than a filler suggestion.
+- **Your prompts never leave the machine.** The only request is the same
+  anonymous `GET /feed` that `watch` makes, and it says nothing about you. The
+  expensive half of this product is the shared grade; the private half is the
+  fit, and the fit is the half that stays local.
+
+A fresh install has no history of its own. Point it at one you already have:
+
+```bash
+doorman needs /path/to/new-project --history ~/.claude/projects/<an-existing-one>
+```
+
+Precision is measured rather than asserted. Of 94 matches on a real 571-prompt
+corpus, a hand check found 10 false; the taxonomy was tightened and it is now
+1 of 10, with every string in `test/needs-precision.test.mjs` verbatim and a
+ratchet that fails if it regresses.
 
 ## Grading
 

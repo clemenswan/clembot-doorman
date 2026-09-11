@@ -137,11 +137,237 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 .masthead nav a:hover { color: var(--text-primary); }
 .masthead nav a[aria-current="true"] { color: var(--accent); }
 .masthead nav a[aria-current="true"]::after { transform: scaleX(1); }
+.masthead-cta {
+  font-family: var(--font-body) !important;
+  font-size: 0.8125rem !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  padding: 5px 14px !important;
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border);
+  display: inline-flex; align-items: center; gap: 4px;
+  transition: all .2s var(--ease-signature);
+  white-space: nowrap;
+}
+.masthead-cta:hover {
+  background: var(--surface-raised);
+  border-color: var(--accent);
+  color: var(--accent) !important;
+}
+.masthead-cta::after { display: none !important; }
 /* A nav link must never wrap its own text. Two sections were added to an
    already-full nav and the links broke mid-label instead of overflowing, so
    the masthead silently became two lines tall while every scrollWidth and
    document-overflow check still read clean. Wrapping is not overflow. */
 .masthead nav a { white-space: nowrap; }
+
+/* ── masthead dropdown ────────────────────────────────────────────────── */
+.nav-dropdown {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+}
+.nav-dropdown-trigger {
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  position: relative;
+  padding-block: 4px;
+  padding-inline: 0;
+  transition: color .2s var(--ease-signature);
+  white-space: nowrap;
+}
+.nav-dropdown-trigger::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform .3s var(--ease-signature);
+}
+.nav-dropdown-trigger:hover,
+.nav-dropdown:focus-within .nav-dropdown-trigger,
+.nav-dropdown.is-open .nav-dropdown-trigger {
+  color: var(--text-primary);
+}
+.nav-dropdown.is-active .nav-dropdown-trigger {
+  color: var(--accent);
+}
+.nav-dropdown.is-active .nav-dropdown-trigger::after {
+  transform: scaleX(1);
+}
+.dropdown-chevron {
+  transition: transform .2s var(--ease-signature);
+  opacity: 0.7;
+}
+.nav-dropdown:hover .dropdown-chevron,
+.nav-dropdown:focus-within .dropdown-chevron,
+.nav-dropdown.is-open .dropdown-chevron {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 330px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-3);
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity .2s var(--ease-signature), transform .2s var(--ease-signature), visibility .2s;
+  pointer-events: none;
+}
+/* Invisible hover bridge */
+.nav-dropdown-menu::before {
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+.nav-dropdown:hover .nav-dropdown-menu,
+.nav-dropdown:focus-within .nav-dropdown-menu,
+.nav-dropdown.is-open .nav-dropdown-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdown-header {
+  padding: 2px var(--sp-2) var(--sp-2);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-2);
+}
+.dropdown-eyebrow {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dropdown-eyebrow::before {
+  content: "";
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+}
+
+.dropdown-card {
+  display: block;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  text-decoration: none !important;
+  color: inherit !important;
+  transition: all .15s ease;
+  margin-bottom: var(--sp-1);
+}
+.dropdown-card::after { display: none !important; }
+.dropdown-card:hover, .dropdown-card:focus-visible {
+  background: var(--surface-raised);
+  border-color: var(--border);
+}
+.dropdown-card.is-current {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+}
+.dropdown-card .card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  margin-bottom: 2px;
+}
+.dropdown-card .card-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
+}
+.dropdown-card:hover .card-title {
+  color: var(--accent);
+}
+.dropdown-card .card-pill {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.dropdown-card .card-desc {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin: 0;
+}
+.nav-dropdown-menu a {
+  white-space: normal !important;
+}
+
+.dropdown-foot {
+  padding: var(--sp-2) var(--sp-2) 2px;
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.75rem;
+}
+.dropdown-foot a {
+  font-family: var(--font-label);
+  font-size: 0.75rem !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  color: var(--accent) !important;
+  padding: 0 !important;
+  min-height: 0 !important;
+}
+.dropdown-foot a::after { display: none !important; }
+.dropdown-foot a:hover {
+  text-decoration: underline;
+}
+.dropdown-sep {
+  color: var(--text-muted);
+}
+
+@media (max-width: 768px) {
+  .nav-dropdown-menu {
+    position: fixed;
+    top: 58px;
+    left: 16px;
+    right: 16px;
+    width: auto;
+    max-width: calc(100vw - 32px);
+  }
+}
 
 /* The nav scrolls sideways rather than disappearing.
    It used to be hidden under 760px, which was fine at six links. At nine it
@@ -161,7 +387,12 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
     -webkit-overflow-scrolling: touch;
   }
   .masthead nav::-webkit-scrollbar { display: none; }
-  .masthead nav a { white-space: nowrap; flex: none; }
+  .masthead nav a, .masthead nav .nav-dropdown { white-space: nowrap; flex: none; }
+}
+@media (max-width: 480px) {
+  .masthead nav { gap: var(--sp-3); }
+  .wordmark span { font-size: 0.9375rem; }
+  .masthead nav a, .nav-dropdown-trigger { padding-block: 8px; min-height: 44px; display: inline-flex; align-items: center; }
 }
 
 /* ── header: short. The demo is the point, not the prose. ─────────────── */
@@ -199,7 +430,33 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 }
 .stage-head > div:first-child { max-width: 62ch; }
 .stage-head h2 + p { margin: var(--sp-4) 0 0; color: var(--ink-muted); font-size: 0.9375rem; max-width: 58ch; }
-.stage-head .runbar { padding-bottom: 4px; }
+.stage-head .stage-controls { padding-bottom: 4px; }
+.stage-controls { display: flex; flex-direction: column; gap: var(--sp-3); align-items: flex-start; }
+.flow-presets { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.preset-label {
+  font-family: var(--font-label); font-size: 0.8125rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);
+}
+.preset-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--ink-surface); color: var(--ink-body); border: 1px solid var(--ink-border);
+  border-radius: var(--radius-full); padding: 4px 10px; font-family: var(--font-body);
+  font-size: 0.8125rem; font-weight: 500; cursor: pointer;
+  transition: all .2s var(--ease-signature);
+}
+.preset-pill:hover {
+  background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-muted);
+}
+.preset-pill.active {
+  background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-accent);
+}
+.pill-band {
+  font-family: var(--font-label); font-size: 0.75rem; font-weight: 600;
+  padding: 1px 6px; border-radius: var(--radius-full);
+}
+.pill-band.bad { background: oklch(25% 0.08 27); color: var(--ink-red); }
+.pill-band.ok { background: oklch(25% 0.08 152); color: var(--ink-accent); }
+.pill-band.warn { background: oklch(25% 0.08 85); color: var(--ink-amber); }
 
 .runbar { display: flex; gap: var(--sp-3); align-items: center; flex-wrap: wrap; }
 .runbar input {
@@ -405,6 +662,53 @@ button.ghost {
 .vl[data-measured="false"] .vl-track { background: transparent; border-top: 1px dashed var(--ink-border); height: 1px; border-radius: 0; }
 .vl[data-measured="false"] .vl-val { color: var(--ink-muted); font-family: var(--font-label); text-transform: uppercase; letter-spacing: .08em; font-size: .625rem; }
 
+.v-tape-btn {
+  margin-left: auto;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.75rem; font-weight: 600; color: var(--ink-accent);
+  background: var(--ink-surface); border: 1px solid var(--ink-border);
+  padding: 4px 12px; border-radius: var(--radius-full); text-decoration: none;
+  transition: all .2s var(--ease-signature);
+}
+.v-tape-btn:hover {
+  background: var(--ink-border); color: var(--ink-text); border-color: var(--ink-accent);
+}
+.v-tape-btn[hidden] { display: none; }
+
+.verdict-recipe-wrap, .verdict-fail-wrap {
+  border-top: 1px solid var(--ink-border); background: var(--ink-bg);
+}
+.verdict-recipe-wrap[hidden], .verdict-fail-wrap[hidden] { display: none; }
+.verdict-recipe summary, .verdict-fail summary {
+  padding: var(--sp-3) var(--sp-5); cursor: pointer; display: flex; align-items: center; gap: var(--sp-3);
+  font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-body);
+  user-select: none;
+}
+.verdict-recipe summary:hover, .verdict-fail summary:hover { color: var(--ink-text); }
+.badge-recipe {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.6875rem; font-weight: 600; color: var(--ink-accent);
+  background: oklch(25% 0.08 152); padding: 2px 8px; border-radius: var(--radius-full);
+}
+.badge-fail {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.08em;
+  font-size: 0.6875rem; font-weight: 600; color: var(--ink-red);
+  background: oklch(25% 0.08 27); padding: 2px 8px; border-radius: var(--radius-full);
+}
+.recipe-view {
+  margin: 0; padding: var(--sp-4) var(--sp-5);
+  font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.6;
+  color: var(--ink-text); background: var(--ink-bg);
+  border-top: 1px solid var(--ink-border); overflow-x: auto; white-space: pre-wrap;
+}
+.verdict-fail-inner { padding: var(--sp-4) var(--sp-5); }
+.fail-list {
+  margin: var(--sp-2) 0 0; padding-left: var(--sp-4);
+  font-family: var(--font-mono); font-size: 0.75rem; line-height: 1.6; color: var(--ink-text);
+}
+.fail-list li { margin-bottom: 4px; }
+
 /* the roster: which agent ends up holding the tool */
 .roster { margin-top: var(--sp-4); display: grid; gap: var(--sp-2); }
 .roster[hidden] { display: none; }
@@ -482,6 +786,14 @@ button.ghost {
   font-size: .875rem; white-space: nowrap;
   display: inline-block; padding-block: 7px;
 }
+.row-test-btn {
+  background: none; border: none; padding: 0;
+  font-family: inherit; font-size: .875rem; color: var(--accent);
+  text-decoration: underline; text-underline-offset: 2px;
+  cursor: pointer; transition: color .2s var(--ease-signature);
+  white-space: nowrap;
+}
+.row-test-btn:hover { color: var(--accent-hover); }
 .audit-note { margin: var(--sp-6) 0 0; font-size: .9375rem; }
 .audits .num { color: var(--text-muted); }
 /* The flagged row is marked by a rule on its leading edge, not a fill. A
@@ -507,14 +819,17 @@ button.ghost {
   .audits thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
   .audits tr { display: block; border-bottom: 1px solid var(--border); padding: var(--sp-2) 0; }
   .audits tbody tr:last-child { border-bottom: 0; }
-  .audits td { display: flex; justify-content: space-between; gap: var(--sp-4); border-bottom: 0; padding: var(--sp-2) var(--sp-5); }
-  .audits td::before { content: attr(data-label); font-family: var(--font-label); font-size: .6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: .11em; color: var(--text-muted); }
+  .audits td { display: flex; justify-content: space-between; gap: var(--sp-4); border-bottom: 0; padding: var(--sp-2) var(--sp-5); word-break: break-word; overflow-wrap: anywhere; }
+  .audits td code { word-break: break-all; }
+  .audits td::before { content: attr(data-label); font-family: var(--font-label); font-size: .6875rem; font-weight: 600; text-transform: uppercase; letter-spacing: .11em; color: var(--text-muted); flex-shrink: 0; }
   .audits .stat.high::after { display: inline; margin-left: 6px; }
-  /* The server cell is the widest and the only one with a second line. Left
-     to the row's flex rule it puts the name and its detail side by side and
-     both wrap. Stacked, it reads as a heading with a caption. */
-  .audits td.server { display: block; }
-  .audits td.server::before { display: block; margin-bottom: 3px; }
+  /* Cells with multiple sentences or details stack their label above the body */
+  .audits td.server,
+  .audits td[data-label="Proof"],
+  .audits td[data-label="What would settle it"] { display: block; }
+  .audits td.server::before,
+  .audits td[data-label="Proof"]::before,
+  .audits td[data-label="What would settle it"]::before { display: block; margin-bottom: 3px; }
 }
 
 /* ── TAPE MODAL ──────────────────────────────────────────────────────────
@@ -733,7 +1048,7 @@ section { padding: clamp(72px, 11vh, 136px) 0; }
 }
 .arch-tag span { color: var(--accent-mid); text-align: right; }
 .arch-node[data-state="planned"] .arch-tag span { color: var(--s-orange-ink); }
-.arch-node h3 { margin: 0 0 var(--sp-2); font-size: 1.0625rem; }
+.arch-node h3 { margin: 0 0 var(--sp-2); font-size: 1.0625rem; overflow-wrap: anywhere; word-break: break-word; }
 .arch-files {
   margin: 0 0 var(--sp-3); max-width: none; overflow-x: auto; white-space: nowrap;
   font-family: var(--font-mono); font-size: .8125rem; color: var(--text-secondary);
@@ -791,6 +1106,25 @@ section { padding: clamp(72px, 11vh, 136px) 0; }
   padding: clamp(18px,2.4vw,26px); background: var(--ink-surface);
 }
 .judge { border-color: var(--border); background: var(--surface); }
+.track-badge {
+  display: inline-block;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  margin-bottom: var(--sp-2);
+}
+.refuse .track-badge {
+  color: var(--ink-accent);
+  background: var(--ink-surface);
+  border-color: var(--ink-border);
+}
 .refuse h3, .judge h3 { margin: 0 0 var(--sp-3); font-size: 1.0625rem; }
 .refuse p { margin: 0; color: var(--ink-body); font-size: .9375rem; }
 .judge p { margin: 0; color: var(--text-secondary); font-size: .9375rem; }
@@ -833,6 +1167,197 @@ dl.facts dt, dl.facts dd { padding-top: var(--sp-4); border-top: 1px solid var(-
 .c-block { color: var(--ink-red); font-weight: 600; }
 .c-dim { color: var(--ink-muted); }
 
+/* ── Glossary Term Boxes & Callouts ───────────────────────────────────── */
+.term-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  vertical-align: baseline;
+  position: relative;
+  cursor: help;
+  padding: 1px 7px;
+  margin: 0 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  color: var(--text-primary);
+  font-weight: 600;
+  text-decoration: none;
+  line-height: 1.35;
+  transition: border-color .15s var(--ease-signature), background .15s var(--ease-signature), color .15s var(--ease-signature);
+  white-space: nowrap;
+}
+.term-box.is-code {
+  font-family: var(--font-mono);
+  font-size: 0.8125em;
+  letter-spacing: -0.01em;
+}
+.term-box.is-code code {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  color: inherit !important;
+  font-family: inherit;
+  font-size: inherit;
+}
+.term-box.is-term {
+  font-family: var(--font-body);
+  font-size: 0.9375em;
+  font-weight: 600;
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--border));
+}
+.term-box::after {
+  content: "";
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: var(--accent);
+  opacity: 0.6;
+  transition: opacity .15s, transform .15s;
+}
+.term-box:hover,
+.term-box:focus-visible,
+.term-box[data-active="true"] {
+  border-color: var(--accent);
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
+  outline: none;
+}
+.term-box:hover::after,
+.term-box:focus-visible::after,
+.term-box[data-active="true"]::after {
+  opacity: 1;
+  transform: scale(1.3);
+}
+
+/* Dark mode (.ink) adaptations */
+.ink .term-box {
+  border-color: var(--ink-border);
+  background: var(--ink-surface);
+  color: var(--ink-body);
+}
+.ink .term-box.is-code {
+  color: var(--ink-amber);
+}
+.ink .term-box.is-term {
+  color: var(--ink-accent);
+  background: color-mix(in srgb, var(--ink-accent) 12%, var(--ink-bg));
+  border-color: color-mix(in srgb, var(--ink-accent) 30%, var(--ink-border));
+}
+.ink .term-box::after {
+  background: var(--ink-accent);
+}
+.ink .term-box:hover,
+.ink .term-box:focus-visible,
+.ink .term-box[data-active="true"] {
+  border-color: var(--ink-accent);
+  background: var(--ink-raised);
+  color: var(--ink-text);
+  box-shadow: 0 0 0 1px var(--ink-accent);
+}
+
+/* Callout popover */
+.term-popover {
+  position: fixed;
+  z-index: 1000;
+  width: min(340px, calc(100vw - 32px));
+  padding: var(--sp-4) var(--sp-5);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.5;
+  pointer-events: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity .15s ease, transform .15s ease, visibility .15s;
+}
+.term-popover[data-visible="true"] {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+.term-popover.is-ink {
+  background: var(--ink-surface);
+  border-color: var(--ink-border);
+  color: var(--ink-body);
+}
+.popover-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-2);
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  color: var(--accent);
+}
+.term-popover.is-ink .popover-badge { color: var(--ink-accent); }
+.popover-meta {
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  text-transform: none;
+  letter-spacing: normal;
+  white-space: nowrap;
+}
+.term-popover.is-ink .popover-meta { color: var(--ink-muted); }
+.popover-title {
+  font-family: var(--font-display);
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.popover-title code {
+  font-family: var(--font-mono);
+  font-size: 0.9375rem;
+  color: var(--accent);
+}
+.term-popover.is-ink .popover-title { color: var(--ink-text); }
+.term-popover.is-ink .popover-title code { color: var(--ink-amber); }
+.popover-body {
+  font-size: 0.84375rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0;
+}
+.term-popover.is-ink .popover-body { color: var(--ink-body); }
+.popover-foot {
+  margin-top: var(--sp-3);
+  padding-top: var(--sp-2);
+  border-top: 1px solid var(--border);
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.term-popover.is-ink .popover-foot { border-top-color: var(--ink-border); color: var(--ink-muted); }
+.popover-foot code {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--text-primary);
+  text-transform: none;
+}
+.term-popover.is-ink .popover-foot code { color: var(--ink-text); }
+
 footer { padding: var(--sp-16) 0 var(--sp-24); border-top: 1px solid var(--border); }
 footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
 
@@ -858,6 +1383,646 @@ footer p { font-size: .9375rem; color: var(--text-muted); max-width: 66ch; }
   *, *::before, *::after { transition: none !important; animation: none !important; }
   .js .reveal, .js .header .reveal { opacity: 1; transform: none; }
 }
+
+/* ── Story Rail: narrative walkthrough ───────────────────────────────── */
+.story-rail-bar {
+  position: sticky; top: 58px; z-index: 45;
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  padding: 0;
+  transition: background .2s var(--ease-signature);
+}
+.story-rail-bar {
+  /* Six steps do not fit in 390px and the flex row does not wrap, so without
+     this the RAIL widens the document: 410px against a 390px viewport, and
+     every section on the page then scrolls sideways. Measured, not guessed.
+     The rail scrolls itself instead, which is the one case the site's own
+     no-horizontal-scroll rule allows. */
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.story-rail-bar::-webkit-scrollbar { display: none; }
+.story-rail-inner {
+  display: flex; align-items: center; gap: var(--sp-3); height: 42px;
+  width: max-content; min-width: 100%;
+}
+.story-rail-label {
+  font-family: var(--font-label); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted);
+  display: inline-flex; align-items: center; gap: 6px; flex: none;
+}
+.story-dot {
+  width: 6px; height: 6px; border-radius: var(--radius-full);
+  background: var(--accent); flex: none;
+}
+.story-steps {
+  display: flex; align-items: center; gap: 2px;
+  overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none;
+  min-width: 0;
+}
+.story-steps::-webkit-scrollbar { display: none; }
+.story-step {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-body); font-size: 0.8125rem; font-weight: 500;
+  color: var(--text-secondary); text-decoration: none; white-space: nowrap;
+  padding: 4px 8px; border-radius: var(--radius-sm);
+  transition: all .2s var(--ease-signature);
+}
+.story-step:hover {
+  color: var(--text-primary); background: var(--surface-raised);
+}
+.story-step.active {
+  color: var(--accent); font-weight: 600;
+  background: var(--surface-raised);
+}
+.story-step .s-num {
+  font-family: var(--font-label); font-size: 0.6875rem; font-weight: 700;
+  letter-spacing: 0.06em; color: var(--text-muted);
+}
+.story-step.active .s-num {
+  color: var(--accent);
+}
+.s-sep {
+  color: var(--border); font-size: 0.8125rem; font-weight: 400; user-select: none;
+  padding-inline: 1px;
+}
+@media (max-width: 768px) {
+  .story-rail-label { display: none; }
+  .story-rail-inner {
+    margin-inline-end: calc(var(--gutter) * -1);
+    padding-inline: 0 var(--gutter);
+  }
+}
+
+/* Scroll margin offset so hash links don't hide under sticky masthead + story rail */
+section[id], div[id].header, div[id].stage, div[id].ink {
+  scroll-margin-top: 106px;
+}
+
+.product-tabs-bar { display: none; }
+
+/* ── TL;DR Card ──────────────────────────────────────────────────────── */
+.tldr-card {
+  border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  background: var(--surface); border-radius: var(--radius-lg);
+  padding: clamp(20px, 3vw, 32px); margin: 0 0 var(--sp-10);
+}
+.tldr-badge {
+  font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.12em;
+  font-size: 0.75rem; font-weight: 700; color: var(--accent);
+  display: inline-flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-2);
+}
+.tldr-badge::before {
+  content: ""; width: 7px; height: 7px; border-radius: var(--radius-full);
+  background: var(--accent);
+}
+.tldr-lead {
+  font-size: clamp(1.0625rem, 1.4vw, 1.2rem); font-weight: 600;
+  color: var(--text-primary); margin-bottom: var(--sp-6); line-height: 1.45;
+  max-width: none;
+}
+.tldr-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: var(--sp-6); margin-top: var(--sp-4);
+}
+.tldr-item strong { display: block; color: var(--text-primary); margin-bottom: var(--sp-1); font-size: 0.9375rem; }
+.tldr-item p { margin: 0; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; }
+
+/* ── Needs Simulator ─────────────────────────────────────────────────── */
+.needs-sim {
+  background: var(--ink-bg); border: 1px solid var(--ink-border);
+  border-radius: var(--radius-xl); overflow: hidden; padding: clamp(20px, 3vw, 32px);
+  margin-top: var(--sp-8);
+}
+.sim-header {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: var(--sp-4); padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--ink-border);
+}
+.sim-title { display: block; font-family: var(--font-display); font-weight: 700; font-size: 1.125rem; color: var(--ink-text); }
+.sim-subtitle { display: block; font-size: 0.8125rem; color: var(--ink-muted); margin-top: 2px; }
+.sim-presets { display: flex; gap: var(--sp-2); flex-wrap: wrap; }
+.sim-btn {
+  font-family: var(--font-label); font-size: 0.75rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  padding: 6px 14px; border-radius: var(--radius-full);
+  background: var(--ink-surface); color: var(--ink-muted);
+  border: 1px solid var(--ink-border); cursor: pointer;
+  transition: all .2s var(--ease-signature);
+}
+.sim-btn:hover { color: var(--ink-text); border-color: var(--ink-accent); }
+.sim-btn.active { color: var(--ink-bg); background: var(--ink-accent); border-color: var(--ink-accent); font-weight: 700; }
+.sim-prompts {
+  margin-top: var(--sp-4); padding: var(--sp-4);
+  background: var(--ink-surface); border: 1px solid var(--ink-border);
+  border-radius: var(--radius-md);
+}
+.sim-prompts-label { display: block; font-family: var(--font-label); text-transform: uppercase; font-size: 0.6875rem; letter-spacing: 0.1em; color: var(--ink-accent); margin-bottom: var(--sp-2); }
+.sim-prompts-list { display: flex; flex-direction: column; gap: 6px; }
+.sim-prompt-item { font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-body); line-height: 1.4; }
+.sim-prompt-item::before { content: "› "; color: var(--ink-accent); font-weight: bold; }
+
+/* ── Lifecycle Workflow Cards ────────────────────────────────────────── */
+.lifecycle-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--sp-4); margin: var(--sp-8) 0;
+}
+.lifecycle-step {
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: var(--sp-5); background: var(--surface); position: relative;
+}
+.lifecycle-step .step-n {
+  font-family: var(--font-label); font-size: 0.75rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent);
+  margin-bottom: var(--sp-2);
+}
+/* ── The ladder ──────────────────────────────────────────────────────────
+   HTML, not SVG, and deliberately. A 900px viewBox at 390px renders a 12px
+   label at 5px, and this diagram is almost entirely labels. A grid reflows;
+   a canvas scales its text with itself. Recorded as a dead end already.
+
+   Three columns become one at 720px, in this order: command, question, price.
+   Read top to bottom the ladder is the product; read the last column alone it
+   is the business model, which is why the price column is never dropped. */
+.ladder { display: flex; flex-direction: column; gap: var(--sp-3); margin-top: var(--sp-6); }
+.ladder-row {
+  display: grid; grid-template-columns: minmax(120px, 150px) 1fr minmax(150px, 190px);
+  gap: var(--sp-5); align-items: start;
+  border: 1px solid var(--border); border-left-width: 4px;
+  border-radius: var(--radius-lg); background: var(--surface);
+  padding: var(--sp-5) var(--sp-6);
+}
+.ladder-row[data-lane="local"] { border-left-color: var(--border-strong, var(--border)); }
+.ladder-row[data-lane="paid"]  { border-left-color: var(--accent); background: var(--surface-raised); }
+.ladder-row[data-lane="yours"] { border-left-color: var(--s-orange); }
+.ladder-cmd code {
+  font-family: var(--font-mono); font-weight: 700; font-size: 1rem;
+  color: var(--text-primary); background: none; padding: 0;
+}
+.ladder-cmd code::before { content: "doorman "; color: var(--text-secondary); font-weight: 400; }
+.ladder-lvl {
+  display: block; margin-top: 2px; font-family: var(--font-label);
+  text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.6875rem;
+  color: var(--text-secondary);
+}
+.ladder-q strong { display: block; font-size: 0.9375rem; margin-bottom: var(--sp-1); color: var(--text-primary); }
+.ladder-q p { margin: 0; font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; }
+.ladder-cost { text-align: right; }
+.ladder-pill {
+  display: inline-block; font-family: var(--font-mono); font-weight: 700;
+  font-size: 0.8125rem; padding: 2px 10px; border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+}
+.ladder-pill.free  { color: var(--text-secondary); }
+.ladder-pill.paid  { color: var(--accent); border-color: var(--accent); }
+.ladder-pill.yours { color: var(--s-orange-ink); border-color: var(--s-orange); }
+.ladder-where { display: block; margin-top: var(--sp-2); font-size: 0.75rem; color: var(--text-secondary); }
+@media (max-width: 720px) {
+  .ladder-row { grid-template-columns: 1fr; gap: var(--sp-3); padding: var(--sp-4) var(--sp-5); }
+  .ladder-cost { text-align: left; }
+  .ladder-where { display: inline; margin-left: var(--sp-2); }
+}
+
+.lifecycle-step h3 { font-size: 1rem; margin-bottom: var(--sp-2); }
+.lifecycle-step p { font-size: 0.875rem; color: var(--text-secondary); margin: 0; line-height: 1.5; }
+
+/* ── A/B Recipe Comparison ───────────────────────────────────────────── */
+.ab-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--sp-6); margin: var(--sp-8) 0;
+}
+.ab-card {
+  border-radius: var(--radius-lg); padding: clamp(20px, 3vw, 28px);
+  border: 1px solid var(--border);
+}
+.ab-card.raw { background: oklch(98% 0.015 25); border-color: oklch(85% 0.05 25); }
+.ab-card.recipe { background: oklch(98% 0.015 150); border-color: oklch(82% 0.07 150); }
+.ab-card h3 { font-size: 1.125rem; margin-bottom: var(--sp-3); }
+.ab-card.raw h3 { color: var(--s-red); }
+.ab-card.recipe h3 { color: var(--accent); }
+.ab-metric {
+  display: flex; justify-content: space-between; padding: var(--sp-2) 0;
+  border-bottom: 1px solid oklch(0% 0 0 / 0.08); font-size: 0.875rem;
+}
+.ab-metric:last-child { border-bottom: 0; }
+.ab-metric .m-val { font-family: var(--font-mono); font-weight: 600; }
+
+/* ── Progressive Disclosure: Interactive 2-Phase Adoption Funnel ────── */
+.funnel-wrap {
+  margin: var(--sp-8) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-6);
+  max-width: 100%;
+}
+.pipeline-funnel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--sp-6);
+  position: relative;
+  max-width: 100%;
+}
+@media (max-width: 860px) {
+  .pipeline-funnel { grid-template-columns: 1fr; }
+}
+.funnel-phase {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  padding: clamp(18px, 2.5vw, 24px);
+  background: var(--surface);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  transition: border-color .2s var(--ease-signature);
+  min-width: 0;
+  max-width: 100%;
+}
+.funnel-phase.local {
+  border-top: 4px solid var(--border-strong, var(--border));
+}
+.funnel-phase.paid {
+  border-top: 4px solid var(--accent);
+  background: var(--surface-raised);
+}
+.funnel-phase-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-3);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.phase-tag {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+.funnel-phase.paid .phase-tag { color: var(--accent); }
+.phase-cost {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.funnel-phase.paid .phase-cost {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.funnel-nodes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.funnel-node {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-3);
+  padding: var(--sp-3) var(--sp-4);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition: transform .15s, border-color .15s, background .15s;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+  min-width: 0;
+  white-space: normal;
+}
+.funnel-phase.paid .funnel-node {
+  background: var(--surface);
+}
+.funnel-node:hover,
+.funnel-node:focus-visible {
+  transform: translateX(3px);
+  border-color: var(--accent);
+  outline: none;
+}
+.node-idx {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  flex: none;
+  margin-top: 1px;
+}
+.funnel-node:hover .node-idx {
+  background: var(--accent);
+  color: var(--surface);
+  border-color: var(--accent);
+}
+.node-info { flex: 1; min-width: 0; }
+.node-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--sp-1) var(--sp-2);
+  margin-bottom: 2px;
+  min-width: 0;
+}
+.node-title {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  min-width: 0;
+  word-break: break-word;
+}
+.node-title code {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--accent);
+}
+.node-action {
+  font-family: var(--font-label);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+@media (max-width: 480px) {
+  .funnel-phase { padding: var(--sp-3); }
+  .funnel-node { padding: var(--sp-3); }
+}
+.node-desc {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  margin: 0;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* ── Interactive Carousel Component ─────────────────────────────────── */
+.carousel {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+  margin: var(--sp-6) 0;
+  overflow: hidden;
+}
+.carousel-viewport {
+  overflow: hidden;
+  max-width: 100%;
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.ink .carousel-viewport {
+  border-color: var(--ink-border);
+  background: var(--ink-surface);
+}
+.carousel-track {
+  display: flex;
+  transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+}
+.carousel-slide {
+  flex: 0 0 100%;
+  min-width: 100%;
+  max-width: 100%;
+  padding: clamp(20px, 3.5vw, 36px);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+@media (max-width: 480px) {
+  .carousel-slide { padding: var(--sp-4) var(--sp-3); }
+}
+.carousel-slide .ab-grid {
+  grid-template-columns: 1fr;
+  gap: var(--sp-3);
+  margin: var(--sp-3) 0 0;
+}
+.carousel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+.carousel-tag {
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+}
+.ink .carousel-tag { color: var(--ink-accent); }
+.carousel-tag.warn { color: var(--s-orange-ink); }
+.carousel-tag.danger { color: var(--s-red); }
+.ink .carousel-tag.danger { color: var(--ink-red); }
+.carousel-badge {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.ink .carousel-badge {
+  border-color: var(--ink-border);
+  color: var(--ink-muted);
+}
+.carousel-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.2vw, 1.625rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 var(--sp-3);
+  color: var(--text-primary);
+}
+.ink .carousel-title { color: var(--ink-text); }
+.carousel-lead {
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  max-width: 65ch;
+  margin: 0 0 var(--sp-5);
+}
+.ink .carousel-lead { color: var(--ink-body); }
+.carousel-evidence {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--sp-4) var(--sp-5);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+  margin-bottom: var(--sp-4);
+  overflow-x: auto;
+}
+.ink .carousel-evidence {
+  background: var(--ink-bg);
+  border-color: var(--ink-border);
+  color: var(--ink-body);
+}
+.carousel-evidence b { color: var(--accent); }
+.ink .carousel-evidence b { color: var(--ink-accent); }
+.carousel-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--border);
+}
+.ink .carousel-footer { border-color: var(--ink-border); }
+.carousel-impact {
+  font-size: 0.8125rem;
+  color: var(--text-muted);
+}
+.ink .carousel-impact { color: var(--ink-muted); }
+.carousel-impact strong { color: var(--text-primary); }
+.ink .carousel-impact strong { color: var(--ink-text); }
+
+/* Carousel Navigation Bar */
+.carousel-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-4);
+}
+.carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface-raised);
+  padding: 0;
+  cursor: pointer;
+  transition: all .2s;
+}
+.ink .carousel-dot {
+  border-color: var(--ink-border);
+  background: var(--ink-surface);
+}
+.carousel-dot.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.2);
+}
+.ink .carousel-dot.active {
+  background: var(--ink-accent);
+  border-color: var(--ink-accent);
+}
+.carousel-nav-btns {
+  display: flex;
+  gap: var(--sp-2);
+}
+.carousel-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all .15s;
+  font-size: 1rem;
+}
+.ink .carousel-btn {
+  border-color: var(--ink-border);
+  background: var(--ink-surface);
+  color: var(--ink-text);
+}
+.carousel-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ink .carousel-btn:hover:not(:disabled) {
+  border-color: var(--ink-accent);
+  color: var(--ink-accent);
+}
+.carousel-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* ── Progressive Disclosure Accordion Trays ─────────────────────────── */
+.distill-tray {
+  margin-top: var(--sp-5);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  overflow: hidden;
+}
+.ink .distill-tray {
+  border-color: var(--ink-border);
+  background: var(--ink-surface);
+}
+.distill-summary {
+  padding: var(--sp-3) var(--sp-4);
+  font-family: var(--font-label);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ink .distill-summary { color: var(--ink-muted); }
+.distill-summary:hover {
+  color: var(--accent);
+}
+.ink .distill-summary:hover {
+  color: var(--ink-accent);
+}
+.distill-summary::after {
+  content: "›";
+  font-size: 1.25rem;
+  line-height: 1;
+  transition: transform .2s var(--ease-signature);
+}
+.distill-tray[open] .distill-summary::after {
+  transform: rotate(90deg);
+}
+.distill-content {
+  padding: 0 var(--sp-4) var(--sp-4);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  border-top: 1px solid var(--border);
+}
+.ink .distill-content {
+  color: var(--ink-body);
+  border-color: var(--ink-border);
+}
+
 
 /* widget-only: this file is a fragment on its own page, so it owns the frame */
 body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
@@ -893,11 +2058,20 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
             takes the free path through it rather than spending your money.
           </p>
         </div>
-        <div class="runbar">
-          <label for="mcp-url" class="visually-hidden" style="position:absolute;left:-9999px">MCP server URL</label>
-          <input type="url" id="mcp-url" value="https://webzum.com/api/mcp" spellcheck="false">
-          <button class="run" id="run-btn" type="button">Run the flow</button>
-          <button class="run ghost" id="reset-btn" type="button" hidden>Reset</button>
+        <div class="stage-controls">
+          <div class="flow-presets" id="flow-presets" aria-label="Sample MCP servers">
+            <span class="preset-label">Try sample:</span>
+            <button type="button" class="preset-pill active" data-url="https://webzum.com/api/mcp">WebZum <span class="pill-band bad">F &middot; 49</span></button>
+            <button type="button" class="preset-pill" data-url="https://mcp.deepwiki.com/mcp">DeepWiki <span class="pill-band ok">A &middot; 85.7</span></button>
+            <button type="button" class="preset-pill" data-url="https://scorecard.wanessalabs.com/mcp">mcp-scorecard <span class="pill-band ok">A &middot; 98.6</span></button>
+            <button type="button" class="preset-pill" data-url="https://mcp.peek.com">Peek.com <span class="pill-band warn">C &middot; 66.7</span></button>
+          </div>
+          <div class="runbar">
+            <label for="mcp-url" class="visually-hidden" style="position:absolute;left:-9999px">MCP server URL</label>
+            <input type="url" id="mcp-url" value="https://webzum.com/api/mcp" spellcheck="false">
+            <button class="run" id="run-btn" type="button">Run the flow</button>
+            <button class="run ghost" id="reset-btn" type="button" hidden>Reset</button>
+          </div>
         </div>
       </div>
 
@@ -964,7 +2138,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
             <h3>A candidate arrives <span class="tag tag-flow">flow</span></h3>
             <p class="say">Someone proposes adding an MCP server to the build. The question is not whether it works. It is whether it makes this agent better, and what it costs to find out.</p>
           </div>
-          <div class="out" data-out></div>
+          <div class="out" data-out aria-live="polite"></div>
         </article>
 
         <article class="step" data-state="idle" data-step="1" data-node="clembot">
@@ -973,7 +2147,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
             <h3>What you already have <span class="tag tag-flow">flow</span></h3>
             <p class="say">Free, local, read only, and it reads your build before it reads the candidate: which servers you already run, which subagents hold MCP tools, and whether the gate is installed <b>and wired</b>, which are two different states and both of them quiet.</p>
           </div>
-          <div class="out" data-out></div>
+          <div class="out" data-out aria-live="polite"></div>
         </article>
 
         <article class="step" data-state="idle" data-step="2" data-node="doorman">
@@ -982,7 +2156,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
             <h3>The cheap check first <span class="tag tag-flow">flow</span></h3>
             <p class="say">Before spending your own compute on a measurement, spend a cent on the question the static layer can answer alone: does this thing tell your agent to do something you did not ask for. The doorman holds <code>Read</code> and exactly one MCP tool, and that tool is the scorecard.</p>
           </div>
-          <div class="out" data-out></div>
+          <div class="out" data-out aria-live="polite"></div>
         </article>
 
         <article class="step" data-state="idle" data-step="3" data-node="bazantic">
@@ -1001,7 +2175,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
               than dressed up.
             </p>
           </div>
-          <div class="out" data-out></div>
+          <div class="out" data-out aria-live="polite"></div>
         </article>
 
         <article class="step" data-state="idle" data-step="4" data-node="scorecard">
@@ -1014,6 +2188,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
                 <span class="v-band" id="v-band" data-band="A">A</span>
                 <span class="v-score"><span id="v-score">0</span> / 100</span>
                 <span class="v-meta"><span id="v-model">model</span><br><span id="v-sha">hash</span></span>
+                <a href="#" class="v-tape-btn" id="v-tape-btn" hidden>Replay tape</a>
               </div>
               <div class="verdict-layers">
                 <div class="vl" data-measured="false" id="vl-static-row">
@@ -1026,9 +2201,18 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
                   <span class="vl-name">Guidance</span><span class="vl-track"><span class="vl-fill" id="vl-gui"></span></span><span class="vl-val" id="vl-gui-v">not measured</span>
                 </div>
               </div>
+              <div class="verdict-recipe-wrap" id="verdict-recipe-wrap" hidden>
+                <details class="verdict-recipe"><summary><span class="badge-recipe">Drafted Recipe</span> <span id="recipe-server-title">recipe.md</span></summary><pre class="recipe-view" id="recipe-view"></pre></details>
+              </div>
+              <div class="verdict-fail-wrap" id="verdict-fail-wrap" hidden>
+                <div class="verdict-fail-inner">
+                  <span class="badge-fail">Observed Failure Modes</span>
+                  <ul class="fail-list" id="verdict-fail-list"></ul>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="out" data-out></div>
+          <div class="out" data-out aria-live="polite"></div>
         </article>
 
         <article class="step" data-state="idle" data-step="5" data-node="clembot">
@@ -1037,7 +2221,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
             <h3>What the measurement would cost <span class="tag tag-flow">flow</span></h3>
             <p class="say">The answer you actually wanted is two throwaway sandboxes, identical except one install layer, driving your harness on a real task. That is not cheap, so it gets priced <b>before</b> it runs and the turn cap is derived from the budget rather than the budget hoped for afterwards.</p>
           </div>
-          <div class="out" data-out></div>
+          <div class="out" data-out aria-live="polite"></div>
         </article>
 
         <article class="step" data-state="idle" data-step="6" data-node="clembot">
@@ -1060,7 +2244,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
               </div>
             </div>
           </div>
-          <div class="out" data-out></div>
+          <div class="out" data-out aria-live="polite"></div>
         </article>
 
 
@@ -1113,8 +2297,14 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
   if (reduce) { pending.forEach(function (el) { el.classList.add('in'); }); pending = []; }
 
   var masthead = $('masthead');
-  var navLinks = [].slice.call(document.querySelectorAll('#nav a'));
-  var targets = navLinks.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+  var navLinks = [].slice.call(document.querySelectorAll('#nav a:not(.masthead-cta)'));
+  var hashLinks = navLinks.filter(function (a) {
+    var h = a.getAttribute('href');
+    return h && h.charAt(0) === '#';
+  });
+  var targets = hashLinks.map(function (a) {
+    try { return document.querySelector(a.getAttribute('href')); } catch (e) { return null; }
+  }).filter(Boolean);
 
   function onScroll() {
     sweep();
@@ -1124,7 +2314,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
       var top = targets[i].getBoundingClientRect().top - 90;
       if (top <= 0 && top > bestTop) { bestTop = top; best = targets[i]; }
     }
-    navLinks.forEach(function (a) {
+    hashLinks.forEach(function (a) {
       if (best && a.getAttribute('href') === '#' + best.id) a.setAttribute('aria-current', 'true');
       else a.removeAttribute('aria-current');
     });
@@ -1170,10 +2360,51 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
   }
   function out(i, html) { steps[i].querySelector('[data-out]').innerHTML = html; }
 
+  /* ── presets & test buttons ───────────────────────────────────────── */
+  var presetPills = [].slice.call(document.querySelectorAll('.preset-pill'));
+  presetPills.forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      presetPills.forEach(function (p) { p.classList.remove('active'); });
+      pill.classList.add('active');
+      urlInput.value = pill.getAttribute('data-url') || '';
+      run();
+    });
+  });
+
+  urlInput.addEventListener('input', function () {
+    var val = urlInput.value.trim();
+    presetPills.forEach(function (p) {
+      p.classList.toggle('active', p.getAttribute('data-url') === val);
+    });
+  });
+
+  document.addEventListener('click', function (ev) {
+    var btn = ev.target.closest && ev.target.closest('.row-test-btn');
+    if (!btn) return;
+    ev.preventDefault();
+    var testUrl = btn.getAttribute('data-url');
+    if (!testUrl) return;
+    urlInput.value = testUrl;
+    presetPills.forEach(function (p) {
+      p.classList.toggle('active', p.getAttribute('data-url') === testUrl);
+    });
+    var flowEl = document.getElementById('flow');
+    if (flowEl && flowEl.scrollIntoView) {
+      flowEl.scrollIntoView({ behavior: 'smooth' });
+    }
+    run();
+  });
+
   function resetFlow() {
     steps.forEach(function (s) { s.setAttribute('data-state', 'idle'); s.querySelector('[data-out]').innerHTML = ''; });
     verdict.hidden = true;
     roster.hidden = true;
+    var tapeBtn = $('v-tape-btn');
+    if (tapeBtn) { tapeBtn.hidden = true; tapeBtn.removeAttribute('href'); }
+    var recWrap = $('verdict-recipe-wrap');
+    if (recWrap) { recWrap.hidden = true; $('recipe-view').textContent = ''; $('recipe-server-title').textContent = 'recipe.md'; }
+    var failWrap = $('verdict-fail-wrap');
+    if (failWrap) { failWrap.hidden = true; $('verdict-fail-list').replaceChildren(); }
     [].slice.call(roster.querySelectorAll('.agent')).forEach(function (a) { a.setAttribute('data-granted', 'false'); });
     ['static', 'beh', 'gui'].forEach(function (k) {
       $('vl-' + k + '-row').setAttribute('data-measured', 'false');
@@ -1227,51 +2458,68 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
     }
   }
 
+  var runId = 0;
   async function run() {
-    if (running) return;
+    var myRunId = ++runId;
     running = true;
     resetFlow();
     runBtn.disabled = true;
     runBtn.textContent = 'Running';
     diagram.setAttribute('data-running', 'true');
     var url = urlInput.value.trim();
+    if (url && !/^https?:\/\//i.test(url)) {
+      url = 'https://' + url;
+      urlInput.value = url;
+    }
+    presetPills.forEach(function (p) {
+      p.classList.toggle('active', p.getAttribute('data-url') === url);
+    });
 
     // 0 - a candidate is proposed
     setStep(0, 'active');
     await sleep(520);
+    if (myRunId !== runId) return;
     out(0, 'candidate:<br>' + esc(url) + '<br>question: <span class="ok">would this make the build better?</span>');
     await sleep(400);
+    if (myRunId !== runId) return;
     setStep(0, 'done');
 
     // 1 - doctor. Free, local, read-only, and it reads YOUR build first.
     setStep(1, 'active');
     await sleep(500);
+    if (myRunId !== runId) return;
     out(1, 'harness: <span class="ok">claude-code</span><br>mcp servers already running: 3<br>' +
            '27 agents, <span class="ok">1</span> holds MCP tools<br>gate: installed <span class="ok">and wired</span>');
     await sleep(400);
+    if (myRunId !== runId) return;
     setStep(1, 'done');
 
     // 2 - the doorman asks
     setStep(2, 'active');
     await sleep(500);
+    if (myRunId !== runId) return;
     out(2, 'tool: <span class="ok">mcp__scorecard__grade</span><br>' +
            'cheapest layer first: <span class="ok">static</span><br>cost to ask: $0.01');
     await sleep(420);
+    if (myRunId !== runId) return;
     setStep(2, 'done');
 
     // 3 - the gateway. Live and priced, but this page does not pay. The copy
     // beside it says so, and the output must not imply a settlement happened.
     setStep(3, 'active');
     await sleep(460);
+    if (myRunId !== runId) return;
     out(3, '<span class="warn">402 payment required</span><br>10000 base units &middot; $0.01 &middot; base mainnet<br>' +
            '<span class="warn">not paid here: free path taken</span>');
     await sleep(560);
+    if (myRunId !== runId) return;
     setStep(3, 'done');
 
     // 4 - the verdict, for real
     setStep(4, 'active');
     out(4, 'calling the deployed scorecard<br><span class="warn">grading</span>');
     var res = await gradeLive(url);
+    if (myRunId !== runId) return;
 
     if (res.ok) {
       var g = res.grade;
@@ -1281,6 +2529,12 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
       $('v-score').textContent = typeof g.score === 'number' ? g.score.toFixed(2) : '--';
       $('v-model').textContent = g.model || 'unknown model';
       $('v-sha').textContent = (g.evidence_sha256 || '').slice(0, 12) || 'unhashed';
+      if (g.audit_id && $('v-tape-btn')) {
+        var tapeBtn = $('v-tape-btn');
+        tapeBtn.href = API + '/grade/' + encodeURIComponent(g.audit_id) + '/transcripts';
+        tapeBtn.setAttribute('aria-label', 'Replay transcript tape for ' + (g.server_name || shortName(url)));
+        tapeBtn.hidden = false;
+      }
       var L = g.layers || {};
       setLayer('static', L.static_pct);
       setLayer('beh', L.behavioral_pct);
@@ -1289,6 +2543,7 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
              'audit ' + esc(String(g.audit_id || '').slice(0, 8)) +
              (g.hard_fail ? '<br><span class="bad">hard fail: ' + esc(g.hard_fail) + '</span>' : ''));
       await sleep(850);
+      if (myRunId !== runId) return;
       setStep(4, 'done');
     } else if (res.queued) {
       out(4, '<span class="warn">no audit yet, so one was queued</span><br>' +
@@ -1309,11 +2564,14 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
     // a hard-failing server showed the doorman letting it through. That is the
     // opposite of what the gate does.
     var blocked = !!g.hard_fail || g.grade === 'F';
+    var gj = typeof g.grade_json === 'string' ? (function () { try { return JSON.parse(g.grade_json); } catch (e) { return {}; } })() : (g.grade_json || {});
+    var worstFailures = g.worst_failure_modes || gj.worst_failure_modes;
 
     // 5 - price the measurement BEFORE running it. Figures come from
     // cli/cost.mjs estimateEval({runs: 3}), not from a copywriter.
     setStep(5, 'active');
     await sleep(540);
+    if (myRunId !== runId) return;
     if (blocked) {
       out(5, '3 runs per arm on claude-sonnet-5<br>' +
              'worst case <span class="warn">$54.47</span> &middot; typical $3.57<br>' +
@@ -1325,24 +2583,51 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
              'turn cap derived from the budget');
     }
     await sleep(700);
+    if (myRunId !== runId) return;
     setStep(5, 'done');
 
     // 6 - the decision, and it is allowed to be no
     setStep(6, 'active');
     await sleep(520);
+    if (myRunId !== runId) return;
     if (blocked) {
+      if (worstFailures && worstFailures.length && $('verdict-fail-wrap')) {
+        var failWrap = $('verdict-fail-wrap');
+        var failList = $('verdict-fail-list');
+        failList.replaceChildren();
+        worstFailures.forEach(function (f) {
+          var li = document.createElement('li');
+          li.textContent = f;
+          failList.appendChild(li);
+        });
+        failWrap.hidden = false;
+      }
+      var failSummary = '';
+      if (worstFailures && worstFailures.length) {
+        failSummary = '<br><span class="bad">observed failure modes:</span><ul class="fail-list">' +
+          worstFailures.slice(0, 3).map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') +
+          '</ul>';
+      }
       out(6, '<span class="bad">DECLINE</span><br>' +
              'the gate refuses it at exit 2<br>' +
-             'spent <span class="ok">$0.01</span>, avoided <span class="ok">$54.47</span>');
+             'spent <span class="ok">$0.01</span>, avoided <span class="ok">$54.47</span>' +
+             failSummary);
     } else {
       roster.hidden = false;
       $('ra-tools').innerHTML = '<span class="chip">Read</span> <span class="chip">Grep</span> ' +
         '<span class="chip new">' + esc(shortName(url)) + '</span>';
       roster.querySelector('.agent').setAttribute('data-granted', 'true');
+      if (g.recipe_md && $('verdict-recipe-wrap')) {
+        $('recipe-view').textContent = g.recipe_md;
+        var cleanTitle = (shortName(url).replace(/^mcp__|__\*$/g, '') || 'server') + '.recipe.md';
+        $('recipe-server-title').textContent = cleanTitle;
+        $('verdict-recipe-wrap').hidden = false;
+      }
       out(6, '<span class="ok">ADOPT</span>, scoped to one agent<br>' +
              'unchanged: code-reviewer, doorman<br>context added elsewhere: <span class="ok">none</span>');
     }
     await sleep(420);
+    if (myRunId !== runId) return;
     setStep(6, 'done');
 
     stop();

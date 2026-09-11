@@ -4,6 +4,16 @@
  *
  *   doorman report <link>              L1, static implementation report. No key needed.
  *   doorman eval <link> --task <file>  L3, two-arm benchmark in a throwaway sandbox.
+ *   doorman allow <server> [--scope user|project] [--why TEXT] [--dry-run]
+      Trust a server by NAME, which is what the gate shows you when it blocks
+      one. Records a DECISION, not a measurement: basis is operator and the
+      grade stays null, because nothing graded it.
+
+      --scope user (default) writes ~/.doorman/registry and covers every
+      project. --scope project writes ./registry and covers this one.
+      Refuses to reverse a denylist entry.
+
+  doorman needs [path]               read this build's own prompt history, propose servers.
  *   doorman watch [path]               poll the feed for candidates new to THIS build.
  *   doorman discover                   sweep a public directory for candidates. Curate, never enqueue.
  *
@@ -16,6 +26,9 @@ import { evaluate } from './eval.mjs';
 import { doctor, renderDoctor } from './doctor.mjs';
 import { watch, renderWatch, readState, writeState, DEFAULT_API, DEFAULT_STATE } from './watch.mjs';
 import { discover, renderDiscover, writeCandidates } from './discover.mjs';
+import { needs as readNeeds, render as renderNeedsCli } from './needs.mjs';
+import { install, renderInstall } from './install.mjs';
+import { allow, renderAllow, SCOPES } from './allow.mjs';
 
 const VERSION = '0.1.0';
 
@@ -27,6 +40,23 @@ doorman ${VERSION} — measure a candidate, do not just read it
       reach, how many subagents hold MCP tools, and whether the gate is installed
       AND wired (those are different, and both are quiet).
       Read-only, local, free. No model, no container, no network.
+
+  doorman install [path] [--dry-run] [--json]
+      Install the security gate (mcp-gate.sh), doorman subagent, /vet command,
+      and doorman skill into a project, safely wiring .claude/settings.json
+      and initializing the registry without overwriting existing trust lists.
+
+  doorman needs [path] [--history DIR] [--candidates FILE] [--json]
+      L0.5. What this build keeps REACHING for, read from its own prompt
+      history, against what it already has. Then the graded feed, matched on
+      capability text the candidates published about themselves.
+
+      Free, keyless, and the history never leaves the machine: the one request
+      is the same anonymous GET /feed that watch makes.
+
+      A need nothing graded covers is printed as a GAP rather than dropped, and
+      a match is only ever worth-measuring. Nothing here drove anything, so
+      nothing here claims a server will work. Only eval answers that.
 
   doorman report <link> [--out DIR] [--needed-for TEXT]
       L1. The static implementation report: protocol, schemas, annotations, and
@@ -74,6 +104,18 @@ Options
   --help,    -h
 `;
 
+/**
+ * Flags that take NO value. Without this list a boolean flag swallows the
+ * positional after it, so `doorman allow --dry-run myserver` parsed as
+ * `dry-run="myserver"` with no server at all, and `doorman needs --json .`
+ * lost the path and then crashed. The flag-then-path order is the one people
+ * type, and it was the broken one.
+ */
+const BOOLEAN_FLAGS = new Set([
+  'json', 'dry-run', 'all', 'estimate', 'help', 'version', 'allow-network',
+  'static-only', 'no-feed',
+]);
+
 function parseArgs(argv) {
   const out = { _: [] };
   for (let i = 0; i < argv.length; i++) {
@@ -81,7 +123,7 @@ function parseArgs(argv) {
     if (a.startsWith('--')) {
       const key = a.slice(2);
       const next = argv[i + 1];
-      if (next === undefined || next.startsWith('--')) out[key] = true;
+      if (BOOLEAN_FLAGS.has(key) || next === undefined || next.startsWith('--')) out[key] = true;
       else { out[key] = next; i++; }
     } else if (a === '-h') out.help = true;
     else if (a === '-v') out.version = true;
@@ -107,6 +149,48 @@ async function main() {
     if (!d.ok) { console.error(`doctor: ${d.why}`); process.exitCode = 1; return; }
     if (args.json) { console.log(JSON.stringify(d, null, 2)); return; }
     console.log(renderDoctor(d));
+    return;
+  }
+
+  if (cmd === 'install') {
+    const target = args._[1] || process.cwd();
+    const dryRun = Boolean(args['dry-run']);
+    const r = await install(target, { dryRun });
+    if (!r.ok) { console.error(`install: ${r.why}`); process.exitCode = 1; return; }
+    if (args.json) { console.log(JSON.stringify(r, null, 2)); return; }
+    console.log(renderInstall(r));
+    return;
+  }
+
+  if (cmd === 'allow') {
+    const r = allow(args._[1], {
+      scope: typeof args.scope === 'string' ? args.scope : 'user',
+      root: process.cwd(),
+      why: typeof args.why === 'string' ? args.why : null,
+      dryRun: Boolean(args['dry-run']),
+    });
+    if (!r.ok) { console.error(renderAllow(r)); process.exitCode = 2; return; }
+    if (args.json) console.log(JSON.stringify(r, null, 2));
+    else console.log(renderAllow(r));
+    return;
+  }
+
+  if (cmd === 'needs') {
+    let r;
+    try {
+      r = await readNeeds({
+        root: args._[1] || process.cwd(),
+        api: (args.api || DEFAULT_API).replace(/\/+$/, ''),
+        historyDir: typeof args.history === 'string' ? args.history : undefined,
+        candidateFile: typeof args.candidates === 'string' ? args.candidates : 'candidates/smithery.json',
+      });
+    } catch (e) {
+      console.error(`needs: ${e.message}`);
+      process.exitCode = e.code === 3 ? 3 : 1;
+      return;
+    }
+    if (args.json) console.log(JSON.stringify(r, null, 2));
+    else console.log(renderNeedsCli(r));
     return;
   }
 

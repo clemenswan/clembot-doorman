@@ -92,6 +92,13 @@ export function assess(listRow, detail) {
     verified: Boolean(listRow.verified),
     use_count: listRow.useCount ?? null,
     tools: (detail.tools ?? []).length,
+    // The registry's own words about what this does, kept so `doorman needs`
+    // can match it against a build's needs and CITE the text that matched.
+    // Capped because a sweep writes thousands of these and the file is read by
+    // a human. Tool NAMES only: the descriptions are already scanned above and
+    // storing them twice would double a candidate file for no new signal.
+    description: detail.description ? String(detail.description).slice(0, 400) : null,
+    tool_names: (detail.tools ?? []).map((t) => t?.name).filter(Boolean).slice(0, 40),
     // The registry has a security field. On everything sampled it is null.
     registry_security: detail.security ?? null,
     scan: {

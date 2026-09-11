@@ -57,8 +57,12 @@ const head = [
   '<meta name="viewport" content="width=device-width, initial-scale=1">',
   `<title>${title || name} | clembot doorman</title>`,
   description ? `<meta name="description" content="${description}">` : '',
-  '<link rel="icon" href="/favicon-32.png" sizes="32x32">',
-  '<link rel="apple-touch-icon" href="/apple-touch-icon.png">',
+  '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">',
+  '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">',
+  '<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">',
+  '<link rel="preconnect" href="https://fonts.googleapis.com">',
+  '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>',
+  '<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Archivo:wght@400;500;600&family=Barlow+Condensed:wght@500;600&display=swap" rel="stylesheet">',
 ].filter(Boolean).join('\n');
 
 const out = `<!doctype html>
@@ -67,14 +71,18 @@ const out = `<!doctype html>
 ${head}
 <style>
 ${css}
+/* secondary pages have no hero canvas, so the masthead divider is fixed on load */
+.masthead { border-bottom-color: var(--border); }
 /* secondary pages have no hero canvas, so the first section needs its own air */
-#hero-direction { padding-top: var(--sp-9, 3rem); }
+#hero-direction { padding-top: var(--sp-12, 3rem); }
 #hero-direction h1 { max-width: 22ch; }
-.next-head { margin-top: var(--sp-9, 3rem); }
+#rail .refuse-grid { margin-top: var(--sp-8); }
+.next-head { margin-top: var(--sp-12, 3rem); margin-bottom: var(--sp-4, 1rem); }
 </style>
 </head>
 <body>
 ${body}
+<script src="/glossary.js" defer></script>
 </body>
 </html>
 `;

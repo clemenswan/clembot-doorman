@@ -137,6 +137,11 @@ export async function watch({ root, api, since, limit, fetchImpl = fetch }) {
     next_since: feed.next_since ?? null,
     inventory: {
       root: inv.root ?? root,
+      // Counts are reported ALONGSIDE what could be read, never alone. "0
+      // agents" is a fact in a Claude Code project and an artefact of asking
+      // the wrong question in a Cursor one, and a caller has to be able to tell
+      // those apart before trusting "new to this build".
+      coverage: inv.coverage ?? { agents: 'unknown', skills: 'unknown', mcpServers: 'unknown' },
       agents: (inv.agents ?? []).length,
       skills: (inv.skills ?? []).length,
       mcp_servers: (inv.mcpServers ?? []).length,
@@ -154,8 +159,18 @@ export async function watch({ root, api, since, limit, fetchImpl = fetch }) {
 export function renderWatch(r) {
   const out = [];
   out.push(`doorman watch  ${r.api}/feed`);
-  out.push(`  inventory: ${r.inventory.agents} agents, ${r.inventory.skills} skills, ` +
-           `${r.inventory.mcp_servers} mcp servers, ${r.inventory.known_keys} known urls`);
+  const cov = r.inventory.coverage ?? {};
+  const n = (count, seen) => (seen === 'read' ? String(count) : 'unknown');
+  out.push(`  inventory: ${n(r.inventory.agents, cov.agents)} agents, ` +
+           `${n(r.inventory.skills, cov.skills)} skills, ` +
+           `${n(r.inventory.mcp_servers, cov.mcpServers)} mcp servers, ` +
+           `${r.inventory.known_keys} known urls`);
+  if (cov.mcpServers !== 'read') {
+    out.push('  !! No MCP config was readable here, so "new to this build" below');
+    out.push('     means "not found in a config I could read", which is a weaker');
+    out.push('     claim. Everything may already be installed.');
+  }
+  for (const note of r.inventory.notes ?? []) out.push(`  note: ${note}`);
   out.push(`  cursor:    ${r.since_used ?? '(first run: everything graded so far)'}`);
   out.push('');
 

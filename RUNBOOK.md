@@ -65,6 +65,48 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 
 ---
 
+## Test 0: the client half, which needs nothing at all
+
+**Cost: nothing. Needs: no key, no Docker, no `mcpscore`, no runner.** Run this
+first. It is the only test that exercises what a user touches on day one, and
+if it fails, nothing downstream is worth debugging yet.
+
+```bash
+cd doorman
+node cli/doorman.mjs doctor .
+node cli/doorman.mjs needs .
+node cli/doorman.mjs watch . --all
+```
+
+**What each should print, and what a failure means:**
+
+| Command | Expected | If it does not |
+|---|---|---|
+| `doctor` | Your harness, your servers, and whether the gate is installed AND wired | Those are two different lines on purpose. "Installed" with "not wired" is a gate that does nothing, and it is the most common broken state |
+| `needs` | Needs counted from your own prompts, with `UNMET` / `GAP` / `COVERED` | `0 prompts read` means it found no history. Claude Code keeps it under `~/.claude/projects/<path-with-dashes>`; pass `--history DIR` if yours is elsewhere |
+| `watch --all` | Every graded row, classified against your build | A `BLOCKED (do not adopt)` section containing WebZum is the expected output today, with a tape link |
+
+**The one assertion worth making by hand.** `needs` must never print the word
+`fits`, and `watch` must never print it either. Both do a mechanical match and
+neither drove anything, so neither may claim a server will work:
+
+```bash
+node cli/doorman.mjs needs . --json | grep -c '"fits"'     # must be 0
+node cli/doorman.mjs watch . --all --json | grep -c '"fits"' # must be 0
+```
+
+**A fresh machine with no history** is the demo case, and it is supported:
+
+```bash
+node cli/doorman.mjs needs /path/to/brand-new-project \
+  --history ~/.claude/projects/<a-project-you-have-used>
+```
+
+`evidence/needs-demo/` holds verbatim captures of exactly this, with the input
+history committed beside them, so you can diff your run against a known one.
+
+---
+
 ## Test 1: the grader alone
 
 **Free. No key, no token, no network beyond the server being graded.** This

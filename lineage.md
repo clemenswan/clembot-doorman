@@ -1,10 +1,84 @@
 ---
 project: clembot-doorman
 cluster: agency
-updated: 2026-09-08
+updated: 2026-09-11
 ---
 
 # Lineage
+
+## 2026-09-11 - Session 17: the day-one question, a plugin, and a page that lied
+
+**The product gained the stage it was missing.** `doctor` reads what a build HAS,
+`watch` reads what was graded lately. Neither answers what to install, and `watch`
+refuses to on purpose: its own header says it must never emit the word `fits`.
+`doorman needs` reads a third thing, the prompts already typed into the build. It
+counts them against twelve capability buckets, subtracts what is installed, and
+matches the rest against the graded feed. Free, keyless, and the prompts never
+leave the machine: the one request is the same anonymous `GET /feed` that `watch`
+makes. Proof: `3410adab`.
+
+**Two precision failures, both found by reading OUTPUT rather than code.** 1548 of
+1656 `user` records in a real transcript directory are tool results, hook
+attachments, compaction summaries or expanded slash-command bodies. Counting them
+inflated every need roughly threefold and quoted skill files back at the user as
+evidence of their own intent. Then, of 94 matches on the cleaned 571-prompt
+corpus, a hand check found 10 false, in four classes: the product name that is
+also an English word (64px slack, no notion of a round winner), the filesystem
+path that is not an ask (.obsidian/), the capability named in order to REJECT it
+(I would like to avoid supabase), and the plain over-broad term (the worker,
+meaning a subagent). Now 1 of 10, ratcheted, every string in the suite verbatim.
+Three mutants checked and caught.
+
+**Then the fix broke something better than it fixed.** The guard that rejects
+`.obsidian/` as a path also rejected `docs.mcp.cloudflare.com`, hiding the
+highest-graded candidate in the entire run. A leading dot and an interior dot are
+different things, and there is a test saying so now. The same commit split the
+matching threshold in two: prose needs precision, because `search` would match
+"search the codebase", and a product name does not, because nobody names a server
+after an incidental verb. Holding both to the prose threshold had made the GRADED
+half of the catalogue match worst, which is exactly backwards. Proof: `bf550798`.
+
+**The front page published six measurements that never happened.** The Bazantic
+Recipe A/B card printed turn counts, token counts and first-try success rates for
+a comparison no run had ever executed. Those figures appear nowhere in this repo,
+there is no eval output directory, and no ANTHROPIC_API_KEY has ever been
+supplied. Every GRADE on the page was real and was checked row by row against the
+live feed; it was the A/B numbers that were invented. Replaced with the honest
+statement and the real cost from `estimateEval`: $54.47 worst case for three runs
+per arm on Sonnet, $3.57 typical, $18.16 on Haiku. Proof: `1828d825`.
+
+**The neighbouring panel is now generated, not pasted.** `scripts/build-sim.mjs`
+rewrites it from verbatim captures in `evidence/needs-demo/`, with the exact input
+history committed beside each one. Its first version showed a thirteenth need that
+does not exist, four verdict words the tool cannot emit, and filed the WebZum F
+under `needs` when it is `watch` that finds it. A stale panel is now a failing
+diff rather than something a judge notices first.
+
+**Invariant 24 did not survive becoming a plugin.** It said the INSTALLER must
+never overwrite a registry. A plugin update replaces the plugin directory
+wholesale, and the gate resolved its registry relative to its own script, so as a
+plugin an update would have silently replaced the user's trust list with our three
+entries. Resolution order is now explicit (`$DOORMAN_REGISTRY_DIR`, then the
+project's registry, then the shipped default) and the user's list lives where the
+plugin cannot reach it. Now invariant 27, with four gate tests asserting the ORDER
+rather than one outcome, and two mutants checked. Both manifests were verified
+with `claude plugin validate` rather than from memory of the format, per the
+recorded lesson about vendor docs describing software that does not exist.
+Proof: `dca6b712`.
+
+**Verification this session:** 382 doorman unit across 14 files, 33 gate, 16
+install, poller green, both plugin manifests validate, site layout and contrast
+clean at 1440/1280/900/390 with a lowest new pair of 6.34:1. The contrast probe
+was wrong twice before it was right, and both times it was caught by a CONTROL
+element that had already shipped scoring identically to the new work. It is
+committed now as `scripts/check-site.mjs`, with that control assertion built in
+and mutation-checked, so it is not rebuilt a fourth time.
+
+**Hazard, recorded because it recurred:** two sessions edited `site/index.html`
+concurrently. Handled by committing the other session's work unmodified as its own
+checkpoint (`ff0831cf`) before editing, so the diffs stay separable and neither is
+lost. A 390px overflow introduced by that session was found by the render check
+and fixed in the same pass.
 
 ## 2026-09-10 - Session 16, a sweep, and the number that stopped it
 

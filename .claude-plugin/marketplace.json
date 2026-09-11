@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "clembot-doorman",
+  "description": "Measure a tool before your agent is allowed to use it.",
+  "owner": {
+    "name": "Clemens Wan",
+    "url": "https://github.com/clemenswan"
+  },
+  "plugins": [
+    {
+      "name": "clembot-doorman",
+      "description": "A PreToolUse gate that blocks MCP servers not on your trust list, plus the commands that decide what belongs on it.",
+      "source": "./doorman",
+      "category": "security"
+    }
+  ]
+}

@@ -166,6 +166,94 @@ else
   pass=$((pass + 1))
 fi
 
+echo
+echo "-- whose trust list wins (the plugin case) --"
+#
+# As a plugin, this gate lives inside a directory that a plugin UPDATE replaces
+# wholesale. If it read its allowlist from beside itself, an update would
+# silently swap the user's trust list for ours. These four cases are the whole
+# reason the resolution order exists, so they assert the order rather than just
+# the outcome.
+
+PROJ="$(mktemp -d)"
+mkdir -p "$PROJ/registry"
+# The user's list: trusts `mine`, and says nothing about `scorecard`.
+printf '{"servers":{"mine":{"decision":"allow","grade":"A","score":90,"audit_id":"x"}}}' \
+  > "$PROJ/registry/allowlist.json"
+printf '{"servers":{}}' > "$PROJ/registry/denylist.json"
+
+run 0 "the project's own allowlist is used when CLAUDE_PROJECT_DIR is set" \
+  "$(payload mcp__mine__search)" "CLAUDE_PROJECT_DIR=$PROJ"
+
+run 2 "and a server only WE trust is blocked, because our list is not in play" \
+  "$(payload mcp__scorecard__grade)" "CLAUDE_PROJECT_DIR=$PROJ"
+
+# Same call, no project registry: falls back to the one shipped beside the gate.
+EMPTY="$(mktemp -d)"
+run 0 "with no project registry, the shipped default is used" \
+  "$(payload mcp__scorecard__grade)" "CLAUDE_PROJECT_DIR=$EMPTY"
+
+# The explicit override still outranks both, which is what every other test here
+# depends on and what install.sh's own verification passes.
+run 2 "an explicit DOORMAN_REGISTRY_DIR still outranks the project" \
+  "$(payload mcp__mine__search)" "CLAUDE_PROJECT_DIR=$PROJ" "DOORMAN_REGISTRY_DIR=$HERE/registry"
+
+rm -f "$PROJ/registry/allowlist.json" "$PROJ/registry/denylist.json"
+rmdir "$PROJ/registry" "$PROJ" "$EMPTY" 2>/dev/null
+
+echo
+echo "-- a user-level list, and denials that survive it --"
+#
+# The plugin installs at USER scope and gates every project, so trusting a
+# server you use everywhere cannot mean copying a file into every repo you own.
+# Hence a user-level registry. Writing one exposed the bug these cases exist
+# for: it replaced the shipped DENYLIST too, and a server that had been
+# explicitly denied came back as merely UNKNOWN. It still blocked, because the
+# gate fails closed, but unknown is one allow away from running and denied is
+# not. Allows are scoped; denials accumulate.
+
+UHOME="$(mktemp -d)"
+mkdir -p "$UHOME/.doorman/registry"
+printf '{"servers":{"my_connector":{"decision":"allow","grade":null,"basis":"operator"}}}' \
+  > "$UHOME/.doorman/registry/allowlist.json"
+printf '{"servers":{}}' > "$UHOME/.doorman/registry/denylist.json"
+
+run 0 "a server allowed in the USER list passes" \
+  "$(payload mcp__my_connector__do)" "DOORMAN_HOME=$UHOME" "HOME=$UHOME"
+
+run 2 "a server in no list is still unknown, and still blocked" \
+  "$(payload mcp__nowhere__do)" "DOORMAN_HOME=$UHOME" "HOME=$UHOME"
+
+# The one that matters. The user denylist is EMPTY and must not erase ours.
+out_deny="$(printf '%s' "$(payload mcp__planted-bad__notes)" \
+  | env "DOORMAN_HOME=$UHOME" "HOME=$UHOME" bash "$GATE" 2>&1)"
+code_deny=$?
+if [ "$code_deny" = 2 ] && printf '%s' "$out_deny" | grep -q 'DENYLIST'; then
+  printf '  PASS  %s\n' "an audited denial survives a user list that omits it"
+  pass=$((pass + 1))
+else
+  printf '  FAIL  %s (exit %s)\n        %s\n' \
+    "an audited denial survives a user list that omits it" "$code_deny" \
+    "$(printf '%s' "$out_deny" | head -n 1)"
+  printf '        a denial that degrades to UNKNOWN is one allow away from running\n'
+  fail=$((fail + 1))
+fi
+
+# Precedence: a project list still beats the user list.
+PROJ2="$(mktemp -d)"
+mkdir -p "$PROJ2/registry"
+printf '{"servers":{"proj_only":{"decision":"allow"}}}' > "$PROJ2/registry/allowlist.json"
+printf '{"servers":{}}' > "$PROJ2/registry/denylist.json"
+run 0 "a project list outranks the user list" \
+  "$(payload mcp__proj_only__do)" "CLAUDE_PROJECT_DIR=$PROJ2" "DOORMAN_HOME=$UHOME" "HOME=$UHOME"
+run 2 "and the user list does not leak into a project that has its own" \
+  "$(payload mcp__my_connector__do)" "CLAUDE_PROJECT_DIR=$PROJ2" "DOORMAN_HOME=$UHOME" "HOME=$UHOME"
+
+rm -f "$UHOME/.doorman/registry/allowlist.json" "$UHOME/.doorman/registry/denylist.json" \
+      "$PROJ2/registry/allowlist.json" "$PROJ2/registry/denylist.json"
+rmdir "$UHOME/.doorman/registry" "$UHOME/.doorman" "$UHOME" "$PROJ2/registry" "$PROJ2" 2>/dev/null
+
+echo
 # Static check: never resolve paths through the ambient git repo.
 if printf '%s' "$code_only" | grep -q 'rev-parse'; then
   printf '  FAIL  the gate resolves paths via git, which points at the wrong repo in a worktree\n'

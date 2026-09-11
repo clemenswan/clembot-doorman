@@ -1,0 +1,31 @@
+
+doorman needs — 3 prompts read from this build’s own history
+  history: ~/.claude/projects/demo-research
+  feed: 26 graded rows
+
+UNMET    Current documentation for a library it does not know
+         2 prompts across 1 sessions  ·  matched "deepwiki", "read the docs"
+         > search the web for the latest deepwiki documentation on mcp servers
+         > read the docs for astro to check how content collections work
+         worth-measuring  javadocs.dev  [A (90.24)]  matched "javadocs"
+                          https://www.javadocs.dev/mcp
+         worth-measuring  Astro Docs server  [A (88.73)]  matched "docs"
+                          https://mcp.docs.astro.build/mcp
+         worth-measuring  docs-ai-search  [A (88.57)]  matched "docs"
+                          https://docs.mcp.cloudflare.com/mcp
+
+UNMET    Reading the live web
+         2 prompts across 1 sessions  ·  matched "search the web", "search online"
+         > search the web for the latest deepwiki documentation on mcp servers
+         > search online for a competitive analysis of ai developer tools
+         worth-measuring  exa-search-server  [A (91.8)]  matched "search"
+                          https://mcp.exa.ai/mcp
+         worth-measuring  docs-ai-search  [A (88.57)]  matched "search"
+                          https://docs.mcp.cloudflare.com/mcp
+
+2 unmet, 0 of them with nothing graded to offer.
+
+What this is: your own prompts, counted, against capability text those
+candidates published about themselves. Nothing here was driven, so
+nothing here is a claim that a server works. `worth-measuring` means
+exactly that — run `doorman eval` with your key and find out.

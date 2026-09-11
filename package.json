@@ -1,7 +1,7 @@
 {
   "name": "clembot-doorman",
   "version": "0.1.0",
-  "description": "Measure whether a candidate tool actually helps YOUR agent, in a throwaway sandbox, on your machine.",
+  "description": "The Package Manager & Security Doorman for Claude Code: inspect your build, recommend vetted MCPs from prompt history, and block rogue tools before context.",
   "homepage": "https://clembot-doorman.wanessalabs.com",
   "type": "module",
   "bin": {
@@ -31,5 +31,24 @@
     "The bin points into doorman/cli/ rather than duplicating it, and",
     "report.mjs resolves the scorecard runner at runtime rather than assuming",
     "the author's directory layout."
+  ],
+  "files": [
+    "doorman/cli",
+    "doorman/src",
+    "doorman/registry",
+    "doorman/hooks",
+    "doorman/agents",
+    "doorman/commands",
+    "doorman/skills",
+    "doorman/scripts",
+    "doorman/recipes",
+    "doorman/.claude",
+    "doorman/.claude-plugin",
+    "doorman/.mcp.json",
+    "doorman/install.sh",
+    "doorman/README.md",
+    "doorman/package.json",
+    ".claude-plugin",
+    "WALKTHROUGH.md"
   ]
 }

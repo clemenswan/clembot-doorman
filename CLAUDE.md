@@ -168,6 +168,32 @@ These are not preferences. Breaking one silently makes the product dishonest.
     invariant 2 applied to a write path instead of to grade math, and a test
     counts the statement in `src/` and fails at two.
 
+27. **The user's trust list outranks the one we shipped, structurally.** The
+    gate resolves its registry in a fixed order: `$DOORMAN_REGISTRY_DIR`, then
+    `$CLAUDE_PROJECT_DIR/registry`, then the copy beside the script. Invariant
+    24 said the INSTALLER must never overwrite a registry; as a plugin that is
+    not enough, because a plugin update replaces the plugin directory wholesale
+    and the gate used to read the allowlist sitting next to itself. The user's
+    list now lives somewhere the plugin cannot reach. Four gate tests assert the
+    ORDER rather than one outcome, and `plugin-manifest.test.mjs` fails if the
+    registry ever becomes a declared plugin component.
+
+28. **`needs` counts prompts, never tool results.** 1548 of 1656 `user` records
+    in a real transcript directory are tool results, hook attachments,
+    compaction summaries or expanded slash-command bodies. Counting them
+    inflates every need roughly threefold and quotes skill files back at the
+    user as evidence of their own intent. `isRealPrompt()` is the one place that
+    rule lives, and the filters are structural fields rather than text sniffing.
+
+29. **A match is `worth-measuring`, never `fits`.** This is invariant 9 pointed
+    at the recommendation layer. `needs` drives nothing, so a match means only
+    that a candidate's own published text claims a capability the build keeps
+    asking for. A need with no candidate prints as `GAP` rather than being
+    dropped, because a hole in our catalogue is information and silence is not.
+    Prompt matching and catalogue matching use different thresholds on purpose:
+    prose needs precision (`search` would match "search the codebase"), a
+    product name does not (`exa-search-server` is unambiguous).
+
 ## Testing
 
 **End-to-end proof lives in `RUNBOOK.md`**, not here. This section is the
@@ -185,8 +211,8 @@ cd mcp-scorecard && npm test              # 228 unit
 node test/smoke-grade.mjs                 # grades a live public server
 node test/smoke-api.mjs                   # 75 assertions, needs wrangler dev
 node test/smoke-x402.mjs                  # 20, needs wrangler dev with PAYMENTS_REQUIRED
-cd ../doorman && node test/run.mjs        # 296, all offline
-bash test-gate.sh                         # 29 adversarial
+cd ../doorman && node test/run.mjs        # 382, all offline
+bash test-gate.sh                         # 33 adversarial
 bash test-install.sh                      # 16, installs into temp dirs
 node test-poller.mjs
 ```

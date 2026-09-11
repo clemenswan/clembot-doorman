@@ -219,6 +219,45 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
       snapshot not history graft. `clembot-doorman-project.md` held back.
 - [x] **Deployed and verified.** `60a25dbd`, Production, source `e088dca`.
 
+## Done (2026-09-11, session 17)
+
+- [x] **`doorman needs`: the day-one question.** Reads the prompts already typed
+      into a build, counts them against twelve capability buckets, subtracts what
+      is installed, matches the rest against the graded feed. Free, keyless, and
+      the prompts never leave the machine. `doctor` reads what a build HAS and
+      `watch` reads what was graded lately; neither answered what to install, and
+      `watch` refuses to on purpose.
+- [x] **Precision measured, not asserted.** 1548 of 1656 `user` records in a real
+      transcript directory are tool results, not prompts; counting them inflated
+      every need roughly threefold. Then 10 of 94 matches on the cleaned corpus
+      were false by hand check, now 1 of 10 with a ratchet and every string in the
+      suite verbatim. Three mutants checked.
+- [x] **The graded catalogue matches on a different threshold than prose.**
+      `search` must be rejected against a prompt and accepted against
+      `exa-search-server`. Holding both to the prose threshold made the A-graded
+      Exa and Astro Docs servers invisible for exactly the needs they serve.
+- [x] **Shipped as a Claude Code plugin.** `.claude-plugin/plugin.json` plus a
+      marketplace entry, both verified with `claude plugin validate`. The manifest
+      POINTS AT the existing payload rather than duplicating it, so the plugin and
+      `install.sh` cannot drift.
+- [x] **Invariant 27: the user's trust list outranks the shipped one.** Invariant
+      24 covered the installer; a plugin update replaces the plugin directory
+      wholesale, and the gate read its allowlist from beside itself. Resolution
+      order is now explicit, with four gate tests asserting the ORDER and two
+      mutants checked.
+- [x] **The front page stopped publishing numbers nothing measured.** Six
+      fabricated A/B figures removed and replaced with the honest statement plus
+      the real cost from `estimateEval`. The recommender panel beside it is now
+      GENERATED from committed captures in `evidence/needs-demo/`.
+- [x] **The six-stage ladder replaces the four-stage grid**, with the price column
+      carrying the business model. HTML not SVG, per the recorded dead end.
+- [x] **`scripts/check-site.mjs` committed.** Layout at four widths plus contrast,
+      with the control-element assertion that caught a broken probe twice.
+      Mutation-checked.
+- [x] **RUNBOOK gains Test 0**, the only test that needs no key, no Docker, no
+      `mcpscore` and no runner, and the only one that exercises what a user
+      touches on day one.
+
 ## Not done, and honest about it
 
 - [ ] **The four model-driven probes have never run against a live model.** No
@@ -325,3 +364,38 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
 Chain test, then site polish, then the ambiguity gauntlet. Guidance delta is no
 longer in the cut order: it is built, and running it costs a key, not a day.
 Never cut: cold open, the hook, the payment on camera, the planted F.
+
+---
+
+## Long-Term Extensibility Roadmap: The Universal Agent Package Manager
+
+Clembot Doorman is built to scale from a single-project security gate into a decentralized package manager and registry for autonomous agents across all harnesses.
+
+### Phase 1: Production Core & Gate (Shipped & Live)
+- [x] **Zero-Dependency Security Hook**: 180-line deterministic bash hook (`mcp-gate.sh`), exit 2, fails closed, 29/29 tests.
+- [x] **Harness & Environment Doctor**: `doorman doctor` audits Claude Code, Cursor, Windsurf, Copilot, Gemini.
+- [x] **Prompt-Driven Needs Recommender**: `doorman needs` parses real session transcripts, maps to 12 capability taxonomies, and matches against public feeds.
+- [x] **Static Injection Scanner**: `doorman report` detects prompt injection, unprompted competitor steering, and schema bloat.
+- [x] **Cross-Platform Node Installer**: `doorman install [target]` safely deploys hooks, subagents, commands, and skills with zero clobbering.
+- [x] **Live Bazantic Gateway**: Active at `clembot-doorman.bazgateway.com` with x402 challenge ($0.01 USDC on Base) and live MCP SSE tool stream.
+- [x] **Public Feed & Scorecard**: 24+ live audited servers with public tape replay at `scorecard.wanessalabs.com/feed`.
+
+### Phase 2: Continuous Feed Subscription & Adverse Drift Watch (Q4 2026)
+- [ ] **Background Watch Poller**: Automated recurring subscription daemon (`doorman watch --poll`) notifying developers when trusted tools suffer adverse security demotions.
+- [ ] **Automated Recipe Regeneration**: Live telemetry detecting when an upstream MCP server releases updated schemas, automatically testing and redrafting `recipe.md`.
+- [ ] **Webhooks & Notification Channels**: Native alerts to Slack, Discord, and GitHub PR comments when new capabilities matching project needs are published.
+
+### Phase 3: Multi-Harness Native Extensibility (Q4 2026 - Q1 2027)
+- [x] **Universal Skill Ingest**: Auto-discovery across `.claude/skills`, `.agents/skills`, and `skills/` using frontmatter arithmetic (30 KB vs 640 KB).
+- [ ] **Cursor & VS Code Extension**: Native sidebar UI displaying Doorman doctor status, pending approvals, and in-editor `/vet` actions.
+- [ ] **Google Antigravity & OpenCode Adapter**: Plug-and-play hook execution for Python SDK and agy agent harnesses.
+- [ ] **Windsurf & Copilot Hook Wrappers**: Standardized PreToolUse adapters for workspace-level command interceptors.
+
+### Phase 4: Decentralized Trust & Micropayment Settlement (Q1 2027)
+- [ ] **On-Chain Cryptographic Anchoring**: Replace anchor stub with live SHA-256 evidence bundle anchoring on Hedera Consensus Service / 0G Network.
+- [ ] **Automated Wallet Facilitator**: Connect Coinbase AgentKit / ERC-4337 smart account on Base for zero-human-intervention audit settlement under strict spend caps.
+- [ ] **Decentralized Allowlist Registry**: Sync peer-to-peer allowlists via IPFS/ENS, allowing engineering teams to subscribe to verified team-wide security registries.
+
+### Phase 5: Autonomous Self-Healing Agent Mesh (Q2 2027)
+- [ ] **Ephemeral Just-In-Time Tool Provisioning**: Agents provision sandbox-isolated MCP servers for single tasks, execute strictly behind pinned recipes, and teardown tools upon completion.
+- [ ] **Autonomous Bug-Bounty Network**: Continuous adversarial fuzzing of public MCP directories, automatically reporting injection vulnerabilities and funding discoveries via x402 bounties.

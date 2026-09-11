@@ -36,7 +36,13 @@ newdir() { mktemp -d 2>/dev/null || mktemp -d -t doorman; }
 # A copy of the repo we can sabotage without touching the real one.
 stage() {
   local s; s="$(newdir)"
+  # The payload moved out of .claude/ when this became a plugin: `agents/` and
+  # `commands/` are plugin-root conventions now, and install.sh maps them INTO
+  # the target's .claude/. A stage that copies only .claude/ stages a BROKEN
+  # installer, which then fails for the wrong reason and takes an unrelated
+  # assertion down with it.
   cp -r "$HERE/.claude" "$s/" && cp -r "$HERE/registry" "$s/" \
+    && cp -r "$HERE/agents" "$s/" && cp -r "$HERE/commands" "$s/" \
     && cp "$INSTALL" "$s/install.sh"
   printf '%s' "$s"
 }

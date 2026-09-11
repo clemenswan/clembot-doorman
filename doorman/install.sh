@@ -66,8 +66,8 @@ copy() {                      # copy <relative-src> <relative-dest-dir>
 }
 
 copy .claude/hooks/mcp-gate.sh .claude/hooks
-copy .claude/agents/doorman.md .claude/agents
-copy .claude/commands/vet.md   .claude/commands
+copy agents/doorman.md   .claude/agents
+copy commands/vet.md     .claude/commands
 
 REGISTRY_KEPT=0
 if [ -f "$TARGET/registry/allowlist.json" ]; then

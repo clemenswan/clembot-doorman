@@ -28,13 +28,59 @@ export const CLAUDE_MD_CAP = 8000;
  * live in whatever project someone dropped it into, which is why this walks up
  * rather than resolving anything relative to itself.
  */
+/**
+ * Every file a project can declare an MCP server in.
+ *
+ * Kept beside the reader rather than inline so the list is one thing, and
+ * exported so `doctor` and this module can be asserted equal. They were not:
+ * doctor read five, this read one, and the gap showed up as a Cursor user
+ * being told to adopt servers they already ran.
+ */
+export const MCP_CONFIG_SOURCES = [
+  '.mcp.json',
+  '.claude/settings.json',
+  '.claude/settings.local.json',
+  '.cursor/mcp.json',
+  '.vscode/mcp.json',
+];
+
+/**
+ * Anything that marks a directory as an agent project.
+ *
+ * `.claude/agents` used to be the only one, which meant a Cursor project had NO
+ * root at all: the whole reader was skipped and the caller received an empty
+ * inventory that looked exactly like a project with nothing installed. `watch`
+ * then told that user to consider adopting two servers listed in their own
+ * `.cursor/mcp.json`.
+ */
+export const SKILL_SOURCES = [
+  '.claude/skills',
+  '.agents/skills',
+  'skills',
+];
+
+export const ROOT_MARKERS = [
+  '.claude/agents',
+  '.claude/skills',
+  '.agents/skills',
+  '.claude/settings.json',
+  '.mcp.json',
+  '.cursor/mcp.json',
+  '.vscode/mcp.json',
+  'CLAUDE.md',
+  'AGENTS.md',
+];
+
 export function findInventoryRoot(startDir, { env = process.env, fs = { existsSync } } = {}) {
   const configured = env.DOORMAN_INVENTORY_ROOT;
   if (configured) return resolve(configured);
 
   let dir = resolve(startDir);
   for (;;) {
-    if (fs.existsSync(join(dir, '.claude', 'agents'))) return dir;
+    for (const marker of ROOT_MARKERS) {
+      // join() with a '/'-containing marker is fine on both platforms.
+      if (fs.existsSync(join(dir, marker))) return dir;
+    }
     const parent = dirname(dir);
     if (parent === dir) return null;      // hit the filesystem root
     dir = parent;
@@ -119,7 +165,7 @@ export function mcpServersFromTools(agents) {
       const m = /^mcp__([A-Za-z0-9_.-]+?)__/.exec(t);
       if (!m) continue;
       const name = m[1];
-      if (!seen.has(name)) seen.set(name, { name, url: null, heldBy: [], tools: 0 });
+      if (!seen.has(name)) seen.set(name, { name, url: null, heldBy: [], tools: 0, sources: ['agent tools'] });
       const entry = seen.get(name);
       entry.tools++;
       if (!entry.heldBy.includes(a.name)) entry.heldBy.push(a.name);
@@ -171,9 +217,25 @@ export function gatherInventory({ root, registryDir, claudeMdCap = CLAUDE_MD_CAP
   const allowlisted = [];
   const notes = [];
 
+  // What this reader could actually SEE here. `0 agents` in a Claude Code
+  // project is a fact; the same 0 in a Cursor project is an artefact of asking
+  // the wrong question, and a caller must be able to tell those apart.
+  const coverage = { agents: 'unknown', skills: 'unknown', mcpServers: 'unknown' };
+
   if (!root) {
     notes.push('no inventory root was found: agents and skills are UNKNOWN, not empty');
   } else {
+    const hasAgentLayout = existsSync(join(root, '.claude', 'agents')) ||
+                           existsSync(join(root, '.agents'));
+    const hasSkillLayout = SKILL_SOURCES.some((rel) => existsSync(join(root, rel)));
+    if (hasAgentLayout) coverage.agents = 'read';
+    if (hasSkillLayout) coverage.skills = 'read';
+    if (!hasAgentLayout && !hasSkillLayout) {
+      notes.push(
+        'this project has no .claude/agents or known skills directory, so its subagents and ' +
+        'skills are UNKNOWN rather than absent. Only the MCP config was read.',
+      );
+    }
     const agentDir = join(root, '.claude', 'agents');
     for (const file of readDirSafe(agentDir).filter((f) => f.endsWith('.md'))) {
       const text = readFileSafe(join(agentDir, file));
@@ -190,24 +252,51 @@ export function gatherInventory({ root, registryDir, claudeMdCap = CLAUDE_MD_CAP
       });
     }
 
-    const skillsDir = join(root, '.claude', 'skills');
-    for (const entry of readDirSafe(skillsDir)) {
-      const skillFile = join(skillsDir, entry, 'SKILL.md');
-      const text = readFileSafe(skillFile);
-      const fm = text && parseFrontmatter(text);
-      if (!fm) continue;                  // not every directory is a skill
-      skills.push({ name: fm.name ?? entry, description: fm.description ?? '' });
+    const seenSkills = new Set();
+    for (const rel of SKILL_SOURCES) {
+      const skillsDir = join(root, rel);
+      if (!existsSync(skillsDir)) continue;
+      for (const entry of readDirSafe(skillsDir)) {
+        const skillFile = join(skillsDir, entry, 'SKILL.md');
+        const text = readFileSafe(skillFile);
+        const fm = text && parseFrontmatter(text);
+        if (!fm) continue;                  // not every directory is a skill
+        const name = fm.name ?? entry;
+        if (!seenSkills.has(name)) {
+          seenSkills.add(name);
+          skills.push({ name, description: fm.description ?? '', source: rel });
+        }
+      }
     }
 
-    const mcpText = readFileSafe(join(root, '.mcp.json'));
-    if (mcpText) {
+    /* Every place a server gets configured, not just the Claude Code one.
+       `doctor` has read all of these since it shipped; this did not, so `watch`
+       told a Cursor user that two servers listed in their own
+       `.cursor/mcp.json` were "new to this build". Both surfaces read the same
+       list now. `MCP_CONFIG_SOURCES` is exported so the drift is visible if the
+       two ever diverge again. */
+    for (const rel of MCP_CONFIG_SOURCES) {
+      const mcpText = readFileSafe(join(root, rel));
+      if (!mcpText) continue;
       try {
         const doc = JSON.parse(mcpText);
-        for (const [name, cfg] of Object.entries(doc.mcpServers ?? {})) {
-          mcpServers.push({ name, url: cfg?.url ?? null, heldBy: [], tools: 0 });
+        // `mcpServers` is the Claude/Cursor spelling, `servers` the VS Code one.
+        const declared = { ...(doc.mcpServers ?? {}), ...(doc.servers ?? {}) };
+        for (const [name, cfg] of Object.entries(declared)) {
+          const url = cfg?.url ?? cfg?.serverUrl ?? null;
+          const existing = mcpServers.find((m) => m.name === name);
+          if (existing) {
+            // Two files can declare the same server. Keep the first url found
+            // rather than letting a later file with no url erase it.
+            if (!existing.url && url) existing.url = url;
+            if (!existing.sources.includes(rel)) existing.sources.push(rel);
+          } else {
+            mcpServers.push({ name, url, heldBy: [], tools: 0, sources: [rel] });
+          }
         }
+        coverage.mcpServers = 'read';
       } catch {
-        notes.push('.mcp.json exists but did not parse; configured servers are UNKNOWN');
+        notes.push(`${rel} exists but did not parse; configured servers are UNKNOWN`);
       }
     }
 
@@ -256,6 +345,7 @@ export function gatherInventory({ root, registryDir, claudeMdCap = CLAUDE_MD_CAP
     allowlisted,
     claudeMd,
     claudeMdTruncated,
+    coverage,
     notes,
   };
 }

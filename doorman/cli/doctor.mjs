@@ -16,7 +16,7 @@
  */
 
 import { readFile, readdir, stat } from 'node:fs/promises';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
 const read = async (p) => {
@@ -104,24 +104,63 @@ async function detectAgents(root) {
   return { count: files.length, withMcp, dir: path.join('.claude', 'agents') };
 }
 
-/** Is the doorman gate installed and wired, or installed and inert? */
-async function detectGate(root) {
+/**
+ * Is the doorman gate installed and wired, or installed and inert?
+ *
+ * THERE ARE TWO WAYS TO INSTALL IT NOW, and this used to see only one. The
+ * plugin route puts the gate in the plugin directory and wires it through the
+ * plugin's own hooks.json, so a plugin user got told "not installed" by the one
+ * command whose entire job is answering that question, while the gate was
+ * actively blocking their calls. Reporting a control as absent when it is
+ * running is the same failure class as reporting it present when it is not.
+ *
+ * Project install is still reported first, because it is the one the operator
+ * controls per project. The plugin is reported as a second, separate source.
+ */
+async function detectGate(root, { env = process.env } = {}) {
   const hook = path.join(root, '.claude', 'hooks', 'mcp-gate.sh');
   const installed = existsSync(hook);
   const settings = await read(path.join(root, '.claude', 'settings.json'));
   const wired = Boolean(settings && settings.includes('mcp-gate.sh'));
   const registry = existsSync(path.join(root, 'registry', 'allowlist.json'));
+
+  // A user-scope plugin gates every project, so its absence from THIS project
+  // says nothing. Detected by looking for an installed plugin that ships the
+  // hook, not by asking the harness, so this stays offline and dependency-free.
+  const plugin = detectPluginGate(env);
+
+  const anyGate = installed || plugin.present;
   return {
     installed,
     wired,
     registry,
+    plugin,
     // The distinction that matters: a gate that is present and not wired is a
     // gate that is not running, and it looks exactly like one that is.
-    verdict: !installed ? 'not installed'
+    verdict: !anyGate ? 'not installed'
+      : !installed && plugin.present ? `installed as a PLUGIN (${plugin.name}), wired by the plugin`
       : !wired ? 'INSTALLED BUT NOT RUNNING (no hook entry in settings.json)'
-      : !registry ? 'wired, but no registry/allowlist.json: it will block everything'
+      : !registry && !plugin.present ? 'wired, but no registry/allowlist.json: it will block everything'
       : 'installed and wired',
   };
+}
+
+/** An installed Claude Code plugin that ships mcp-gate.sh. Read-only. */
+function detectPluginGate(env) {
+  const home = env.USERPROFILE || env.HOME;
+  if (!home) return { present: false, why: 'no home directory in the environment' };
+  const record = path.join(home, '.claude', 'plugins', 'installed_plugins.json');
+  if (!existsSync(record)) return { present: false, why: 'no installed_plugins.json' };
+  let raw;
+  try { raw = JSON.parse(readFileSync(record, 'utf8')); } catch {
+    return { present: false, why: 'installed_plugins.json did not parse' };
+  }
+  // The shape of that file is the harness's business and it has changed before,
+  // so match on content rather than on a path into it.
+  const text = JSON.stringify(raw);
+  const named = /"(clembot-doorman[^"]*)"/.exec(text);
+  if (!named) return { present: false, why: 'no clembot-doorman plugin installed' };
+  return { present: true, name: named[1], record };
 }
 
 /** What an eval could drive. Presence only: nothing is executed. */
@@ -139,14 +178,14 @@ async function detectAgentRunners(root) {
   return out;
 }
 
-export async function doctor(root) {
+export async function doctor(root, opts = {}) {
   const abs = path.resolve(root);
   let ok = true;
   try { ok = (await stat(abs)).isDirectory(); } catch { ok = false; }
   if (!ok) return { ok: false, why: `not a directory: ${abs}` };
 
   const [harnesses, servers, agents, gate, runners] = await Promise.all([
-    detectHarness(abs), detectMcpServers(abs), detectAgents(abs), detectGate(abs), detectAgentRunners(abs),
+    detectHarness(abs), detectMcpServers(abs), detectAgents(abs), detectGate(abs, opts), detectAgentRunners(abs),
   ]);
   return { ok: true, root: abs, harnesses, servers, agents, gate, runners };
 }
@@ -212,6 +251,15 @@ export function renderDoctor(d) {
   L.push(`- hook present: ${d.gate.installed ? 'yes' : 'no'}`);
   L.push(`- wired in settings.json: ${d.gate.wired ? 'yes' : 'no'}`);
   L.push(`- registry present: ${d.gate.registry ? 'yes' : 'no'}`);
+  L.push(`- installed as a plugin: ${d.gate.plugin?.present ? `yes (${d.gate.plugin.name})` : 'no'}`);
+  if (d.gate.plugin?.present && !d.gate.installed) {
+    L.push('');
+    L.push('> The gate is running from a user-scope PLUGIN, so it applies to every');
+    L.push('> project on this machine, not just this one. The trust list it reads is');
+    L.push('> `$CLAUDE_PROJECT_DIR/registry/allowlist.json` if this project has one,');
+    L.push('> and the plugin default otherwise. `doorman install .` gives this project');
+    L.push('> its own list, which a plugin update can never overwrite.');
+  }
   if (d.gate.installed && !d.gate.wired) {
     L.push('');
     L.push('> A gate that is installed and not wired is not running, and looks exactly');
