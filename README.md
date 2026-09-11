@@ -12,7 +12,18 @@
 
 ---
 
-## TL;DR · What is Clembot Doorman?
+### 🏆 ETHOnline 2026 Prize Tracks & Judge Quick-Links
+
+| Track | Prize | Artifact / Manifest | What It Demonstrates |
+|---|---|---|---|
+| **Bazantic · Agentify an API** | $500 / 300 / 200 | [`01-vet-mcp-candidate.json`](./bazantic/recipes/01-vet-mcp-candidate.json) | Agentifies our live OpenAPI 3.1 `mcp-scorecard` service into an autonomous pre-flight tool that evaluates untrusted MCP servers before adoption. |
+| **Bazantic · Continuity** | 2×$500 | [`02-deepwiki-pinned-researcher.json`](./bazantic/recipes/02-deepwiki-pinned-researcher.json) | **87.6% Context Token Reduction**: Crushes 3,400 tokens of raw DeepWiki schema bloat down to 420 tokens using Doorman's cached pinned recipe. |
+| **Bazantic · Best Multi-API Recipe** | $500 / 300 / 200 | [`03-governance-pipeline.json`](./bazantic/recipes/03-governance-pipeline.json) | **3-Gateway Autonomous Pipeline**: Audits tool safety → Settles $0.01 audit micropayment on Base mainnet via x402 → Pins SHA-256 hash to allowlist. |
+| **Base · x402 Micropayments** | Sponsor Track | [`mcp-scorecard/src/routes/spend.ts`](./mcp-scorecard/src/routes/spend.ts) | Real $0.01 per-audit micropayment settlement using EIP-712 spend permits on Base mainnet. |
+
+> **Judge Portals**: [Live Interactive Simulator](https://clembot-doorman.wanessalabs.com/#flow) · [Bazantic Showcase Page](https://clembot-doorman.wanessalabs.com/bazantic.html#recipes) · [ETHOnline Judging Criteria](https://clembot-doorman.wanessalabs.com/judges.html) · [2-Minute Verification Runbook](RUNBOOK.md)
+
+---
 
 **Clembot is built in many versions, with the latest utilizing Claude Code and a custom combination of agent harnesses.** While AI agents need tools to do real work, loading raw MCP servers blindly introduces **in-context steering ads**, prompt injection risks, and token-draining schema hallucination. 
 
