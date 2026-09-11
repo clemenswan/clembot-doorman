@@ -12,7 +12,7 @@
       },
       "target_subagent": {
         "type": "string",
-        "description": "The subagent to assign the tool to (e.g., 'research-analyst', 'design-director')."
+        "description": "The subagent to assign the tool to (e.g., 'research-analyst', 'security-sentinel')."
       },
       "spend_permit": {
         "type": "string",
@@ -32,33 +32,29 @@
   },
   "output_example": {
     "status": "APPROVED",
-    "audit_id": "audit_sc_20260911_01",
+    "audit_id": "d4bc490c-5e51-4fb7-be67-6ef6f5a0a0ea",
     "grade": "A",
     "score": 98.63,
     "base_tx": "0x8f4b7a12e4c2...3f1a",
     "settled_usdc": "0.01",
-    "sha256_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sha256_hash": "b4e0c3a11594263d05a965d49eb5b3c1c5c9ce0d54d7aa28216a4fd5956308c2",
     "allowlist_entry": {
-      "client_name": "scorecard",
+      "client_name": "mcp-scorecard",
       "assigned_to": "security-sentinel",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sha256": "b4e0c3a11594263d05a965d49eb5b3c1c5c9ce0d54d7aa28216a4fd5956308c2",
       "verified_at": "2026-09-11T14:30:00Z"
     }
   },
-  "prompt_template": "Execute the 3-stage governance pipeline for {{inputs}}. First, invoke 'clembot-doorman/grade_mcp_server' to evaluate candidate safety. If score >= 70 and no hard fail is detected, invoke 'base-x402-gateway/settle_micropayment' using the spend permit. Upon settlement confirmation, invoke 'clembot-doorman/append_allowlist' to pin the SHA-256 hash to the subagent's allowlist. If any step fails, abort and report reasons.",
+  "prompt_template": "You are the Doorman Multi-API Governance Engine. Execute the 3-stage governance pipeline for {{inputs}}:\n\n1. Candidate Evaluation: Invoke the gateway tool 'getLatestGrade' with argument server set to candidate_url. Verify the candidate's safety score (score >= 70, band A or B) and ensure hard_fail is null.\n2. Provenance Audit: Using the audit_id returned from getLatestGrade, invoke 'getAudit' to retrieve the full audit record and extract the cryptographic evidence_sha256 hash.\n3. Settlement & Allowlist: Settle the $0.01 USDC audit micropayment on Base mainnet using spend_permit, then generate a pinned allowlist entry registering evidence_sha256 for target_subagent.\n\nCRITICAL CONSTRAINTS: Call ONLY 'getLatestGrade' and 'getAudit'. Do NOT call 'getBadge', 'getFeed', or any other endpoint.\n\nReturn strictly a JSON response matching output_example with status (APPROVED or DECLINED), audit_id, grade, score, base_tx, settled_usdc, sha256_hash, and allowlist_entry.",
   "model": "claude-3-5-sonnet-20241022",
   "tool_bindings": [
     {
       "gateway_slug": "clembot-doorman",
-      "tool_name": "grade_mcp_server"
-    },
-    {
-      "gateway_slug": "base-x402-gateway",
-      "tool_name": "settle_micropayment"
+      "tool_name": "getLatestGrade"
     },
     {
       "gateway_slug": "clembot-doorman",
-      "tool_name": "append_allowlist"
+      "tool_name": "getAudit"
     }
   ]
 }

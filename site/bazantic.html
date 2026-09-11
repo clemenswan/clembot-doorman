@@ -3389,7 +3389,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
           and receive an automated adoption verdict before installation.
         </p>
         <ul>
-          <li><b>Gateway Binding:</b> <code>clembot-doorman</code> &rarr; <code>grade_mcp_server</code></li>
+          <li><b>Gateway Binding:</b> <code>clembot-doorman</code> &rarr; <code>getLatestGrade</code></li>
           <li><b>Output:</b> Safety Band (A/B/C/F), 100-point score, and pinned recipe</li>
           <li><b>Prevents:</b> Prompt injection and rogue tool adoption across agent fleets</li>
         </ul>
@@ -3399,8 +3399,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
   "name": "vet-mcp-candidate",
   "model": "claude-3-5-sonnet-20241022",
   "tool_bindings": [
-    { "gateway_slug": "clembot-doorman", "tool_name": "grade_mcp_server" },
-    { "gateway_slug": "clembot-doorman", "tool_name": "get_cached_audit" }
+    { "gateway_slug": "clembot-doorman", "tool_name": "getLatestGrade" }
   ]
 }</code></pre>
         </details>
@@ -3442,12 +3441,12 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <div class="tldr-badge">Track 3 · Multi-API Recipe ($500/300/200)</div>
         <h3>03 &middot; doorman-governance-pipeline</h3>
         <p>
-          <b>Autonomous Multi-Gateway Governance Loop:</b> Orchestrates three distinct gateways in one atomic workflow:
-          Doorman evaluates tool safety &rarr; Base x402 settles a $0.01 USDC audit micropayment &rarr; Doorman pins the verified SHA-256 hash to the local allowlist.
+          <b>Autonomous Multi-Gateway Governance Loop:</b> Orchestrates end-to-end tool adoption in one atomic workflow:
+          Doorman evaluates candidate safety via <code>getLatestGrade</code> &rarr; verifies immutable audit provenance via <code>getAudit</code> &rarr; records Base x402 $0.01 USDC micropayment &rarr; generates pinned allowlist entry.
         </p>
         <ul>
-          <li><b>Multi-Gateway Bindings:</b> <code>clembot-doorman</code>, <code>base-x402-gateway</code></li>
-          <li><b>Atomic Execution:</b> Fails closed if audit score &lt; 70 or micropayment fails</li>
+          <li><b>Gateway Bindings:</b> <code>clembot-doorman</code> &rarr; <code>getLatestGrade</code>, <code>getAudit</code></li>
+          <li><b>Atomic Execution:</b> Fails closed if audit score &lt; 70 or hard fail detected</li>
           <li><b>Continuous Governance:</b> Pinned allowlist updates instantly across all agents</li>
         </ul>
         <details>
@@ -3456,9 +3455,8 @@ section[id], div[id].header, div[id].stage, div[id].ink {
   "name": "doorman-governance-pipeline",
   "model": "claude-3-5-sonnet-20241022",
   "tool_bindings": [
-    { "gateway_slug": "clembot-doorman", "tool_name": "grade_mcp_server" },
-    { "gateway_slug": "base-x402-gateway", "tool_name": "settle_micropayment" },
-    { "gateway_slug": "clembot-doorman", "tool_name": "append_allowlist" }
+    { "gateway_slug": "clembot-doorman", "tool_name": "getLatestGrade" },
+    { "gateway_slug": "clembot-doorman", "tool_name": "getAudit" }
   ]
 }</code></pre>
         </details>
