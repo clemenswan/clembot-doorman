@@ -421,6 +421,38 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
   .masthead-cta { display: none !important; }
   .masthead .wrap { gap: var(--sp-2); }
   .masthead nav { gap: var(--sp-3); }
+  .btn {
+    white-space: normal !important;
+    text-align: center;
+    justify-content: center;
+    max-width: 100%;
+    word-break: break-word;
+  }
+  .hero-cta .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero-install-banner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .hero-install-banner code {
+    display: block !important;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.75rem !important;
+    box-sizing: border-box;
+  }
+  .hero-install-banner > span:not(.tldr-badge) {
+    display: none;
+  }
 }
 
 @media (max-width: 480px) {
@@ -436,6 +468,12 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
     font-size: 0.75rem;
     letter-spacing: 0.08em;
   }
+  h1 { font-size: clamp(1.85rem, 8vw, 2.5rem); }
+  h2 { font-size: clamp(1.35rem, 5.5vw, 1.75rem); }
+  .term-box { max-width: 100%; white-space: normal; }
+  .term-box.is-code code { word-break: break-all; }
+  .preset-pill { padding: 6px 10px; min-height: 38px; }
+  .audits { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 }
 
 @media (max-width: 360px) {
@@ -447,6 +485,15 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
     letter-spacing: 0.06em;
     gap: 3px;
   }
+  .wrap { padding-inline: 14px; }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.25rem; }
+}
+
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── header: short. The demo is the point, not the prose. ─────────────── */
@@ -469,7 +516,6 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 .btn-ghost {
   background: transparent; color: var(--text-primary); border-color: var(--border);
 }
-@media (max-width: 420px) { .hero-cta .btn { flex: 1 1 100%; justify-content: center; } }
 .header .story {
   font-size: clamp(1.0625rem, 1.55vw, 1.25rem); color: var(--text-secondary);
   max-width: 60ch; margin-top: var(--sp-6); line-height: 1.55;
