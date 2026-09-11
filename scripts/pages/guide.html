@@ -85,17 +85,59 @@
 
 <main id="main">
 
-<section id="hero-direction">
-  <div class="wrap">
-    <p class="eyebrow reveal">Developer Walkthrough &amp; Skill Management</p>
-    <h1 class="reveal d1">From fresh init to production protection</h1>
-    <p class="section-intro reveal d2">
-      A complete, step-by-step developer guide for initializing a new Claude Code / <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> build,
-      recommending pre-vetted <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp">MCP</span> tools from actual prompt history, and managing existing skill rosters
-      so you never spend money or tokens on redundant capabilities.
-    </p>
+<div class="header page-hero" id="hero">
+  <div class="hero-panel" id="hero-panel" aria-hidden="true"></div>
+  <canvas id="hero-canvas" class="page-hero-canvas" data-hero="guide" aria-hidden="true"></canvas>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">Developer Walkthrough &amp; Skill Management</p>
+      <h1 class="reveal d1">From fresh init to production protection</h1>
+      <p class="story reveal d2">
+        A complete, step-by-step developer guide for initializing a new Claude Code / <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> build,
+        recommending pre-vetted <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp">MCP</span> tools from actual prompt history, and managing existing skill rosters
+        so you never spend money or tokens on redundant capabilities.
+      </p>
+      <p class="hero-cta reveal d2">
+        <a class="btn" href="#step-init">Step 1: Fresh Init</a>
+        <a class="btn btn-ghost" href="#step-needs">Step 2: Recommendations</a>
+        <a class="btn btn-ghost" href="#step-vet">Step 3: Verification</a>
+      </p>
+    </div>
+    <div class="hero-telemetry reveal d2">
+      <div class="hero-hud-card" role="region" aria-label="MCP Protocol Analyzer Telemetry">
+        <div class="hud-head">
+          <div class="hud-status"><span class="hud-dot"></span><span>Protocol Inspector</span></div>
+          <span class="hud-tag">JSON-RPC 2.0</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="hud-metric">
+            <span class="hud-val good">8,420 pkts</span>
+            <span class="hud-lbl">Inspected Calls</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val warn">6,290 chars</span>
+            <span class="hud-lbl">Injection Blocked</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val accent">0.4ms</span>
+            <span class="hud-lbl">Hook Latency</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val good">180 lines</span>
+            <span class="hud-lbl">Bash Gate Hook</span>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-hud" id="hud-trigger-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Inject Test Payload</span>
+          </button>
+          <p class="hud-hint">Click canvas or button to inject a rogue tool and watch the scanner cage it</p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <!-- STEP 1: FRESH INIT -->
 <section id="step-init" style="padding-top: 0;">

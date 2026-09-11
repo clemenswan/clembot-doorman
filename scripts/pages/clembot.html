@@ -85,23 +85,60 @@
 
 <main id="main">
 
-<section id="hero-direction">
-  <div class="wrap">
-    <p class="eyebrow reveal">Autonomous Agency Architecture</p>
-    <h1 class="reveal d1">Inside Clembot: A 27-Agent Marketing &amp; Operations Engine</h1>
-    <p class="section-intro reveal d2">
-      <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> is a real, production-grade
-      multi-client marketing agency built by Clemens Wan at <a href="/wanessa-labs.html">Wanessa Labs</a>.
-      Rather than relying on one monolithic prompt, Clembot orchestrates <b>27 specialized subagents</b>
-      operating across content creation, market intelligence, visual design, and engineering deployment.
-    </p>
-    <p class="hero-cta reveal d2">
-      <a class="btn" href="#roster">Explore 27-Agent Roster</a>
-      <a class="btn btn-ghost" href="#why-doorman">Why It Needed Doorman</a>
-      <a class="btn btn-ghost" href="/how-it-works.html">See Defense Funnel</a>
-    </p>
+<div class="header page-hero" id="hero">
+  <div class="hero-panel" id="hero-panel" aria-hidden="true"></div>
+  <canvas id="hero-canvas" class="page-hero-canvas" data-hero="clembot" aria-hidden="true"></canvas>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">Autonomous Agency Architecture</p>
+      <h1 class="reveal d1">Inside Clembot: A 27-Agent Marketing &amp; Operations Engine</h1>
+      <p class="story reveal d2">
+        <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span> is a real, production-grade
+        multi-client marketing agency built by Clemens Wan at <a href="/wanessa-labs.html">Wanessa Labs</a>.
+        Rather than relying on one monolithic prompt, Clembot orchestrates <b>27 specialized subagents</b>
+        operating across content creation, market intelligence, visual design, and engineering deployment.
+      </p>
+      <p class="hero-cta reveal d2">
+        <a class="btn" href="#roster">Explore 27-Agent Roster</a>
+        <a class="btn btn-ghost" href="#why-doorman">Why It Needed Doorman</a>
+        <a class="btn btn-ghost" href="/how-it-works.html">See Defense Funnel</a>
+      </p>
+    </div>
+    <div class="hero-telemetry reveal d2">
+      <div class="hero-hud-card" role="region" aria-label="Clembot Swarm Telemetry">
+        <div class="hud-head">
+          <div class="hud-status"><span class="hud-dot"></span><span>Swarm Mesh Active</span></div>
+          <span class="hud-tag">27 SUBAGENTS</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="hud-metric">
+            <span class="hud-val good">27 Active</span>
+            <span class="hud-lbl">Autonomous Agents</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val accent">5 Divisions</span>
+            <span class="hud-lbl">Role Partitioning</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val">100%</span>
+            <span class="hud-lbl">Context Shielded</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val good">&lt; 5ms</span>
+            <span class="hud-lbl">Gate Intercept Speed</span>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-hud" id="hud-trigger-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            <span>Dispatch Swarm Ping</span>
+          </button>
+          <p class="hud-hint">Click canvas or button to ping all 27 agents and sentinel forcefield</p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <!-- ── SECTION 1: THE STORY OF CLEMBOT ─────────────────────────────── -->
 <section id="story" style="padding-top: 0;">

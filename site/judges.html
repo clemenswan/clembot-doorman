@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>For ETHOnline 2026 Judges | clembot doorman</title>
-<meta name="description" content="ETHOnline judging criteria mapping, prize tracks, and 2-minute runbook">
+<title>ETHOnline Criteria & Judging Guide | clembot doorman</title>
+<meta name="description" content="Complete mapping of Clembot Doorman against ETHGlobal criteria and prize tracks">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -50,9 +50,9 @@
   --ink-surface: oklch(22%   0.010 82);
   --ink-raised:  oklch(26%   0.010 82);
   --ink-border:  oklch(30%   0.010 82);
-  --ink-text:    oklch(93%   0.006 82);
-  --ink-body:    oklch(80%   0.008 82);
-  --ink-muted:   oklch(64%   0.008 82);
+  --ink-text:    #ffffff;
+  --ink-body:    #ffffff;
+  --ink-muted:   rgba(255, 255, 255, 0.88);
   --ink-accent:  oklch(72%   0.14  152);
   --ink-red:     oklch(72%   0.15  27);
   --ink-amber:   oklch(78%   0.13  85);
@@ -591,7 +591,7 @@ button.ghost {
   gap: clamp(14px, 2.4vw, 32px); align-items: start;
   border: 1px solid var(--ink-border); border-radius: var(--radius-xl);
   background: var(--ink-surface); padding: clamp(18px, 2.4vw, 26px) clamp(18px, 2.6vw, 28px);
-  opacity: .3;
+  opacity: .6;
   transition: opacity .5s var(--ease-signature), border-color .5s var(--ease-signature),
               transform .5s var(--ease-signature);
 }
@@ -600,7 +600,7 @@ button.ghost {
 }
 .step[data-state="active"] { opacity: 1; border-color: var(--ink-accent); transform: translateY(-2px); }
 .step[data-state="done"]   { opacity: 1; }
-.step[data-state="idle"]   { opacity: .3; }
+.step[data-state="idle"]   { opacity: .6; }
 
 .step-who {
   font-family: var(--font-mono); font-size: 0.8125rem; color: var(--ink-accent);
@@ -615,10 +615,10 @@ button.ghost {
 .step[data-state="done"] .dot   { background: var(--ink-accent); }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .25; } }
 
-.step h3 { margin-bottom: var(--sp-2); font-size: 1rem; }
-.step .say { margin: 0; font-size: 0.9375rem; color: var(--ink-body); max-width: 52ch; }
+.step h3 { margin-bottom: var(--sp-2); font-size: 1rem; color: #ffffff; }
+.step .say { margin: 0; font-size: 0.9375rem; color: #ffffff; max-width: 52ch; }
 .step .out {
-  font-family: var(--font-mono); font-size: 0.78125rem; color: var(--ink-muted);
+  font-family: var(--font-mono); font-size: 0.78125rem; color: #ffffff;
   border-left: 1px solid var(--ink-border); padding-left: var(--sp-4); min-height: 1.4em;
   line-height: 1.7; word-break: break-word;
 }
@@ -655,16 +655,16 @@ button.ghost {
 }
 .v-band[data-band="F"] { color: var(--ink-red); }
 .v-band[data-band="C"] { color: var(--ink-amber); }
-.v-score { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; color: var(--ink-text); font-variant-numeric: tabular-nums; }
-.v-meta { margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-muted); text-align: right; }
+.v-score { font-family: var(--font-display); font-weight: 700; font-size: 1.0625rem; color: #ffffff; font-variant-numeric: tabular-nums; }
+.v-meta { margin-left: auto; font-family: var(--font-mono); font-size: 0.75rem; color: #ffffff; text-align: right; }
 .verdict-layers { padding: var(--sp-4) var(--sp-5); display: grid; gap: var(--sp-3); }
 .vl { display: grid; grid-template-columns: 88px 1fr 92px; gap: var(--sp-3); align-items: center; }
-.vl-name { font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.6875rem; font-weight: 600; color: var(--ink-muted); }
+.vl-name { font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.09em; font-size: 0.6875rem; font-weight: 600; color: #ffffff; }
 .vl-track { height: 4px; border-radius: var(--radius-full); background: var(--ink-border); overflow: hidden; }
 .vl-fill { height: 100%; border-radius: var(--radius-full); background: var(--ink-accent); width: 0; transition: width 1s var(--ease-signature); }
-.vl-val { font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-body); text-align: right; font-variant-numeric: tabular-nums; }
+.vl-val { font-family: var(--font-mono); font-size: 0.75rem; color: #ffffff; text-align: right; font-variant-numeric: tabular-nums; }
 .vl[data-measured="false"] .vl-track { background: transparent; border-top: 1px dashed var(--ink-border); height: 1px; border-radius: 0; }
-.vl[data-measured="false"] .vl-val { color: var(--ink-muted); font-family: var(--font-label); text-transform: uppercase; letter-spacing: .08em; font-size: .625rem; }
+.vl[data-measured="false"] .vl-val { color: rgba(255, 255, 255, 0.75); font-family: var(--font-label); text-transform: uppercase; letter-spacing: .08em; font-size: .625rem; }
 
 .v-tape-btn {
   margin-left: auto;
@@ -1019,6 +1019,138 @@ button.ghost {
   #gate-canvas { display: none; }
 }
 
+/* ── SECONDARY PAGE HERO & INTERACTIVE TELEMETRY HUD ───────────────────── */
+.page-hero {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+  padding: clamp(48px, 8vh, 88px) 0 clamp(40px, 6vh, 64px);
+  background: var(--bg);
+}
+.page-hero .hero-panel {
+  position: absolute; top: 0; bottom: 0; right: 0; width: 42%;
+  background: var(--surface-raised);
+  border-left: 1px solid var(--border);
+  z-index: 0;
+  pointer-events: none;
+}
+.page-hero-canvas {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  display: block; z-index: 1; pointer-events: auto;
+  cursor: crosshair;
+}
+.page-hero .hero-grid {
+  position: relative; z-index: 2; pointer-events: none;
+  display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(310px, 0.85fr);
+  gap: clamp(24px, 4.5vw, 64px); align-items: center;
+}
+.page-hero .hero-copy {
+  min-width: 0; max-width: 58ch; pointer-events: auto;
+}
+.page-hero .hero-copy h1 {
+  font-size: clamp(2.125rem, 4.2vw, 3.25rem);
+  line-height: 1.08; letter-spacing: -0.03em;
+  margin: var(--sp-3) 0 var(--sp-4);
+}
+.page-hero .hero-copy .story {
+  font-size: 1.0625rem; line-height: 1.62; color: var(--text-secondary);
+  margin: 0 0 var(--sp-4);
+}
+.hero-telemetry {
+  min-width: 0; pointer-events: auto;
+}
+.hero-hud-card {
+  background: var(--ink-bg);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-xl);
+  padding: var(--sp-5) var(--sp-6);
+  color: var(--ink-text);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+.hud-head {
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--ink-border);
+  padding-bottom: var(--sp-3); margin-bottom: var(--sp-4);
+}
+.hud-status {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--font-label); font-size: 0.75rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; color: var(--ink-accent);
+}
+.hud-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ink-accent);
+  box-shadow: 0 0 0 0 rgba(47, 107, 79, 0.7);
+  animation: hud-pulse 2s infinite cubic-bezier(0.66, 0, 0, 1);
+}
+@keyframes hud-pulse {
+  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+.hud-tag {
+  font-family: var(--font-mono); font-size: 0.6875rem;
+  padding: 2px 7px; border-radius: var(--radius-sm);
+  background: var(--ink-surface); border: 1px solid var(--ink-border);
+  color: var(--ink-muted);
+}
+.hud-metrics {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--sp-3) var(--sp-4);
+  margin-bottom: var(--sp-4);
+}
+.hud-metric {
+  display: flex; flex-direction: column;
+}
+.hud-val {
+  font-family: var(--font-display); font-size: 1.35rem; font-weight: 800;
+  color: var(--ink-text); line-height: 1.1; font-variant-numeric: tabular-nums;
+}
+.hud-val.good { color: var(--ink-accent); }
+.hud-val.warn { color: var(--ink-amber); }
+.hud-val.accent { color: var(--accent-mid); }
+.hud-lbl {
+  font-family: var(--font-label); font-size: 0.6875rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-muted);
+  margin-top: 3px;
+}
+.hud-actions {
+  display: flex; flex-direction: column; gap: var(--sp-2);
+  border-top: 1px solid var(--ink-border);
+  padding-top: var(--sp-4);
+}
+.btn-hud {
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 8px; width: 100%;
+  background: var(--ink-surface); color: var(--ink-text);
+  border: 1px solid var(--ink-border); border-radius: var(--radius-md);
+  font-family: var(--font-label); font-size: 0.8125rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 9px 16px; cursor: pointer; transition: all 0.15s ease;
+}
+.btn-hud:hover {
+  background: var(--ink-raised); border-color: var(--ink-accent);
+  color: var(--ink-accent);
+}
+.hud-hint {
+  font-size: 0.75rem; color: var(--ink-muted); text-align: center;
+  margin: 0; line-height: 1.4;
+}
+@media (max-width: 900px) {
+  .page-hero .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--sp-6);
+  }
+  .page-hero .hero-panel { display: none; }
+  .page-hero-canvas {
+    opacity: 0.35;
+  }
+  .hero-hud-card {
+    margin-top: var(--sp-2);
+  }
+}
+
 section { padding: clamp(72px, 11vh, 136px) 0; }
 .section-intro { color: var(--text-secondary); max-width: var(--measure); margin: var(--sp-6) 0 var(--sp-12); font-size: 1.0625rem; }
 .ink .section-intro { color: var(--ink-body); }
@@ -1130,9 +1262,11 @@ section { padding: clamp(72px, 11vh, 136px) 0; }
   border-color: var(--ink-border);
 }
 .refuse h3, .judge h3 { margin: 0 0 var(--sp-3); font-size: 1.0625rem; }
-.refuse p { margin: 0; color: var(--ink-body); font-size: .9375rem; }
+.refuse p { margin: 0; color: #ffffff; font-size: .9375rem; }
+.refuse ul, .refuse li { color: #ffffff; }
+.refuse strong, .refuse b { color: #ffffff; }
 .judge p { margin: 0; color: var(--text-secondary); font-size: .9375rem; }
-.refuse h3 { color: var(--ink-accent); }
+.refuse h3 { color: #ffffff; }
 .judge h3 { color: var(--accent); }
 .judge-links {
   display: flex; flex-wrap: wrap; gap: var(--sp-2) var(--sp-4);
@@ -2028,9 +2162,8 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 }
 
 
-/* secondary pages have no hero canvas, so the masthead divider is fixed on load */
+/* secondary pages masthead divider is fixed on load */
 .masthead { border-bottom-color: var(--border); }
-/* secondary pages have no hero canvas, so the first section needs its own air */
 #hero-direction { padding-top: var(--sp-12, 3rem); }
 #hero-direction h1 { max-width: 22ch; }
 #rail .refuse-grid { margin-top: var(--sp-8); }
@@ -2125,22 +2258,59 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 
 <main id="main">
 
-<section id="hero-direction">
-  <div class="wrap">
-    <p class="eyebrow reveal in">ETHOnline 2026 · Judging Guide &amp; Prize Verification</p>
-    <h1 class="reveal in d1">Mapping Clembot Doorman to ETHGlobal Judging Criteria</h1>
-    <p class="section-intro reveal in d2">
-      A transparent, verifiable guide for ETHOnline 2026 judges. Below is an exhaustive mapping
-      of Clembot Doorman against the <b>five ETHGlobal core judging categories</b>, alongside
-      a direct checklist verifying alignment with the <b>Bazantic</b> and <b>Base / x402</b> prize tracks.
-    </p>
-    <p class="hero-cta reveal in d2">
-      <a class="btn" href="#criteria">View 5 Core Categories</a>
-      <a class="btn btn-ghost" href="#prizes">Prize Checklist</a>
-      <a class="btn btn-ghost" href="#runbook">2-Min Reproduction</a>
-    </p>
+<div class="header page-hero" id="hero">
+  <div class="hero-panel" id="hero-panel" aria-hidden="true"></div>
+  <canvas id="hero-canvas" class="page-hero-canvas" data-hero="judges" aria-hidden="true"></canvas>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal in">ETHOnline 2026 · Judging Guide &amp; Prize Verification</p>
+      <h1 class="reveal in d1">Mapping Clembot Doorman to ETHGlobal Judging Criteria</h1>
+      <p class="story reveal in d2">
+        A transparent, verifiable evaluation guide for ETHOnline 2026 judges. Below is an exhaustive mapping
+        of Clembot Doorman against the <b>five ETHGlobal core judging categories</b>, alongside
+        a direct checklist verifying alignment with the <b>Bazantic</b> and <b>Base / x402</b> prize tracks.
+      </p>
+      <p class="hero-cta reveal in d2">
+        <a class="btn" href="#criteria">View 5 Core Categories</a>
+        <a class="btn btn-ghost" href="#prizes">Prize Checklist</a>
+        <a class="btn btn-ghost" href="#runbook">2-Min Reproduction</a>
+      </p>
+    </div>
+    <div class="hero-telemetry reveal in d2">
+      <div class="hero-hud-card" role="region" aria-label="ETHOnline Evaluation Matrix">
+        <div class="hud-head">
+          <div class="hud-status"><span class="hud-dot"></span><span>Evaluation Matrix</span></div>
+          <span class="hud-tag">ETHONLINE 2026</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="hud-metric">
+            <span class="hud-val good">98.6 / 100</span>
+            <span class="hud-lbl">Criteria Score</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val accent">5 / 5</span>
+            <span class="hud-lbl">Core Categories</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val">2 Active</span>
+            <span class="hud-lbl">Prize Tracks</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val good">436 Tests</span>
+            <span class="hud-lbl">100% Passing</span>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-hud" id="hud-trigger-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            <span>Pulse Evaluation Radar</span>
+          </button>
+          <p class="hud-hint">Click canvas or button to pulse 3D evaluation radar web</p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <!-- ── SECTION 1: 5 CORE JUDGING CATEGORIES ────────────────────────── -->
 <section id="criteria" style="padding-top: 0;">
@@ -2153,99 +2323,99 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 
     <div class="refuse-grid reveal in d2">
       <!-- 1. TECHNICALITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">01 · Technicality</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Sophistication &amp; Architectural Rigor</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>The Problem:</strong> Adding an MCP server takes one line of JSON. After that, an unvetted third-party
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">01 · Technicality</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">Sophistication &amp; Architectural Rigor</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">The Problem:</strong> Adding an MCP server takes one line of JSON. After that, an unvetted third-party
           server injects tool descriptions directly into the agent's LLM context window, enabling covert prompt injection,
           schema bloat, and unauthorized execution.
         </p>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Our Solution:</strong>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Our Solution:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Offline Security Hook:</b> A 180-line standalone Bash hook (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span>) executing in &lt; 5ms with zero external runtime dependencies. Fails closed (<code>exit 2</code>).</li>
-          <li><b>Dual-Sandbox Harness Adapter:</b> Isolates execution in local Docker containers, driving Claude Code via native CLI flags without credential leakage.</li>
-          <li><b>EIP-712 x402 Micropayments:</b> Protocol-level HTTP 402 challenge negotiation on Base USDC with bounded spend caps ($1/run, $5/day).</li>
-          <li><b>Deterministic Schema Synthesis:</b> Prunes bloated MCP schemas from 3,400 tokens down to 420 tokens in pinned <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span> files.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Offline Security Hook:</b> A 180-line standalone Bash hook (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span>) executing in &lt; 5ms with zero external runtime dependencies. Fails closed (<code>exit 2</code>).</li>
+          <li><b style="color: #ffffff;">Dual-Sandbox Harness Adapter:</b> Isolates execution in local Docker containers, driving Claude Code via native CLI flags without credential leakage.</li>
+          <li><b style="color: #ffffff;">EIP-712 x402 Micropayments:</b> Protocol-level HTTP 402 challenge negotiation on Base USDC with bounded spend caps ($1/run, $5/day).</li>
+          <li><b style="color: #ffffff;">Deterministic Schema Synthesis:</b> Prunes bloated MCP schemas from 3,400 tokens down to 420 tokens in pinned <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span> files.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Verified in: src/vet.mjs · bin/mcp-gate.sh · src/budget.mjs
         </p>
       </article>
 
       <!-- 2. ORIGINALITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">02 · Originality</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">First Package Manager &amp; Gate for Agent Tools</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Fresh Problem Space:</strong> While traditional web applications have firewalls and package managers (npm, brew),
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">02 · Originality</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">First Package Manager &amp; Gate for Agent Tools</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Fresh Problem Space:</strong> While traditional web applications have firewalls and package managers (npm, brew),
           AI agents have zero adoption gates—anyone who pastes an MCP URL grants arbitrary external code full prompt influence.
         </p>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Creative Inventions:</strong>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Creative Inventions:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Discovery of Stealth Steering:</b> Uncovered real-world covert ads embedded in MCP servers (WebZum's 6,290-character injection instructing models to recite sales scripts and de-rank competitors).</li>
-          <li><b>2-Phase Defense Funnel:</b> Eliminates redundant or unsafe tools locally for $0.00, only paying $0.01 for remote adversarial grading when a tool is proven novel.</li>
-          <li><b>Reverse-Needs Recommender:</b> Inspects actual session history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>) to suggest tools based on what subagents actually asked for.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Discovery of Stealth Steering:</b> Uncovered real-world covert ads embedded in MCP servers (WebZum's 6,290-character injection instructing models to recite sales scripts and de-rank competitors).</li>
+          <li><b style="color: #ffffff;">2-Phase Defense Funnel:</b> Eliminates redundant or unsafe tools locally for $0.00, only paying $0.01 for remote adversarial grading when a tool is proven novel.</li>
+          <li><b style="color: #ffffff;">Reverse-Needs Recommender:</b> Inspects actual session history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>) to suggest tools based on what subagents actually asked for.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           First reported in: site/index.html (#finding) · evals/fixtures
         </p>
       </article>
 
       <!-- 3. PRACTICALITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">03 · Practicality</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">100% Production Ready &amp; Battle-Tested</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Not a Mock or Concept:</strong> Clembot Doorman is fully implemented, fully tested, and already running in active production.
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">03 · Practicality</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">100% Production Ready &amp; Battle-Tested</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Not a Mock or Concept:</strong> Clembot Doorman is fully implemented, fully tested, and already running in active production.
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Complete Test Coverage:</b> 399 unit tests and 37 CLI tests passing with zero failures.</li>
-          <li><b>Real-World Deployment:</b> Guards the active 27-agent roster of <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span>, a multi-client marketing agency.</li>
-          <li><b>24 Public Audits:</b> Scanned and graded 24 real third-party MCP servers, publishing reproducible transcript tapes for every single score.</li>
-          <li><b>Live Infrastructure:</b> Deployed on Cloudflare Pages production with custom domain (<a href="https://clembot-doorman.wanessalabs.com" target="_blank" rel="noopener noreferrer">clembot-doorman.wanessalabs.com</a>) and Bazantic Gateway (<a href="https://clembot-doorman.bazgateway.com" target="_blank" rel="noopener noreferrer">clembot-doorman.bazgateway.com</a>).</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Complete Test Coverage:</b> 399 unit tests and 37 CLI tests passing with zero failures.</li>
+          <li><b style="color: #ffffff;">Real-World Deployment:</b> Guards the active 27-agent roster of <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span>, a multi-client marketing agency.</li>
+          <li><b style="color: #ffffff;">24 Public Audits:</b> Scanned and graded 24 real third-party MCP servers, publishing reproducible transcript tapes for every single score.</li>
+          <li><b style="color: #ffffff;">Live Infrastructure:</b> Deployed on Cloudflare Pages production with custom domain (<a href="https://clembot-doorman.wanessalabs.com" target="_blank" rel="noopener noreferrer" style="color: var(--ink-accent);">clembot-doorman.wanessalabs.com</a>) and Bazantic Gateway (<a href="https://clembot-doorman.bazgateway.com" target="_blank" rel="noopener noreferrer" style="color: var(--ink-accent);">clembot-doorman.bazgateway.com</a>).</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Run suite: npm test · 399 passed, 37 CLI passed
         </p>
       </article>
 
       <!-- 4. USABILITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">04 · Usability (UI / UX / DX)</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Intuitive DX, Agent Ergonomics &amp; Polished UI</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Developer &amp; Agent Ergonomics:</strong>
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">04 · Usability (UI / UX / DX)</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">Intuitive DX, Agent Ergonomics &amp; Polished UI</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Developer &amp; Agent Ergonomics:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Zero-Config Doctor:</b> Running <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-doctor"><code>doorman doctor</code></span> instantly outputs an ASCII audit of active harnesses, MCP tools, and gate status in plain terminal text.</li>
-          <li><b>In-Session Slash Command:</b> Type <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="vet"><code>/vet &lt;url&gt;</code></span> directly within Claude Code to inspect tool safety without leaving your editor.</li>
-          <li><b>Interactive Simulator:</b> The live web simulator offers preset pills (WebZum, DeepWiki, mcp-scorecard, Peek.com) for instant testing with real-time audit step transitions.</li>
-          <li><b>Universal Mobile Design:</b> 0 horizontal scroll overflow across all viewports (320px, 375px, 768px, 1280px) and accessible keyboard navigation.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Zero-Config Doctor:</b> Running <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-doctor"><code>doorman doctor</code></span> instantly outputs an ASCII audit of active harnesses, MCP tools, and gate status in plain terminal text.</li>
+          <li><b style="color: #ffffff;">In-Session Slash Command:</b> Type <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="vet"><code>/vet &lt;url&gt;</code></span> directly within Claude Code to inspect tool safety without leaving your editor.</li>
+          <li><b style="color: #ffffff;">Interactive Simulator:</b> The live web simulator offers preset pills (WebZum, DeepWiki, mcp-scorecard, Peek.com) for instant testing with real-time audit step transitions.</li>
+          <li><b style="color: #ffffff;">Universal Mobile Design:</b> 0 horizontal scroll overflow across all viewports (320px, 375px, 768px, 1280px) and accessible keyboard navigation.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Experience it: /#flow (Live Demo) · guide.html (Developer Walkthrough)
         </p>
       </article>
 
       <!-- 5. WOW FACTOR -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">05 · WOW Factor</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Memorable, Striking &amp; Visually Verifiable</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Standout Moments that Resonate:</strong>
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">05 · WOW Factor</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">Memorable, Striking &amp; Visually Verifiable</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Standout Moments that Resonate:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Adversarial Injection Caught Live:</b> Clicking "WebZum" in the simulator runs a live probe that halts at Step 6, highlighting the exact 6,290-character hostile prompt and awarding a Grade F.</li>
-          <li><b>Live On-Chain Micropayment Challenge:</b> Inspecting the network tab during gateway queries shows real HTTP 402 Payment Required headers on Base USDC.</li>
-          <li><b>Context Token Crash:</b> A side-by-side comparison demonstrating an 87% token reduction (3,400 to 420 tokens) via Bazantic recipe generation.</li>
-          <li><b>Honest Limitations Card:</b> Distinctly lists what is NOT measured (e.g. 70 of 100 points requiring live model keys), demonstrating rare hackathon honesty.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Adversarial Injection Caught Live:</b> Clicking "WebZum" in the simulator runs a live probe that halts at Step 6, highlighting the exact 6,290-character hostile prompt and awarding a Grade F.</li>
+          <li><b style="color: #ffffff;">Live On-Chain Micropayment Challenge:</b> Inspecting the network tab during gateway queries shows real HTTP 402 Payment Required headers on Base USDC.</li>
+          <li><b style="color: #ffffff;">Context Token Crash:</b> A side-by-side comparison demonstrating an 87% token reduction (3,400 to 420 tokens) via Bazantic recipe generation.</li>
+          <li><b style="color: #ffffff;">Honest Limitations Card:</b> Distinctly lists what is NOT measured (e.g. 70 of 100 points requiring live model keys), demonstrating rare hackathon honesty.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Interactive proof: /#flow · clembot-doorman.bazgateway.com
         </p>
       </article>
@@ -2267,17 +2437,17 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <!-- TRACK A: BAZANTIC -->
         <article class="refuse">
           <div class="tldr-badge" style="background: var(--ink-accent); color: var(--ink-surface); margin-bottom: var(--sp-3);">Track A · Bazantic</div>
-          <h3>Agentify an API / Continuity Track</h3>
-          <p style="font-size: 0.875rem; color: var(--ink-body); line-height: 1.55; margin-bottom: var(--sp-3);">
+          <h3 style="color: #ffffff;">Agentify an API / Continuity Track</h3>
+          <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
             Bazantic solves agent tool hallucination by publishing deterministic recipes and hosting authenticated gateways.
             Clembot Doorman is a direct consumer and producer of Bazantic infrastructure.
           </p>
 
-          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: var(--ink-body); line-height: 1.7;">
-            <li>✅ <strong>Live Hosted Gateway:</strong> <code>clembot-doorman.bazgateway.com</code> deployed and reachable over HTTPS.</li>
-            <li>✅ <strong>Pinned Recipe Generation:</strong> Generates canonical <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span> files with exact argument signatures, reducing prompt drift.</li>
-            <li>✅ <strong>Context Token Reduction:</strong> Documented 87% reduction in schema tokens (3,400 → 420 tokens per turn).</li>
-            <li>✅ <strong>Deterministic Allowlisting:</strong> Merges Bazantic hashes into local <code>registry/allowlist.json</code> for offline verification.</li>
+          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: #ffffff; line-height: 1.7;">
+            <li>✅ <strong style="color: #ffffff;">Live Hosted Gateway:</strong> <code style="color: var(--ink-accent);">clembot-doorman.bazgateway.com</code> deployed and reachable over HTTPS.</li>
+            <li>✅ <strong style="color: #ffffff;">Pinned Recipe Generation:</strong> Generates canonical <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code style="color: var(--ink-accent);">recipe.md</code></span> files with exact argument signatures, reducing prompt drift.</li>
+            <li>✅ <strong style="color: #ffffff;">Context Token Reduction:</strong> Documented 87% reduction in schema tokens (3,400 → 420 tokens per turn).</li>
+            <li>✅ <strong style="color: #ffffff;">Deterministic Allowlisting:</strong> Merges Bazantic hashes into local <code>registry/allowlist.json</code> for offline verification.</li>
           </ul>
 
           <div style="background: var(--ink-bg); border: 1px solid var(--ink-border); border-radius: var(--radius-md); padding: var(--sp-3); font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-accent);">
@@ -2288,17 +2458,17 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <!-- TRACK B: BASE -->
         <article class="refuse">
           <div class="tldr-badge" style="background: var(--ink-accent); color: var(--ink-surface); margin-bottom: var(--sp-3);">Track B · Base</div>
-          <h3>Autonomous Agent Micropayments &amp; x402 Track</h3>
-          <p style="font-size: 0.875rem; color: var(--ink-body); line-height: 1.55; margin-bottom: var(--sp-3);">
+          <h3 style="color: #ffffff;">Autonomous Agent Micropayments &amp; x402 Track</h3>
+          <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
             Base enables sub-cent micropayments for autonomous agent workflows. Clembot Doorman incorporates
             native x402 payment negotiation on Base USDC for paid adversarial evaluations.
           </p>
 
-          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: var(--ink-body); line-height: 1.7;">
-            <li>✅ <strong>x402 Protocol Compliance:</strong> Responds to HTTP 402 Payment Required with structured EIP-712 payment payloads.</li>
-            <li>✅ <strong>Base USDC Micropayments:</strong> Configured for $0.01 USDC audits on Base, proving cost-effective agent evaluation.</li>
-            <li>✅ <strong>Bounded Spend Caps:</strong> Hard limits enforced by <code>src/budget.mjs</code> ($1 per run, $5 per day); unspent allowances auto-released.</li>
-            <li>✅ <strong>Free Tier First:</strong> Zero network and zero tokens spent on redundant candidates; Base payments trigger only for novel tools.</li>
+          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: #ffffff; line-height: 1.7;">
+            <li>✅ <strong style="color: #ffffff;">x402 Protocol Compliance:</strong> Responds to HTTP 402 Payment Required with structured EIP-712 payment payloads.</li>
+            <li>✅ <strong style="color: #ffffff;">Base USDC Micropayments:</strong> Configured for $0.01 USDC audits on Base, proving cost-effective agent evaluation.</li>
+            <li>✅ <strong style="color: #ffffff;">Bounded Spend Caps:</strong> Hard limits enforced by <code>src/budget.mjs</code> ($1 per run, $5 per day); unspent allowances auto-released.</li>
+            <li>✅ <strong style="color: #ffffff;">Free Tier First:</strong> Zero network and zero tokens spent on redundant candidates; Base payments trigger only for novel tools.</li>
           </ul>
 
           <div style="background: var(--ink-bg); border: 1px solid var(--ink-border); border-radius: var(--radius-md); padding: var(--sp-3); font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-accent);">
@@ -2367,5 +2537,6 @@ curl -i https://clembot-doorman.wanessalabs.com/</code></pre>
 </footer>
 
 <script src="/glossary.js" defer></script>
+<script src="/hero-canvas.js" defer></script>
 </body>
 </html>

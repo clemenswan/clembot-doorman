@@ -71,9 +71,8 @@ const out = `<!doctype html>
 ${head}
 <style>
 ${css}
-/* secondary pages have no hero canvas, so the masthead divider is fixed on load */
+/* secondary pages masthead divider is fixed on load */
 .masthead { border-bottom-color: var(--border); }
-/* secondary pages have no hero canvas, so the first section needs its own air */
 #hero-direction { padding-top: var(--sp-12, 3rem); }
 #hero-direction h1 { max-width: 22ch; }
 #rail .refuse-grid { margin-top: var(--sp-8); }
@@ -83,6 +82,7 @@ ${css}
 <body>
 ${body}
 <script src="/glossary.js" defer></script>
+<script src="/hero-canvas.js" defer></script>
 </body>
 </html>
 `;

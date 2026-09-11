@@ -13,8 +13,7 @@ matched" is a result and hiding it would make this document a brochure.
 claude plugin marketplace add clemenswan/clembot-doorman
 claude plugin install clembot-doorman     # the gate, /doorman, /vet, the subagent
 
-git clone https://github.com/clemenswan/clembot-doorman
-npm i -g ./clembot-doorman                # doctor, needs, report, watch, eval
+npm i -g clembot-doorman                  # doctor, needs, report, watch, eval
 ```
 
 Check what actually loaded. A manifest can validate and still ship components

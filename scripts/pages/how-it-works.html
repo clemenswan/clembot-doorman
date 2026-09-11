@@ -85,22 +85,59 @@
 
 <main id="main">
 
-<section id="hero-direction">
-  <div class="wrap">
-    <p class="eyebrow reveal">Architecture &amp; Defense Funnel</p>
-    <h1 class="reveal d1">How Clembot Doorman Protects Autonomous Agents</h1>
-    <p class="section-intro reveal d2">
-      A sequential, cost-bounded architecture designed to protect agent context windows.
-      Clembot Doorman stops redundant or unsafe tools locally for <b>$0.00</b>, only advancing
-      to remote adversarial grading on Base for <b>$0.01</b> when a candidate is genuinely novel.
-    </p>
-    <p class="hero-cta reveal d2">
-      <a class="btn" href="#funnel">The 2-Phase Funnel</a>
-      <a class="btn btn-ghost" href="#four-layers">The 4 Layers</a>
-      <a class="btn btn-ghost" href="/#flow">Try Interactive Simulator</a>
-    </p>
+<div class="header page-hero" id="hero">
+  <div class="hero-panel" id="hero-panel" aria-hidden="true"></div>
+  <canvas id="hero-canvas" class="page-hero-canvas" data-hero="how-it-works" aria-hidden="true"></canvas>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">Architecture &amp; Defense Funnel</p>
+      <h1 class="reveal d1">How Clembot Doorman Protects Autonomous Agents</h1>
+      <p class="story reveal d2">
+        A sequential, cost-bounded architecture engineered to protect agent context windows.
+        Clembot Doorman stops redundant, stale, or dangerous tools locally for <b>$0.00</b>, advancing
+        to remote adversarial grading on Base for <b>$0.01</b> only when a candidate is genuinely novel.
+      </p>
+      <p class="hero-cta reveal d2">
+        <a class="btn" href="#funnel">The 2-Phase Funnel</a>
+        <a class="btn btn-ghost" href="#four-layers">The 4 Layers</a>
+        <a class="btn btn-ghost" href="/#flow">Try Interactive Simulator</a>
+      </p>
+    </div>
+    <div class="hero-telemetry reveal d2">
+      <div class="hero-hud-card" role="region" aria-label="Funnel Defense Telemetry">
+        <div class="hud-head">
+          <div class="hud-status"><span class="hud-dot"></span><span>Defense Funnel Active</span></div>
+          <span class="hud-tag">2-PHASE GATE</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="hud-metric">
+            <span class="hud-val good">$0.00</span>
+            <span class="hud-lbl">Phase 1 Local Cost</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val accent">$0.01</span>
+            <span class="hud-lbl">Phase 2 Base Audit</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val">24 / 24</span>
+            <span class="hud-lbl">Live MCPs Audited</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val warn">18.2%</span>
+            <span class="hud-lbl">Threat Rejection</span>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-hud" id="hud-trigger-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Spawn Candidate Batch</span>
+          </button>
+          <p class="hud-hint">Click canvas or button to inject candidates into the 3D funnel</p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <!-- ── SECTION 1: THE 2-PHASE DEFENSE FUNNEL ───────────────────────── -->
 <section id="funnel" style="padding-top: 0;">

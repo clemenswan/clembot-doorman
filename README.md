@@ -113,8 +113,7 @@ claude plugin details clembot-doorman
 ### 2. The CLI: doctor, needs, report, watch, eval
 
 ```bash
-git clone https://github.com/clemenswan/clembot-doorman
-npm i -g ./clembot-doorman
+npm i -g clembot-doorman
 doorman --version
 ```
 

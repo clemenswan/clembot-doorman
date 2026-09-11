@@ -85,24 +85,60 @@
 
 <main id="main">
 
-<!-- ── HERO SECTION ────────────────────────────────────────────────── -->
-<section id="hero-direction">
-  <div class="wrap">
-    <p class="eyebrow reveal">Applied AI Research &amp; Autonomous Systems</p>
-    <h1 class="reveal d1">56 Projects, 283 Shipments, and the Evolution of Clembot</h1>
-    <p class="section-intro reveal d2">
-      <b>Wanessa Labs</b> is an applied AI engineering studio founded by <b>Clemens Wan</b>.
-      Over 7 months of continuous shipping (March – September 2026), Wanessa Labs has logged <b>283 verified updates</b> across <b>56 active projects in 7 tracks</b>.
-      Every milestone is backed by an append-only decision log, documenting the real-world evolution of autonomous multi-agent agencies from local LLMs to 27-agent meshes.
-    </p>
-    <p class="hero-cta reveal d2">
-      <a class="btn" href="#clembot-evolution">The Clembot Evolution</a>
-      <a class="btn btn-ghost" href="#tracks">56 Projects (7 Tracks)</a>
-      <a class="btn btn-ghost" href="#velocity">Shipping Velocity &amp; Logs</a>
-      <a class="btn btn-ghost" href="https://wanessalabs.com" target="_blank" rel="noopener noreferrer">wanessalabs.com ↗</a>
-    </p>
+<div class="header page-hero" id="hero">
+  <div class="hero-panel" id="hero-panel" aria-hidden="true"></div>
+  <canvas id="hero-canvas" class="page-hero-canvas" data-hero="wanessa-labs" aria-hidden="true"></canvas>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">Applied AI Research &amp; Autonomous Systems</p>
+      <h1 class="reveal d1">56 Projects, 283 Shipments, and the Evolution of Clembot</h1>
+      <p class="story reveal d2">
+        <b>Wanessa Labs</b> is an applied AI engineering studio founded by <b>Clemens Wan</b>.
+        Over 7 months of continuous shipping (March – September 2026), Wanessa Labs has logged <b>283 verified updates</b> across <b>56 active projects in 7 tracks</b>.
+        Every milestone is backed by an append-only decision log, documenting the real-world evolution of autonomous multi-agent agencies.
+      </p>
+      <p class="hero-cta reveal d2">
+        <a class="btn" href="#clembot-evolution">The Clembot Evolution</a>
+        <a class="btn btn-ghost" href="#tracks">56 Projects (7 Tracks)</a>
+        <a class="btn btn-ghost" href="#velocity">Shipping Velocity &amp; Logs</a>
+        <a class="btn btn-ghost" href="https://wanessalabs.com" target="_blank" rel="noopener noreferrer">wanessalabs.com ↗</a>
+      </p>
+    </div>
+    <div class="hero-telemetry reveal d2">
+      <div class="hero-hud-card" role="region" aria-label="Wanessa Labs Studio Engine">
+        <div class="hud-head">
+          <div class="hud-status"><span class="hud-dot"></span><span>Studio Timeline Active</span></div>
+          <span class="hud-tag">7-MONTH RUN</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="hud-metric">
+            <span class="hud-val good">56 Projects</span>
+            <span class="hud-lbl">Active Codebases</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val accent">283</span>
+            <span class="hud-lbl">Verified Shipments</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val">7 Tracks</span>
+            <span class="hud-lbl">Research Domains</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val good">1.3 / day</span>
+            <span class="hud-lbl">Shipping Velocity</span>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-hud" id="hud-trigger-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            <span>Simulate Shipping Wave</span>
+          </button>
+          <p class="hud-hint">Click canvas or button to ripple shipping waves across the 7 months</p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <!-- ── STATS BAR ───────────────────────────────────────────────────── -->
 <section id="stats" style="padding-top: 0;">

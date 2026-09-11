@@ -85,25 +85,62 @@
 
 <main id="main">
 
-<section id="hero-direction">
-  <div class="wrap">
-    <p class="eyebrow reveal">Where this is headed</p>
-    <h1 class="reveal d1">A subscription that keeps an agent stack current</h1>
-    <p class="section-intro reveal d2">
-      Adding a capability to an agent is one line of JSON, and after that line a
-      server you have never audited describes its own tools to your agent. The
-      first half of this project made that decision measurable. The second half
-      makes it <b>continuous</b>: new tools appear every week, and the question
-      is not whether one is good, it is whether one is good <em>for the build
-      you already have</em>.
-    </p>
-    <p class="section-intro reveal d2">
-      This page is the direction, with the line between what runs today and what
-      is specified drawn where it actually falls rather than where it would look
-      best.
-    </p>
+<div class="header page-hero" id="hero">
+  <div class="hero-panel" id="hero-panel" aria-hidden="true"></div>
+  <canvas id="hero-canvas" class="page-hero-canvas" data-hero="direction" aria-hidden="true"></canvas>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">Where this is headed</p>
+      <h1 class="reveal d1">A continuous trust rail that keeps an agent stack current</h1>
+      <p class="story reveal d2">
+        Adding a capability to an agent is one line of JSON, and after that line a
+        server you have never audited describes its own tools to your agent. The
+        first half of this project made that decision measurable. The second half
+        makes it <b>continuous</b>: new tools appear every week, and the question
+        is not whether one is good, it is whether one is good <em>for the build
+        you already have</em>.
+      </p>
+      <p class="hero-cta reveal d2">
+        <a class="btn" href="#shape">The 7 Stages</a>
+        <a class="btn btn-ghost" href="#rail">Cryptographic Trust Rail</a>
+        <a class="btn btn-ghost" href="/#flow">Try Simulator</a>
+      </p>
+    </div>
+    <div class="hero-telemetry reveal d2">
+      <div class="hero-hud-card" role="region" aria-label="Cryptographic Trust Rail Telemetry">
+        <div class="hud-head">
+          <div class="hud-status"><span class="hud-dot"></span><span>Trust Rail Online</span></div>
+          <span class="hud-tag">BLAKE3 &amp; ERC-4337</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="hud-metric">
+            <span class="hud-val good">7 Stages</span>
+            <span class="hud-lbl">Verification Pipeline</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val accent">1 Paid ($0.01)</span>
+            <span class="hud-lbl">Only When Novel</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val">100% Snap</span>
+            <span class="hud-lbl">Deterministic Fit</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val good">Base L2</span>
+            <span class="hud-lbl">On-Chain Registry</span>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-hud" id="hud-trigger-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
+            <span>Drop Signed Block</span>
+          </button>
+          <p class="hud-hint">Click canvas or button to drop and snap a new cryptographic block</p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <section id="shape">
   <div class="wrap">

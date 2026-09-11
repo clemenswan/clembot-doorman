@@ -29,8 +29,7 @@ If it prints `NOT_FOUND`, stop and tell the user this, then end the turn:
 > Reinstall the plugin, or install the CLI directly:
 >
 > ```bash
-> git clone https://github.com/clemenswan/clembot-doorman
-> npm i -g ./clembot-doorman
+> npm i -g clembot-doorman
 > ```
 >
 > The gate is still running either way. It is pure bash and depends on none of

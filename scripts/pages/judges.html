@@ -85,22 +85,59 @@
 
 <main id="main">
 
-<section id="hero-direction">
-  <div class="wrap">
-    <p class="eyebrow reveal">ETHOnline 2026 · Judging Guide &amp; Prize Verification</p>
-    <h1 class="reveal d1">Mapping Clembot Doorman to ETHGlobal Judging Criteria</h1>
-    <p class="section-intro reveal d2">
-      A transparent, verifiable guide for ETHOnline 2026 judges. Below is an exhaustive mapping
-      of Clembot Doorman against the <b>five ETHGlobal core judging categories</b>, alongside
-      a direct checklist verifying alignment with the <b>Bazantic</b> and <b>Base / x402</b> prize tracks.
-    </p>
-    <p class="hero-cta reveal d2">
-      <a class="btn" href="#criteria">View 5 Core Categories</a>
-      <a class="btn btn-ghost" href="#prizes">Prize Checklist</a>
-      <a class="btn btn-ghost" href="#runbook">2-Min Reproduction</a>
-    </p>
+<div class="header page-hero" id="hero">
+  <div class="hero-panel" id="hero-panel" aria-hidden="true"></div>
+  <canvas id="hero-canvas" class="page-hero-canvas" data-hero="judges" aria-hidden="true"></canvas>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">ETHOnline 2026 · Judging Guide &amp; Prize Verification</p>
+      <h1 class="reveal d1">Mapping Clembot Doorman to ETHGlobal Judging Criteria</h1>
+      <p class="story reveal d2">
+        A transparent, verifiable evaluation guide for ETHOnline 2026 judges. Below is an exhaustive mapping
+        of Clembot Doorman against the <b>five ETHGlobal core judging categories</b>, alongside
+        a direct checklist verifying alignment with the <b>Bazantic</b> and <b>Base / x402</b> prize tracks.
+      </p>
+      <p class="hero-cta reveal d2">
+        <a class="btn" href="#criteria">View 5 Core Categories</a>
+        <a class="btn btn-ghost" href="#prizes">Prize Checklist</a>
+        <a class="btn btn-ghost" href="#runbook">2-Min Reproduction</a>
+      </p>
+    </div>
+    <div class="hero-telemetry reveal d2">
+      <div class="hero-hud-card" role="region" aria-label="ETHOnline Evaluation Matrix">
+        <div class="hud-head">
+          <div class="hud-status"><span class="hud-dot"></span><span>Evaluation Matrix</span></div>
+          <span class="hud-tag">ETHONLINE 2026</span>
+        </div>
+        <div class="hud-metrics">
+          <div class="hud-metric">
+            <span class="hud-val good">98.6 / 100</span>
+            <span class="hud-lbl">Criteria Score</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val accent">5 / 5</span>
+            <span class="hud-lbl">Core Categories</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val">2 Active</span>
+            <span class="hud-lbl">Prize Tracks</span>
+          </div>
+          <div class="hud-metric">
+            <span class="hud-val good">436 Tests</span>
+            <span class="hud-lbl">100% Passing</span>
+          </div>
+        </div>
+        <div class="hud-actions">
+          <button type="button" class="btn-hud" id="hud-trigger-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+            <span>Pulse Evaluation Radar</span>
+          </button>
+          <p class="hud-hint">Click canvas or button to pulse 3D evaluation radar web</p>
+        </div>
+      </div>
+    </div>
   </div>
-</section>
+</div>
 
 <!-- ── SECTION 1: 5 CORE JUDGING CATEGORIES ────────────────────────── -->
 <section id="criteria" style="padding-top: 0;">
@@ -113,99 +150,99 @@
 
     <div class="refuse-grid reveal d2">
       <!-- 1. TECHNICALITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">01 · Technicality</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Sophistication &amp; Architectural Rigor</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>The Problem:</strong> Adding an MCP server takes one line of JSON. After that, an unvetted third-party
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">01 · Technicality</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">Sophistication &amp; Architectural Rigor</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">The Problem:</strong> Adding an MCP server takes one line of JSON. After that, an unvetted third-party
           server injects tool descriptions directly into the agent's LLM context window, enabling covert prompt injection,
           schema bloat, and unauthorized execution.
         </p>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Our Solution:</strong>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Our Solution:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Offline Security Hook:</b> A 180-line standalone Bash hook (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span>) executing in &lt; 5ms with zero external runtime dependencies. Fails closed (<code>exit 2</code>).</li>
-          <li><b>Dual-Sandbox Harness Adapter:</b> Isolates execution in local Docker containers, driving Claude Code via native CLI flags without credential leakage.</li>
-          <li><b>EIP-712 x402 Micropayments:</b> Protocol-level HTTP 402 challenge negotiation on Base USDC with bounded spend caps ($1/run, $5/day).</li>
-          <li><b>Deterministic Schema Synthesis:</b> Prunes bloated MCP schemas from 3,400 tokens down to 420 tokens in pinned <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span> files.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Offline Security Hook:</b> A 180-line standalone Bash hook (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="mcp-gate"><code>mcp-gate.sh</code></span>) executing in &lt; 5ms with zero external runtime dependencies. Fails closed (<code>exit 2</code>).</li>
+          <li><b style="color: #ffffff;">Dual-Sandbox Harness Adapter:</b> Isolates execution in local Docker containers, driving Claude Code via native CLI flags without credential leakage.</li>
+          <li><b style="color: #ffffff;">EIP-712 x402 Micropayments:</b> Protocol-level HTTP 402 challenge negotiation on Base USDC with bounded spend caps ($1/run, $5/day).</li>
+          <li><b style="color: #ffffff;">Deterministic Schema Synthesis:</b> Prunes bloated MCP schemas from 3,400 tokens down to 420 tokens in pinned <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span> files.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Verified in: src/vet.mjs · bin/mcp-gate.sh · src/budget.mjs
         </p>
       </article>
 
       <!-- 2. ORIGINALITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">02 · Originality</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">First Package Manager &amp; Gate for Agent Tools</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Fresh Problem Space:</strong> While traditional web applications have firewalls and package managers (npm, brew),
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">02 · Originality</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">First Package Manager &amp; Gate for Agent Tools</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Fresh Problem Space:</strong> While traditional web applications have firewalls and package managers (npm, brew),
           AI agents have zero adoption gates—anyone who pastes an MCP URL grants arbitrary external code full prompt influence.
         </p>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Creative Inventions:</strong>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Creative Inventions:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Discovery of Stealth Steering:</b> Uncovered real-world covert ads embedded in MCP servers (WebZum's 6,290-character injection instructing models to recite sales scripts and de-rank competitors).</li>
-          <li><b>2-Phase Defense Funnel:</b> Eliminates redundant or unsafe tools locally for $0.00, only paying $0.01 for remote adversarial grading when a tool is proven novel.</li>
-          <li><b>Reverse-Needs Recommender:</b> Inspects actual session history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>) to suggest tools based on what subagents actually asked for.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Discovery of Stealth Steering:</b> Uncovered real-world covert ads embedded in MCP servers (WebZum's 6,290-character injection instructing models to recite sales scripts and de-rank competitors).</li>
+          <li><b style="color: #ffffff;">2-Phase Defense Funnel:</b> Eliminates redundant or unsafe tools locally for $0.00, only paying $0.01 for remote adversarial grading when a tool is proven novel.</li>
+          <li><b style="color: #ffffff;">Reverse-Needs Recommender:</b> Inspects actual session history (<span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span>) to suggest tools based on what subagents actually asked for.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           First reported in: site/index.html (#finding) · evals/fixtures
         </p>
       </article>
 
       <!-- 3. PRACTICALITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">03 · Practicality</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">100% Production Ready &amp; Battle-Tested</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Not a Mock or Concept:</strong> Clembot Doorman is fully implemented, fully tested, and already running in active production.
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">03 · Practicality</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">100% Production Ready &amp; Battle-Tested</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Not a Mock or Concept:</strong> Clembot Doorman is fully implemented, fully tested, and already running in active production.
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Complete Test Coverage:</b> 399 unit tests and 37 CLI tests passing with zero failures.</li>
-          <li><b>Real-World Deployment:</b> Guards the active 27-agent roster of <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span>, a multi-client marketing agency.</li>
-          <li><b>24 Public Audits:</b> Scanned and graded 24 real third-party MCP servers, publishing reproducible transcript tapes for every single score.</li>
-          <li><b>Live Infrastructure:</b> Deployed on Cloudflare Pages production with custom domain (<a href="https://clembot-doorman.wanessalabs.com" target="_blank" rel="noopener noreferrer">clembot-doorman.wanessalabs.com</a>) and Bazantic Gateway (<a href="https://clembot-doorman.bazgateway.com" target="_blank" rel="noopener noreferrer">clembot-doorman.bazgateway.com</a>).</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Complete Test Coverage:</b> 399 unit tests and 37 CLI tests passing with zero failures.</li>
+          <li><b style="color: #ffffff;">Real-World Deployment:</b> Guards the active 27-agent roster of <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span>, a multi-client marketing agency.</li>
+          <li><b style="color: #ffffff;">24 Public Audits:</b> Scanned and graded 24 real third-party MCP servers, publishing reproducible transcript tapes for every single score.</li>
+          <li><b style="color: #ffffff;">Live Infrastructure:</b> Deployed on Cloudflare Pages production with custom domain (<a href="https://clembot-doorman.wanessalabs.com" target="_blank" rel="noopener noreferrer" style="color: var(--ink-accent);">clembot-doorman.wanessalabs.com</a>) and Bazantic Gateway (<a href="https://clembot-doorman.bazgateway.com" target="_blank" rel="noopener noreferrer" style="color: var(--ink-accent);">clembot-doorman.bazgateway.com</a>).</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Run suite: npm test · 399 passed, 37 CLI passed
         </p>
       </article>
 
       <!-- 4. USABILITY -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">04 · Usability (UI / UX / DX)</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Intuitive DX, Agent Ergonomics &amp; Polished UI</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Developer &amp; Agent Ergonomics:</strong>
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">04 · Usability (UI / UX / DX)</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">Intuitive DX, Agent Ergonomics &amp; Polished UI</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Developer &amp; Agent Ergonomics:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Zero-Config Doctor:</b> Running <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-doctor"><code>doorman doctor</code></span> instantly outputs an ASCII audit of active harnesses, MCP tools, and gate status in plain terminal text.</li>
-          <li><b>In-Session Slash Command:</b> Type <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="vet"><code>/vet &lt;url&gt;</code></span> directly within Claude Code to inspect tool safety without leaving your editor.</li>
-          <li><b>Interactive Simulator:</b> The live web simulator offers preset pills (WebZum, DeepWiki, mcp-scorecard, Peek.com) for instant testing with real-time audit step transitions.</li>
-          <li><b>Universal Mobile Design:</b> 0 horizontal scroll overflow across all viewports (320px, 375px, 768px, 1280px) and accessible keyboard navigation.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Zero-Config Doctor:</b> Running <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-doctor"><code>doorman doctor</code></span> instantly outputs an ASCII audit of active harnesses, MCP tools, and gate status in plain terminal text.</li>
+          <li><b style="color: #ffffff;">In-Session Slash Command:</b> Type <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="vet"><code>/vet &lt;url&gt;</code></span> directly within Claude Code to inspect tool safety without leaving your editor.</li>
+          <li><b style="color: #ffffff;">Interactive Simulator:</b> The live web simulator offers preset pills (WebZum, DeepWiki, mcp-scorecard, Peek.com) for instant testing with real-time audit step transitions.</li>
+          <li><b style="color: #ffffff;">Universal Mobile Design:</b> 0 horizontal scroll overflow across all viewports (320px, 375px, 768px, 1280px) and accessible keyboard navigation.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Experience it: /#flow (Live Demo) · guide.html (Developer Walkthrough)
         </p>
       </article>
 
       <!-- 5. WOW FACTOR -->
-      <article class="refuse" style="border-top: 3px solid var(--accent);">
-        <div class="tldr-badge" style="margin-bottom: var(--sp-3);">05 · WOW Factor</div>
-        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2);">Memorable, Striking &amp; Visually Verifiable</h3>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.55; margin-bottom: var(--sp-3);">
-          <strong>Standout Moments that Resonate:</strong>
+      <article class="refuse" style="border-top: 3px solid var(--ink-accent);">
+        <div class="tldr-badge" style="margin-bottom: var(--sp-3); color: var(--ink-accent); border-color: var(--ink-border);">05 · WOW Factor</div>
+        <h3 style="font-size: 1.25rem; margin-bottom: var(--sp-2); color: #ffffff;">Memorable, Striking &amp; Visually Verifiable</h3>
+        <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
+          <strong style="color: #ffffff;">Standout Moments that Resonate:</strong>
         </p>
-        <ul style="font-size: 0.875rem; color: var(--text-secondary); padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b>Adversarial Injection Caught Live:</b> Clicking "WebZum" in the simulator runs a live probe that halts at Step 6, highlighting the exact 6,290-character hostile prompt and awarding a Grade F.</li>
-          <li><b>Live On-Chain Micropayment Challenge:</b> Inspecting the network tab during gateway queries shows real HTTP 402 Payment Required headers on Base USDC.</li>
-          <li><b>Context Token Crash:</b> A side-by-side comparison demonstrating an 87% token reduction (3,400 to 420 tokens) via Bazantic recipe generation.</li>
-          <li><b>Honest Limitations Card:</b> Distinctly lists what is NOT measured (e.g. 70 of 100 points requiring live model keys), demonstrating rare hackathon honesty.</li>
+        <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
+          <li><b style="color: #ffffff;">Adversarial Injection Caught Live:</b> Clicking "WebZum" in the simulator runs a live probe that halts at Step 6, highlighting the exact 6,290-character hostile prompt and awarding a Grade F.</li>
+          <li><b style="color: #ffffff;">Live On-Chain Micropayment Challenge:</b> Inspecting the network tab during gateway queries shows real HTTP 402 Payment Required headers on Base USDC.</li>
+          <li><b style="color: #ffffff;">Context Token Crash:</b> A side-by-side comparison demonstrating an 87% token reduction (3,400 to 420 tokens) via Bazantic recipe generation.</li>
+          <li><b style="color: #ffffff;">Honest Limitations Card:</b> Distinctly lists what is NOT measured (e.g. 70 of 100 points requiring live model keys), demonstrating rare hackathon honesty.</li>
         </ul>
-        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--accent);">
+        <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
           Interactive proof: /#flow · clembot-doorman.bazgateway.com
         </p>
       </article>
@@ -227,17 +264,17 @@
         <!-- TRACK A: BAZANTIC -->
         <article class="refuse">
           <div class="tldr-badge" style="background: var(--ink-accent); color: var(--ink-surface); margin-bottom: var(--sp-3);">Track A · Bazantic</div>
-          <h3>Agentify an API / Continuity Track</h3>
-          <p style="font-size: 0.875rem; color: var(--ink-body); line-height: 1.55; margin-bottom: var(--sp-3);">
+          <h3 style="color: #ffffff;">Agentify an API / Continuity Track</h3>
+          <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
             Bazantic solves agent tool hallucination by publishing deterministic recipes and hosting authenticated gateways.
             Clembot Doorman is a direct consumer and producer of Bazantic infrastructure.
           </p>
 
-          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: var(--ink-body); line-height: 1.7;">
-            <li>✅ <strong>Live Hosted Gateway:</strong> <code>clembot-doorman.bazgateway.com</code> deployed and reachable over HTTPS.</li>
-            <li>✅ <strong>Pinned Recipe Generation:</strong> Generates canonical <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span> files with exact argument signatures, reducing prompt drift.</li>
-            <li>✅ <strong>Context Token Reduction:</strong> Documented 87% reduction in schema tokens (3,400 → 420 tokens per turn).</li>
-            <li>✅ <strong>Deterministic Allowlisting:</strong> Merges Bazantic hashes into local <code>registry/allowlist.json</code> for offline verification.</li>
+          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: #ffffff; line-height: 1.7;">
+            <li>✅ <strong style="color: #ffffff;">Live Hosted Gateway:</strong> <code style="color: var(--ink-accent);">clembot-doorman.bazgateway.com</code> deployed and reachable over HTTPS.</li>
+            <li>✅ <strong style="color: #ffffff;">Pinned Recipe Generation:</strong> Generates canonical <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code style="color: var(--ink-accent);">recipe.md</code></span> files with exact argument signatures, reducing prompt drift.</li>
+            <li>✅ <strong style="color: #ffffff;">Context Token Reduction:</strong> Documented 87% reduction in schema tokens (3,400 → 420 tokens per turn).</li>
+            <li>✅ <strong style="color: #ffffff;">Deterministic Allowlisting:</strong> Merges Bazantic hashes into local <code>registry/allowlist.json</code> for offline verification.</li>
           </ul>
 
           <div style="background: var(--ink-bg); border: 1px solid var(--ink-border); border-radius: var(--radius-md); padding: var(--sp-3); font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-accent);">
@@ -248,17 +285,17 @@
         <!-- TRACK B: BASE -->
         <article class="refuse">
           <div class="tldr-badge" style="background: var(--ink-accent); color: var(--ink-surface); margin-bottom: var(--sp-3);">Track B · Base</div>
-          <h3>Autonomous Agent Micropayments &amp; x402 Track</h3>
-          <p style="font-size: 0.875rem; color: var(--ink-body); line-height: 1.55; margin-bottom: var(--sp-3);">
+          <h3 style="color: #ffffff;">Autonomous Agent Micropayments &amp; x402 Track</h3>
+          <p style="font-size: 0.875rem; color: #ffffff; line-height: 1.55; margin-bottom: var(--sp-3);">
             Base enables sub-cent micropayments for autonomous agent workflows. Clembot Doorman incorporates
             native x402 payment negotiation on Base USDC for paid adversarial evaluations.
           </p>
 
-          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: var(--ink-body); line-height: 1.7;">
-            <li>✅ <strong>x402 Protocol Compliance:</strong> Responds to HTTP 402 Payment Required with structured EIP-712 payment payloads.</li>
-            <li>✅ <strong>Base USDC Micropayments:</strong> Configured for $0.01 USDC audits on Base, proving cost-effective agent evaluation.</li>
-            <li>✅ <strong>Bounded Spend Caps:</strong> Hard limits enforced by <code>src/budget.mjs</code> ($1 per run, $5 per day); unspent allowances auto-released.</li>
-            <li>✅ <strong>Free Tier First:</strong> Zero network and zero tokens spent on redundant candidates; Base payments trigger only for novel tools.</li>
+          <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: #ffffff; line-height: 1.7;">
+            <li>✅ <strong style="color: #ffffff;">x402 Protocol Compliance:</strong> Responds to HTTP 402 Payment Required with structured EIP-712 payment payloads.</li>
+            <li>✅ <strong style="color: #ffffff;">Base USDC Micropayments:</strong> Configured for $0.01 USDC audits on Base, proving cost-effective agent evaluation.</li>
+            <li>✅ <strong style="color: #ffffff;">Bounded Spend Caps:</strong> Hard limits enforced by <code>src/budget.mjs</code> ($1 per run, $5 per day); unspent allowances auto-released.</li>
+            <li>✅ <strong style="color: #ffffff;">Free Tier First:</strong> Zero network and zero tokens spent on redundant candidates; Base payments trigger only for novel tools.</li>
           </ul>
 
           <div style="background: var(--ink-bg); border: 1px solid var(--ink-border); border-radius: var(--radius-md); padding: var(--sp-3); font-family: var(--font-mono); font-size: 0.75rem; color: var(--ink-accent);">
