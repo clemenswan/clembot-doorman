@@ -1,0 +1,65 @@
+{
+  "_what": "What the daily popularity sweep should count each graded server by.",
+  "_evidence_standard": [
+    "A mapping is recorded ONLY when the source's own record points back at the",
+    "graded server's hostname. A name that merely looks right is not evidence.",
+    "A wrong mapping publishes a stranger's download count under this server's",
+    "name, with a timestamp and a trend, and looks exactly like a correct one.",
+    "",
+    "Checked against the live sources on 2026-09-11. Apply with:",
+    "  read -rsp 'RUNNER_TOKEN: ' RUNNER_TOKEN && export RUNNER_TOKEN",
+    "  node runner/link.mjs --file popularity-subjects.json",
+    "",
+    "Three of 26 graded servers could be mapped. That is the honest yield: most",
+    "of the graded set are hosted remote servers with no npm package and no",
+    "public repo that names them. Every unmapped server reports",
+    "sources_measured: 0, which is the correct output rather than a useful one."
+  ],
+  "verified": [
+    {
+      "server_url": "https://gitmcp.io/docs",
+      "source": "github",
+      "subject": "idosal/git-mcp",
+      "evidence": "GitHub repo record names gitmcp.io. The repo IS the service.",
+      "value_at_check": 8382
+    },
+    {
+      "server_url": "https://mcp.exa.ai/mcp",
+      "source": "github",
+      "subject": "exa-labs/exa-mcp-server",
+      "evidence": "GitHub repo record names mcp.exa.ai. The repo IS the server.",
+      "value_at_check": 4992
+    },
+    {
+      "server_url": "https://subwayinfo.nyc/mcp",
+      "source": "smithery",
+      "subject": "subwayinfo",
+      "evidence": "Smithery list row homepage is https://subwayinfo.nyc, verified=true. Moved 16873 -> 22961 between 04:04 and 21:50 on 2026-09-11, so this one already has something to trend.",
+      "value_at_check": 22961
+    }
+  ],
+  "_needs_a_human_call": [
+    {
+      "server_url": "https://mcp.docs.astro.build/mcp",
+      "source": "github",
+      "subject": "withastro/docs",
+      "value_at_check": 1688,
+      "why_not_applied": [
+        "It PASSES the evidence standard: the repo record names the host. It is",
+        "still probably the wrong subject, because the stars measure the Astro",
+        "DOCS PROJECT and not the MCP server that happens to be served from it.",
+        "An evidenced mapping can still count the wrong population, which is a",
+        "failure the host check cannot see. Apply it only if you want the docs",
+        "project's popularity standing in for the server's."
+      ]
+    }
+  ],
+  "_rejected": [
+    { "server_url": "https://docs.mcp.cloudflare.com/mcp", "tried": "github cloudflare/mcp-server-cloudflare", "why": "repo exists, has no homepage field and its record never names the host" },
+    { "server_url": "https://knowledge-mcp.global.api.aws", "tried": "github awslabs/mcp", "why": "repo homepage is awslabs.github.io/mcp, never names knowledge-mcp.global.api.aws" },
+    { "server_url": "https://hf.co/mcp", "tried": "github huggingface/hf-mcp-server, npm @huggingface/mcp-client", "why": "repo homepage is huggingface.co/mcp; hf.co/mcp serves 200 with NO redirect, so the two could not be evidenced as the same endpoint" },
+    { "server_url": "https://mcp.exa.ai/mcp", "tried": "npm exa-mcp-server", "why": "package exists, its metadata never names mcp.exa.ai" },
+    { "server_url": "https://mcp.openzeppelin.com/contracts/solidity/mcp", "tried": "github OpenZeppelin/contracts-mcp", "why": "404, the repo does not exist under that name" },
+    { "server_url": "8 others", "tried": "smithery search by name, with backoff after an initial 429", "why": "searched, no registry entry whose homepage host matches. Rechecked rather than left at 429: a rate limit is NOT MEASURED, and recording it as no-match would shrink the candidate set on the strength of a throttle" }
+  ]
+}

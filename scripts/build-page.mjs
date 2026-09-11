@@ -50,6 +50,9 @@ const css = styleMatch[1];
 const footerMatch = html.match(/<footer[\s\S]*?<\/footer>/);
 const footerHtml = footerMatch ? footerMatch[0] : '';
 
+const navJsPath = path.join(SITE, 'nav.js');
+const navJs = fs.existsSync(navJsPath) ? fs.readFileSync(navJsPath, 'utf8') : '';
+
 // The scroll sweep that adds `.in` to `.reveal` lives in the index page's
 // driver script, which this page does not ship. Reveal everything up front
 // rather than serving a page whose content never becomes visible.
@@ -326,6 +329,7 @@ ${css}
 </head>
 <body>
 ${body}
+<script>${navJs}</script>
 <script src="/glossary.js" defer></script>
 <script src="/hero-canvas.js" defer></script>
 </body>

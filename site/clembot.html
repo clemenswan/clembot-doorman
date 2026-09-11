@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>About Clembot | clembot doorman</title>
-<meta name="description" content="Autonomous multi-client marketing & ops engine">
+<title>Clembot Agent Architecture | clembot doorman</title>
+<meta name="description" content="The 27-agent autonomous marketing and operations engine that prompted the creation of clembot-doorman.">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -128,20 +128,20 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
    Radius rather than a circle, to match every other bordered surface here. */
 .wordmark img { display: block; width: 26px; height: 26px; border-radius: var(--radius-sm); flex: none; }
 .wordmark i { color: var(--accent-mid); font-style: normal; }
-.masthead nav { display: flex; gap: var(--sp-6); }
-.masthead nav a {
+.masthead nav { display: flex; align-items: center; gap: var(--sp-6); }
+.masthead nav > a {
   font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.1em;
   font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); text-decoration: none;
   position: relative; padding-block: 4px; transition: color .2s var(--ease-signature);
 }
-.masthead nav a::after {
+.masthead nav > a::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
   background: var(--accent); transform: scaleX(0); transform-origin: left;
   transition: transform .3s var(--ease-signature);
 }
-.masthead nav a:hover { color: var(--text-primary); }
-.masthead nav a[aria-current="true"] { color: var(--accent); }
-.masthead nav a[aria-current="true"]::after { transform: scaleX(1); }
+.masthead nav > a:hover { color: var(--text-primary); }
+.masthead nav > a[aria-current="true"] { color: var(--accent); }
+.masthead nav > a[aria-current="true"]::after { transform: scaleX(1); }
 .masthead-cta {
   font-family: var(--font-body) !important;
   font-size: 0.8125rem !important;
@@ -167,7 +167,7 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
    already-full nav and the links broke mid-label instead of overflowing, so
    the masthead silently became two lines tall while every scrollWidth and
    document-overflow check still read clean. Wrapping is not overflow. */
-.masthead nav a { white-space: nowrap; }
+.masthead nav > a { white-space: nowrap; }
 
 /* ── masthead dropdown ────────────────────────────────────────────────── */
 .nav-dropdown {
@@ -364,40 +364,73 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 }
 
 @media (max-width: 768px) {
+  .nav-dropdown.is-open::before {
+    content: "";
+    position: fixed;
+    top: 58px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 90;
+    pointer-events: auto;
+  }
   .nav-dropdown-menu {
     position: fixed;
     top: 58px;
-    left: 16px;
-    right: 16px;
+    left: 12px;
+    right: 12px;
     width: auto;
-    max-width: calc(100vw - 32px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    z-index: 100;
+  }
+  .dropdown-card {
+    display: block !important;
+    width: 100% !important;
   }
 }
 
-/* The nav scrolls sideways rather than disappearing.
-   It used to be hidden under 760px, which was fine at six links. At nine it
-   overflowed the PAGE between 760 and about 1060: 578px of links inside a
-   768px viewport pushed the document to 814 and the whole site scrolled
-   horizontally. Hiding it at a higher breakpoint would have fixed the overflow
-   by removing navigation from every tablet, so it scrolls instead and stays
-   reachable at 320. */
 @media (max-width: 1060px) {
-  .masthead .wrap { gap: var(--sp-4); }
-  .masthead nav {
-    min-width: 0; overflow-x: auto; gap: var(--sp-5);
-    scrollbar-width: none; -ms-overflow-style: none;
-    /* Bleed to the edge so the last link is not trapped under the gutter. */
-    margin-inline-end: calc(var(--gutter) * -1);
-    padding-inline: 0 var(--gutter);
-    -webkit-overflow-scrolling: touch;
-  }
-  .masthead nav::-webkit-scrollbar { display: none; }
-  .masthead nav a, .masthead nav .nav-dropdown { white-space: nowrap; flex: none; }
+  .masthead .wrap { gap: var(--sp-3); }
+  .masthead nav { gap: var(--sp-4); }
 }
-@media (max-width: 480px) {
+
+@media (max-width: 640px) {
+  .masthead-cta { display: none !important; }
+  .masthead .wrap { gap: var(--sp-2); }
   .masthead nav { gap: var(--sp-3); }
+}
+
+@media (max-width: 480px) {
+  .wordmark { gap: var(--sp-2); }
+  .wordmark img { width: 24px; height: 24px; }
   .wordmark span { font-size: 0.9375rem; }
-  .masthead nav a, .nav-dropdown-trigger { padding-block: 8px; min-height: 44px; display: inline-flex; align-items: center; }
+  .masthead nav { gap: var(--sp-3); }
+  .masthead nav > a, .nav-dropdown-trigger {
+    padding-block: 6px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (max-width: 360px) {
+  .masthead .wrap { padding-inline: 12px; }
+  .wordmark span { font-size: 0.875rem; }
+  .masthead nav { gap: var(--sp-2); }
+  .masthead nav > a, .nav-dropdown-trigger {
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    gap: 3px;
+  }
 }
 
 /* ── header: short. The demo is the point, not the prose. ─────────────── */
@@ -2746,6 +2779,245 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 #hero-direction h1 { max-width: 22ch; }
 #rail .refuse-grid { margin-top: var(--sp-8); }
 .next-head { margin-top: var(--sp-12, 3rem); margin-bottom: var(--sp-4, 1rem); }
+
+/* ── Native Bazantic Recipe Showcase Cards ─────────────────────────────── */
+.recipe-grid {
+  display: grid;
+  gap: var(--sp-5);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  margin-top: var(--sp-6);
+}
+.recipe-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 2.5vw, 28px);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: border-color .2s var(--ease-signature), transform .2s var(--ease-signature), box-shadow .2s var(--ease-signature);
+}
+.recipe-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+.recipe-card .tldr-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-family: var(--font-label);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 3px 10px;
+  margin-bottom: var(--sp-3);
+}
+.recipe-card h3 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 var(--sp-2);
+}
+.recipe-card p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--sp-3);
+}
+.recipe-card p b, .recipe-card p strong {
+  color: var(--text-primary);
+}
+.recipe-card ul {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding-left: var(--sp-4);
+  margin: 0 0 var(--sp-4);
+}
+.recipe-card ul li {
+  color: var(--text-secondary);
+  margin-bottom: 4px;
+}
+.recipe-card ul li b, .recipe-card ul li strong {
+  color: var(--text-primary);
+}
+.recipe-card code {
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+}
+.recipe-card details {
+  margin-top: auto;
+  padding-top: var(--sp-2);
+  border-top: 1px dashed var(--border);
+}
+.recipe-card details summary {
+  cursor: pointer;
+  color: var(--accent);
+  font-weight: 600;
+  font-family: var(--font-label);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.8125rem;
+  user-select: none;
+  padding-block: 4px;
+  transition: color .2s var(--ease-signature);
+}
+.recipe-card details summary:hover {
+  color: var(--accent-hover);
+}
+.recipe-card details pre {
+  margin-top: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-primary);
+  overflow-x: auto;
+  line-height: 1.45;
+}
+.recipe-card .btn-recipe {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: var(--sp-4);
+  padding: 8px 16px;
+  background: var(--accent);
+  color: #ffffff !important;
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform .2s var(--ease-signature), background .2s var(--ease-signature);
+}
+.recipe-card .btn-recipe:hover {
+  background: var(--accent-hover);
+  color: #ffffff !important;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+/* Founder showcase styles */
+.founder-card {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--accent);
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: clamp(20px, 3.5vw, 36px);
+  margin-top: var(--sp-6);
+}
+.founder-layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: clamp(20px, 3.5vw, 40px);
+  align-items: start;
+}
+.founder-media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.founder-portrait-frame {
+  width: 200px;
+  height: 200px;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 5px;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.founder-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: calc(var(--radius-md) - 3px);
+  display: block;
+  background: #ffffff;
+}
+.founder-caption {
+  margin-top: var(--sp-3);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.founder-caption-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.0625rem;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+.founder-caption-role {
+  font-family: var(--font-label);
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.founder-info {
+  min-width: 0;
+}
+.founder-name-heading {
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 0 0 var(--sp-2);
+  line-height: 1.2;
+}
+.founder-bio {
+  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin: 0 0 var(--sp-3);
+}
+.founder-meta-chips {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: var(--sp-3);
+  margin: var(--sp-4) 0;
+  padding: var(--sp-4);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.founder-actions {
+  display: flex;
+  gap: var(--sp-3);
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: var(--sp-4);
+}
+@media (max-width: 680px) {
+  .founder-layout {
+    grid-template-columns: 1fr;
+    gap: var(--sp-5);
+  }
+  .founder-media {
+    margin-bottom: var(--sp-2);
+  }
+  .founder-portrait-frame {
+    width: 170px;
+    height: 170px;
+  }
+}
 </style>
 </head>
 <body>
@@ -2793,9 +3065,11 @@ section[id], div[id].header, div[id].stage, div[id].ink {
             <p class="card-desc">Post-hackathon trajectory: cryptographic trust tokens, autonomous fit, and production rail.</p>
           </a>
           <div class="dropdown-foot">
-            <a href="/judges.html#runbook">2-Minute Runbook &rarr;</a>
+            <a href="/judges.html#runbook">Runbook &rarr;</a>
             <span class="dropdown-sep">&middot;</span>
-            <a href="/#flow">Live Demo &rarr;</a>
+            <a href="/#flow">Demo &rarr;</a>
+            <span class="dropdown-sep">&middot;</span>
+            <a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">Install CLI &rarr;</a>
           </div>
         </div>
       </div>
@@ -3184,6 +3458,91 @@ section[id], div[id].header, div[id].stage, div[id].ink {
   </div>
 </footer>
 
+<script>/**
+ * Nav Dropdown Interaction Controller for clembot-doorman
+ * Works across desktop, tablet, and mobile touch devices.
+ * Accessible with keyboard navigation (Tab, Escape, Enter, Space).
+ */
+(function () {
+  'use strict';
+
+  function initNav() {
+    var nav = document.getElementById('nav');
+    if (!nav) return;
+
+    var dropdowns = Array.from(nav.querySelectorAll('.nav-dropdown'));
+    if (!dropdowns.length) return;
+
+    function closeAll(except) {
+      dropdowns.forEach(function (dd) {
+        if (dd !== except && dd.classList.contains('is-open')) {
+          dd.classList.remove('is-open');
+          var trigger = dd.querySelector('.nav-dropdown-trigger');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    dropdowns.forEach(function (dd) {
+      var trigger = dd.querySelector('.nav-dropdown-trigger');
+      var menu = dd.querySelector('.nav-dropdown-menu');
+      if (!trigger || !menu) return;
+
+      trigger.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var wasOpen = dd.classList.contains('is-open');
+        closeAll(wasOpen ? null : dd);
+        if (!wasOpen) {
+          dd.classList.add('is-open');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      // Close when clicking a link inside menu
+      menu.addEventListener('click', function (e) {
+        if (e.target.closest('a')) {
+          closeAll();
+        }
+      });
+    });
+
+    // Close when clicking outside (or on backdrop)
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.nav-dropdown-menu') && !e.target.closest('.nav-dropdown-trigger')) {
+        closeAll();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        var openDd = nav.querySelector('.nav-dropdown.is-open');
+        if (openDd) {
+          var trigger = openDd.querySelector('.nav-dropdown-trigger');
+          closeAll();
+          if (trigger) trigger.focus();
+        }
+      }
+    });
+
+    // Close on orientation change or desktop breakpoint transition
+    var lastW = window.innerWidth;
+    window.addEventListener('resize', function () {
+      if (Math.abs(window.innerWidth - lastW) > 100) {
+        lastW = window.innerWidth;
+        closeAll();
+      }
+    }, { passive: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNav);
+  } else {
+    initNav();
+  }
+})();
+</script>
 <script src="/glossary.js" defer></script>
 <script src="/hero-canvas.js" defer></script>
 </body>

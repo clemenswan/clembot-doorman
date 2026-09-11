@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bazantic Integration | clembot doorman</title>
-<meta name="description" content="Continuous tool governance and automated recipe synthesis">
+<title>Continuous Agent Tool Governance with Bazantic | clembot doorman</title>
+<meta name="description" content="Solving Tool Hallucination & Schema Drift with Bazantic: continuous tool governance, automated recipes, and live gateway proof.">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -128,20 +128,20 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
    Radius rather than a circle, to match every other bordered surface here. */
 .wordmark img { display: block; width: 26px; height: 26px; border-radius: var(--radius-sm); flex: none; }
 .wordmark i { color: var(--accent-mid); font-style: normal; }
-.masthead nav { display: flex; gap: var(--sp-6); }
-.masthead nav a {
+.masthead nav { display: flex; align-items: center; gap: var(--sp-6); }
+.masthead nav > a {
   font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.1em;
   font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); text-decoration: none;
   position: relative; padding-block: 4px; transition: color .2s var(--ease-signature);
 }
-.masthead nav a::after {
+.masthead nav > a::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
   background: var(--accent); transform: scaleX(0); transform-origin: left;
   transition: transform .3s var(--ease-signature);
 }
-.masthead nav a:hover { color: var(--text-primary); }
-.masthead nav a[aria-current="true"] { color: var(--accent); }
-.masthead nav a[aria-current="true"]::after { transform: scaleX(1); }
+.masthead nav > a:hover { color: var(--text-primary); }
+.masthead nav > a[aria-current="true"] { color: var(--accent); }
+.masthead nav > a[aria-current="true"]::after { transform: scaleX(1); }
 .masthead-cta {
   font-family: var(--font-body) !important;
   font-size: 0.8125rem !important;
@@ -167,7 +167,7 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
    already-full nav and the links broke mid-label instead of overflowing, so
    the masthead silently became two lines tall while every scrollWidth and
    document-overflow check still read clean. Wrapping is not overflow. */
-.masthead nav a { white-space: nowrap; }
+.masthead nav > a { white-space: nowrap; }
 
 /* ── masthead dropdown ────────────────────────────────────────────────── */
 .nav-dropdown {
@@ -364,40 +364,73 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 }
 
 @media (max-width: 768px) {
+  .nav-dropdown.is-open::before {
+    content: "";
+    position: fixed;
+    top: 58px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 90;
+    pointer-events: auto;
+  }
   .nav-dropdown-menu {
     position: fixed;
     top: 58px;
-    left: 16px;
-    right: 16px;
+    left: 12px;
+    right: 12px;
     width: auto;
-    max-width: calc(100vw - 32px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    z-index: 100;
+  }
+  .dropdown-card {
+    display: block !important;
+    width: 100% !important;
   }
 }
 
-/* The nav scrolls sideways rather than disappearing.
-   It used to be hidden under 760px, which was fine at six links. At nine it
-   overflowed the PAGE between 760 and about 1060: 578px of links inside a
-   768px viewport pushed the document to 814 and the whole site scrolled
-   horizontally. Hiding it at a higher breakpoint would have fixed the overflow
-   by removing navigation from every tablet, so it scrolls instead and stays
-   reachable at 320. */
 @media (max-width: 1060px) {
-  .masthead .wrap { gap: var(--sp-4); }
-  .masthead nav {
-    min-width: 0; overflow-x: auto; gap: var(--sp-5);
-    scrollbar-width: none; -ms-overflow-style: none;
-    /* Bleed to the edge so the last link is not trapped under the gutter. */
-    margin-inline-end: calc(var(--gutter) * -1);
-    padding-inline: 0 var(--gutter);
-    -webkit-overflow-scrolling: touch;
-  }
-  .masthead nav::-webkit-scrollbar { display: none; }
-  .masthead nav a, .masthead nav .nav-dropdown { white-space: nowrap; flex: none; }
+  .masthead .wrap { gap: var(--sp-3); }
+  .masthead nav { gap: var(--sp-4); }
 }
-@media (max-width: 480px) {
+
+@media (max-width: 640px) {
+  .masthead-cta { display: none !important; }
+  .masthead .wrap { gap: var(--sp-2); }
   .masthead nav { gap: var(--sp-3); }
+}
+
+@media (max-width: 480px) {
+  .wordmark { gap: var(--sp-2); }
+  .wordmark img { width: 24px; height: 24px; }
   .wordmark span { font-size: 0.9375rem; }
-  .masthead nav a, .nav-dropdown-trigger { padding-block: 8px; min-height: 44px; display: inline-flex; align-items: center; }
+  .masthead nav { gap: var(--sp-3); }
+  .masthead nav > a, .nav-dropdown-trigger {
+    padding-block: 6px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+}
+
+@media (max-width: 360px) {
+  .masthead .wrap { padding-inline: 12px; }
+  .wordmark span { font-size: 0.875rem; }
+  .masthead nav { gap: var(--sp-2); }
+  .masthead nav > a, .nav-dropdown-trigger {
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    gap: 3px;
+  }
 }
 
 /* ── header: short. The demo is the point, not the prose. ─────────────── */
@@ -3032,9 +3065,11 @@ section[id], div[id].header, div[id].stage, div[id].ink {
             <p class="card-desc">Post-hackathon trajectory: cryptographic trust tokens, autonomous fit, and production rail.</p>
           </a>
           <div class="dropdown-foot">
-            <a href="/judges.html#runbook">2-Minute Runbook &rarr;</a>
+            <a href="/judges.html#runbook">Runbook &rarr;</a>
             <span class="dropdown-sep">&middot;</span>
-            <a href="/#flow">Live Demo &rarr;</a>
+            <a href="/#flow">Demo &rarr;</a>
+            <span class="dropdown-sep">&middot;</span>
+            <a href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">Install CLI &rarr;</a>
           </div>
         </div>
       </div>
@@ -3532,6 +3567,91 @@ x-402-network: base
   </div>
 </footer>
 
+<script>/**
+ * Nav Dropdown Interaction Controller for clembot-doorman
+ * Works across desktop, tablet, and mobile touch devices.
+ * Accessible with keyboard navigation (Tab, Escape, Enter, Space).
+ */
+(function () {
+  'use strict';
+
+  function initNav() {
+    var nav = document.getElementById('nav');
+    if (!nav) return;
+
+    var dropdowns = Array.from(nav.querySelectorAll('.nav-dropdown'));
+    if (!dropdowns.length) return;
+
+    function closeAll(except) {
+      dropdowns.forEach(function (dd) {
+        if (dd !== except && dd.classList.contains('is-open')) {
+          dd.classList.remove('is-open');
+          var trigger = dd.querySelector('.nav-dropdown-trigger');
+          if (trigger) trigger.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    dropdowns.forEach(function (dd) {
+      var trigger = dd.querySelector('.nav-dropdown-trigger');
+      var menu = dd.querySelector('.nav-dropdown-menu');
+      if (!trigger || !menu) return;
+
+      trigger.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var wasOpen = dd.classList.contains('is-open');
+        closeAll(wasOpen ? null : dd);
+        if (!wasOpen) {
+          dd.classList.add('is-open');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+      });
+
+      // Close when clicking a link inside menu
+      menu.addEventListener('click', function (e) {
+        if (e.target.closest('a')) {
+          closeAll();
+        }
+      });
+    });
+
+    // Close when clicking outside (or on backdrop)
+    document.addEventListener('click', function (e) {
+      if (!e.target.closest('.nav-dropdown-menu') && !e.target.closest('.nav-dropdown-trigger')) {
+        closeAll();
+      }
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' || e.key === 'Esc') {
+        var openDd = nav.querySelector('.nav-dropdown.is-open');
+        if (openDd) {
+          var trigger = openDd.querySelector('.nav-dropdown-trigger');
+          closeAll();
+          if (trigger) trigger.focus();
+        }
+      }
+    });
+
+    // Close on orientation change or desktop breakpoint transition
+    var lastW = window.innerWidth;
+    window.addEventListener('resize', function () {
+      if (Math.abs(window.innerWidth - lastW) > 100) {
+        lastW = window.innerWidth;
+        closeAll();
+      }
+    }, { passive: true });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initNav);
+  } else {
+    initNav();
+  }
+})();
+</script>
 <script src="/glossary.js" defer></script>
 <script src="/hero-canvas.js" defer></script>
 </body>
