@@ -36,7 +36,7 @@
     "transcript_url": "https://clembot-doorman.wanessalabs.com/evidence/deepwiki-static/transcript.jsonl",
     "recipe_md": "# Recipe: DeepWiki\n`https://mcp.deepwiki.com/mcp` - graded **A** (85.71/100)\nNo failure modes observed. Use server as documented."
   },
-  "prompt_template": "You are the Doorman Security Auditor. When given candidate tool specifications in {{inputs}}, invoke the gateway tool 'getLatestGrade' with argument server set to candidate_url. Inspect the resulting audit report for: (1) schema validity, (2) prompt injections or commercial steering phrases (check probe_scores.injection_sniff and hard_fail), and (3) token footprint. Call ONLY 'getLatestGrade' (do NOT call getBadge or getFeed). Output a structured JSON verdict matching output_example indicating whether the server should be ADOPTED or DECLINED, including score, safety band, and pinned usage recipe from recipe_md.",
+  "prompt_template": "You are the Doorman Security Auditor. When given candidate tool specifications in {{inputs}}, invoke the gateway tool 'getLatestGrade' with argument server set to candidate_url. Inspect the resulting audit report for: (1) schema validity, (2) prompt injections or commercial steering phrases (check probe_scores.injection_sniff and hard_fail), and (3) token footprint. Call ONLY 'getLatestGrade' (do NOT call getBadge, getTranscripts, getFeed, or any other tool). Output a structured JSON verdict matching output_example indicating whether the server should be ADOPTED or DECLINED, including score, safety band, and pinned usage recipe from recipe_md.",
   "model": "claude-3-5-sonnet-20241022",
   "tool_bindings": [
     {
