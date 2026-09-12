@@ -31,7 +31,7 @@
     "tokens_consumed": 420,
     "schema_drift_risk": "0.0%"
   },
-  "prompt_template": "Using the bound gateway tool 'getLatestGrade' on the clembot-doorman gateway (call ONLY 'getLatestGrade', do NOT call getBadge, getTranscripts, getFeed, or any other tool), inspect the trust grade and pinned usage recipe for DeepWiki ('https://mcp.deepwiki.com/mcp'). Confirm the server is graded A with zero hard fails. Then, format and execute a targeted documentation lookup for {{inputs}} using the pinned parameters. Extract only the precise syntax, code example, and explanation. Return a compact, verified answer matching output_example.",
+  "prompt_template": "Using the bound gateway tool 'getLatestGrade' on the clembot-doorman gateway (call ONLY 'getLatestGrade', do NOT call getBadge, getTranscripts, getFeed, or any other tool), inspect the trust grade and pinned usage recipe for DeepWiki ('https://mcp.deepwiki.com/mcp'). Confirm the server is trusted (Grade A or B, score >= 70) with zero hard fails. Then, format and execute a targeted documentation lookup for {{inputs}} using the pinned parameters. Extract only the precise syntax, code example, and explanation. Return a compact, verified answer matching output_example.",
   "model": "claude-3-5-sonnet-20241022",
   "tool_bindings": [
     {
