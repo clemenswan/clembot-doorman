@@ -3566,11 +3566,14 @@ exactly that — run `doorman eval` with your key and find out.</code></pre>
         </article>
       </div>
 
-      <div class="notes reveal in" style="margin-top: var(--sp-8);">
-        <p><strong>Two findings cap a grade at F outright:</strong> injection-shaped content in the advertised strings, and a transport that is not TLS. A hard fail overrides everything else, and a hard-failed server with a 90 percent static result is still an F.</p>
-        <p><strong>A layer that did not run is not a zero.</strong> Its weight is removed and the others renormalise. Scoring an unmeasured layer as zero would drag every honest partial audit into a failing band, which is a way of lying with arithmetic.</p>
-        <p><strong>The guidance delta is not a generalisation claim.</strong> The recipe is written from the failures of the run it is then measured against, so of course it fixes that run. What it honestly answers is narrower and more useful: we told the agent, in plain language, exactly what went wrong, and did that fix it? A server that recovers can be put safely behind a recipe. A server that still fails with the correction sitting in front of it cannot be saved by documentation, and that is the finding worth having. The interesting result here is a <em>low</em> score.</p>
-      </div>
+      <details class="distill-tray reveal in" style="margin-top: var(--sp-8);">
+        <summary class="distill-summary">Methodology FAQ &amp; Hard-Fail Rubric</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);"><strong>What triggers an automatic F?</strong> Two findings cap a grade at F outright: injection-shaped content in advertised strings, and a non-TLS transport. A hard fail immediately overrides high static scores.</p>
+          <p><strong>Are unmeasured layers counted as zero?</strong> No. A layer that did not run has its weight removed, renormalising remaining layers so honest partial audits are not penalized.</p>
+          <p><strong>What does the guidance delta prove?</strong> It measures recovered headroom when the agent receives the drafted recipe. A server that recovers can be safely adopted behind a recipe; a server that still fails cannot be saved by documentation.</p>
+        </div>
+      </details>
     </div>
   </section>
 </div>
@@ -3638,6 +3641,41 @@ exactly that — run `doorman eval` with your key and find out.</code></pre>
       </table>
     </div>
 
+    <!-- Developer Implementation FAQ -->
+    <div style="margin-top: var(--sp-10);">
+      <p class="eyebrow reveal in">Developer Q&amp;A</p>
+      <h3 class="reveal in d1" style="font-size: 1.25rem; margin-bottom: var(--sp-4);">Frequently Asked Implementation Questions</h3>
+
+      <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+        <details class="distill-tray reveal in d2">
+          <summary class="distill-summary">Can I run Doorman without global npm permissions?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Yes. You can install it directly as a Claude Code Marketplace plugin (<code>claude plugin install clembot-doorman</code>) or invoke it on demand using <code>npx clembot-doorman audit</code>. In both cases, zero global permissions or dependencies are needed.
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal in d2">
+          <summary class="distill-summary">How does the unified `doorman audit` command work?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              <code>doorman audit</code> aggregates L0 doctor (wiring &amp; inventory inspection), L0.5 prompt needs (capability gap extraction), and L2 feed watch into a single executive report. Pass <code>--out .doorman/audit.md</code> to save a markdown summary or <code>--json</code> for machine-readable output.
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal in d2">
+          <summary class="distill-summary">How are spend limits enforced on paid audits?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Doorman's local <code>budget.mjs</code> checks and reserves funds against your configured caps ($1.00 per run, $5.00 per day) in an offline append-only ledger (<code>.claude/registry/ledger.jsonl</code>) <em>before</em> any HTTP request is dispatched. If the network call fails, the reservation is immediately released.
+            </p>
+          </div>
+        </details>
+      </div>
+    </div>
+
     <div style="margin-top: var(--sp-12); text-align: center;">
       <a class="btn" href="https://github.com/clemenswan/clembot-doorman" target="_blank" rel="noopener noreferrer">View GitHub Repository</a>
       <a class="btn btn-ghost" href="/#flow">Try Interactive Simulator</a>
@@ -3675,6 +3713,7 @@ exactly that — run `doorman eval` with your key and find out.</code></pre>
           <p class="footer-col-title">Platform &amp; Defense</p>
           <ul class="footer-col-links">
             <li><a href="/how-it-works.html">How It Works</a></li>
+            <li><a href="/#faq">Architecture &amp; Security FAQ</a></li>
             <li><a href="/how-it-works.html#funnel-pyramid">Layer 0–3 Verification</a></li>
             <li><a href="/bazantic.html">Bazantic Gateway</a></li>
             <li><a href="/clembot.html#roster">Sentinel Gate Hook</a></li>

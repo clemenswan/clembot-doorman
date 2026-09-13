@@ -423,6 +423,41 @@ x-402-network: base
 {"error":"Payment required","price":"0.01 USDC","network":"base","recipient":"0x..."}</code></pre>
     </div>
 
+    <!-- Bazantic Integration FAQ -->
+    <div style="margin-top: var(--sp-10); margin-bottom: var(--sp-8);">
+      <p class="eyebrow reveal">Bazantic Q&amp;A</p>
+      <h3 class="reveal d1" style="font-size: 1.25rem; margin-bottom: var(--sp-4);">Frequently Asked Integration Questions</h3>
+
+      <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+        <details class="distill-tray reveal d2">
+          <summary class="distill-summary">How does Bazantic recipe compilation achieve an 87.6% token reduction?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Raw third-party OpenAPI and MCP schemas typically carry 3,400+ tokens of bloated JSON properties, marketing descriptions, and nested optional fields. Bazantic recipes compile these into minimal, strictly typed 420-token markdown signatures that provide only the verified parameters an agent actually needs.
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal d2">
+          <summary class="distill-summary">How do the three native Bazantic platform recipes map to ETHOnline prizes?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Track 1 (Agentify an API): <code>01-vet-mcp-candidate.json</code> turns the Scorecard into a universal agent vetting tool. Track 2 (Continuity): <code>02-deepwiki-pinned-researcher.json</code> eliminates schema drift. Track 3 (Multi-API Workflow): <code>03-governance-pipeline.json</code> chains safety evaluation, Base x402 settlement, and allowlisting into one atomic loop.
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal d2">
+          <summary class="distill-summary">How does Bazantic handle edge authentication and secret masking?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Subagents never handle upstream API keys directly. The Bazantic edge gateway (<code>clembot-doorman.bazgateway.com</code>) injects credentials at the edge, masking provider secrets from client containers while enforcing subdomain-level request isolation.
+            </p>
+          </div>
+        </details>
+      </div>
+    </div>
+
     <div class="tldr-card reveal d2">
       <div class="tldr-badge">Note for Bazantic Leadership &amp; Engineering</div>
       <p class="tldr-lead">

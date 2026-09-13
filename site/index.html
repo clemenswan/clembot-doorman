@@ -4590,6 +4590,93 @@ doorman eval npm:some-candidate \
   </div>
 </section>
 
+<!-- ── FREQUENTLY ASKED QUESTIONS & EVIDENCE ─────────────────────── -->
+<section id="faq" style="padding: clamp(48px, 6vh, 72px) 0;">
+  <div class="wrap">
+    <p class="eyebrow reveal">Evidence &amp; Clarifications</p>
+    <h2 class="reveal d1">Frequently Asked Questions</h2>
+    <p class="section-intro reveal d2">
+      Key items at a glance. Expand any question to inspect the underlying architectural proofs, audit evidence, and design decisions:
+    </p>
+
+    <div class="reveal d2" style="margin-top: var(--sp-6); display: flex; flex-direction: column; gap: var(--sp-4);">
+      <details class="distill-tray">
+        <summary class="distill-summary">How does an AI agent pay for audits without holding a crypto wallet?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            <strong>Decoupled Intent from Custody:</strong> Storing raw private keys or seed phrases in an LLM's prompt context is a critical security vulnerability. An adversarial tool call or runaway loop could drain the wallet.
+          </p>
+          <p>
+            Instead, Clembot Doorman uses <strong>Bazantic Hosted Grants</strong> (e.g. <code>baz grant create --name doorman --cap 1 --service &lt;slug&gt;</code>) or single-use EIP-712 spend permits authorising exactly $0.01 USDC on Base. The agent passes an ephemeral credential; Bazantic's edge facilitator settles on Base mainnet. The model never touches private keys or wallet SDKs.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray">
+        <summary class="distill-summary">Do I need to install Bazantic or Web3 SDKs in my codebase?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            <strong>No. Zero runtime dependencies.</strong> Bazantic is an infrastructure gateway (hosted at <code>clembot-doorman.bazgateway.com</code>), not a code dependency. It communicates via standard HTTP status codes (<code>402 Payment Required</code>), RFC x402 headers, and Model Context Protocol (MCP) over Server-Sent Events (SSE). Native Node.js <code>fetch</code> or any standard MCP client connects directly without importing third-party libraries.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray">
+        <summary class="distill-summary">How does the 2-Phase Defense Funnel keep costs at $0.00?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            <strong>Phase 1 Local Fit Review</strong> runs entirely on your machine. If an existing skill or active MCP tool already covers the requested capability, the verdict is <code>REDUNDANT</code> and execution terminates before constructing the payment client ($0.00 spent).
+          </p>
+          <p>
+            All cached reads (<code>getLatestGrade</code>, <code>getAudit</code>, public feed <code>/feed</code>, and transcript tapes) are <strong>permanently free ($0.00)</strong>. Paid adversarial evaluation ($0.01) is only triggered when a candidate tool is genuinely novel and needed.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray">
+        <summary class="distill-summary">Why did 62.5% of third-party MCP servers fail our audit?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            Across our 24 live audits, failures stemmed from three root causes:
+          </p>
+          <ul style="padding-left: var(--sp-4); margin: var(--sp-2) 0; font-size: 0.875rem; line-height: 1.6;">
+            <li><strong>Commercial Steering Ads:</strong> Discovered 6,290 characters of unprompted upsell copy in WebZum instructing agents to steer users away from Vercel/AWS (instant Grade F).</li>
+            <li><strong>Schema Bloat &amp; Drift:</strong> Unpruned schemas with 3,400+ tokens of raw OpenAPI metadata causing recursive retry loops and hallucinated arguments.</li>
+            <li><strong>Non-TLS Endpoints &amp; Broken Error Schemas:</strong> Failing basic connection protocol lints.</li>
+          </ul>
+          <p>
+            Generating a pinned <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="recipe"><code>recipe.md</code></span> reduces schema tokens by 87% (down to 420 tokens) and eliminates argument hallucinations.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray">
+        <summary class="distill-summary">How does the offline security gate run in &lt; 5ms?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            The gate (<code>mcp-gate.sh</code>) is a 180-line standalone POSIX Bash hook registered to Claude Code's <code>PreToolUse</code> lifecycle event. When the agent attempts to call any tool matching <code>mcp__.*</code>, the hook parses the client name and checks the local <code>registry/allowlist.json</code>.
+          </p>
+          <p>
+            If the server is unreviewed or denied, the hook immediately aborts with <strong>exit code 2</strong> in under 5 milliseconds—preventing untrusted instructions from ever reaching the agent's context window.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray">
+        <summary class="distill-summary">How can I schedule recurring audits across my project?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            Run <code>doorman schedule --github</code> to automatically generate a weekly GitHub Actions workflow (<code>.github/workflows/doorman-audit.yml</code>) that audits project posture and publishes tool recommendations every Monday at 09:00 UTC.
+          </p>
+          <p>
+            Alternatively, use your agent chat harness (<code>/schedule CronExpression="0 9 * * 1", Prompt="Run doorman audit"</code>) or local crontab (<code>0 9 * * 1 npx clembot-doorman audit --out .doorman/audit.md</code>).
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
 <section id="judges">
   <div class="wrap">
     <p class="eyebrow reveal">Shortcuts</p>
@@ -4681,6 +4768,7 @@ doorman eval npm:some-candidate \
           <p class="footer-col-title">Platform &amp; Defense</p>
           <ul class="footer-col-links">
             <li><a href="/how-it-works.html">How It Works</a></li>
+            <li><a href="/#faq">Architecture &amp; Security FAQ</a></li>
             <li><a href="/how-it-works.html#funnel-pyramid">Layer 0–3 Verification</a></li>
             <li><a href="/bazantic.html">Bazantic Gateway</a></li>
             <li><a href="/clembot.html#roster">Sentinel Gate Hook</a></li>

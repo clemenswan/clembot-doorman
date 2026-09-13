@@ -3475,9 +3475,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
     <p class="eyebrow reveal in">Payment &amp; Custody Architecture</p>
     <h2 class="reveal in d1">Why the AI Agent Never Holds a Crypto Wallet</h2>
     <p class="section-intro reveal in d2">
-      A foundational rule of autonomous agent security: <strong>decoupling intent from custody</strong>.
-      Clembot Doorman coordinates x402 micropayments on Base without exposing private keys to agent context windows,
-      without requiring wallet SDK dependencies, and with deterministic offline spend caps.
+      <strong>Decoupling intent from custody:</strong> Clembot Doorman coordinates x402 micropayments on Base without exposing private keys to agent context, without requiring wallet SDKs, and with deterministic offline spend caps.
     </p>
 
     <div class="refuse-grid reveal in d2">
@@ -3485,9 +3483,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <span class="refuse-label">1. Custody Decoupling</span>
         <h3>The Anti-Pattern We Refuse</h3>
         <p>
-          Giving an LLM an unconstrained self-custody wallet (storing raw private keys or seed phrases in memory or prompt context) is a severe security vulnerability.
-          An untrusted MCP server returning an indirect prompt injection or an autonomous agent looping unchecked could exfiltrate the key or drain funds in seconds.
-          Clembot Doorman structurally refuses self-custody wallets in agent memory.
+          Putting private keys into an LLM's prompt context is an extreme security hazard. Indirect prompt injection or runaway agent loops could exfiltrate the key or drain funds. Doorman structurally bans self-custody wallets in agent memory.
         </p>
       </article>
 
@@ -3495,10 +3491,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <span class="refuse-label">2. Scoped Facilitation</span>
         <h3>Bazantic Hosted Grants &amp; EIP-712</h3>
         <p>
-          Instead of holding a wallet, human developers create a scoped, revocable grant via Bazantic:
-          <code>baz grant create --name doorman --cap 1 --service &lt;slug&gt;</code>.
-          The grant is strictly restricted to this single gateway, capped to a ceiling (e.g. $1.00 = 100 audits), and revocable at any moment.
-          The agent passes an ephemeral credential; Bazantic's edge facilitator executes the on-chain settlement on Base mainnet (<code>eip155:8453</code> USDC). The model never signs transactions directly.
+          Developers configure a scoped, revocable grant (<code>baz grant create --name doorman --cap 1 --service &lt;slug&gt;</code>) or single-use EIP-712 permit. The agent passes an ephemeral credential; Bazantic's facilitator settles on Base (<code>eip155:8453</code> USDC).
         </p>
       </article>
 
@@ -3506,10 +3499,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <span class="refuse-label">3. Zero Package Bloat</span>
         <h3>Standard HTTP &amp; MCP, Not an SDK</h3>
         <p>
-          The agent does <strong>not</strong> need to <code>npm install bazantic</code> or any web3 wallet library.
-          Bazantic is an infrastructure edge gateway, not a code dependency.
-          It speaks standard HTTP <code>402 Payment Required</code> (RFC x402 v2 headers) and Model Context Protocol (MCP) over Server-Sent Events (SSE).
-          Any standard Node.js <code>fetch</code> or MCP harness (Claude Code, Antigravity, Cursor) interacts with it natively with zero external dependencies.
+          No <code>npm install bazantic</code> or web3 SDKs required. The gateway communicates via standard HTTP <code>402 Payment Required</code> (RFC x402 v2 headers) and Model Context Protocol (MCP) over SSE. Native Node.js <code>fetch</code> handles everything.
         </p>
       </article>
 
@@ -3517,11 +3507,60 @@ section[id], div[id].header, div[id].stage, div[id].ink {
         <span class="refuse-label">4. Local Spend Ledger</span>
         <h3>Free Reads First ($0.00) &amp; Hard Caps</h3>
         <p>
-          Before any paid call fires, Doorman's local <code>budget.mjs</code> checks and reserves $0.01 in an offline append-only ledger (<code>.claude/registry/ledger.jsonl</code>) against hard per-run ($1) and per-day ($5) caps.
-          Furthermore, Phase 1 Local Fit Review runs first: if existing skills already handle the task, it halts at $0.00.
-          All cached reads (<code>getLatestGrade</code>, <code>getAudit</code>, public feed <code>/feed</code>, transcript tapes) are <strong>100% free ($0.00)</strong>.
+          Doorman's local <code>budget.mjs</code> checks and reserves $0.01 in an offline append-only ledger (<code>ledger.jsonl</code>) against $1/run and $5/day caps. Phase 1 Fit Review stops redundant tools at $0.00, and all cached reads are 100% free.
         </p>
       </article>
+    </div>
+
+    <!-- Deep-Dive FAQ Accordion Trays -->
+    <div style="margin-top: var(--sp-10);">
+      <p class="eyebrow reveal in">Evidence &amp; Deep-Dive Details</p>
+      <h3 class="reveal in d1" style="font-size: 1.25rem; margin-bottom: var(--sp-4);">Frequently Asked Architecture Questions</h3>
+
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">How does an agent actually pay without private keys?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            The agent acts as the <strong>requester</strong>, not the custodian. When calling a paid audit route (<code>POST /grade</code>), the Bazantic Gateway issues an RFC x402 HTTP 402 challenge specifying the exact amount (10,000 atomic units = $0.01 USDC) and Base contract address.
+          </p>
+          <p>
+            The agent satisfies this with a developer-provisioned Bazantic grant token or single-use EIP-712 spend permit. The Bazantic edge gateway facilitator settles the transaction against the developer's prefunded balance on Base mainnet. The model never holds a seed phrase, private key, or signing authority.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">Do I need to install Bazantic in my project dependencies?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            <strong>No.</strong> Clembot Doorman has zero runtime dependencies. Bazantic is an infrastructure gateway (hosted at <code>clembot-doorman.bazgateway.com</code>), not a client library. It speaks standard HTTP status codes, standard JSON bodies, and standard MCP over Server-Sent Events (SSE). Any HTTP client or standard agent harness connects natively.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">How does the 2-Phase Funnel prevent runaway agent spend?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            First, <strong>Phase 1 Local Fit Review</strong> compares the candidate against your existing tools and skills. If your roster already handles the task, the verdict is <code>REDUNDANT</code> and the run terminates before constructing the network client ($0.00 spent).
+          </p>
+          <p>
+            Second, <strong>cached reads are permanently free</strong>. Querying <code>getLatestGrade</code>, <code>getAudit</code>, or <code>/feed</code> costs $0.00.
+          </p>
+          <p>
+            Third, if a paid audit is required, <code>budget.mjs</code> reserves the $0.01 against your configured spend caps ($1.00/run, $5.00/day) in an offline append-only ledger (<code>.claude/registry/ledger.jsonl</code>) <em>before</em> the request fires. If the request fails, the reservation is released.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">How does the offline gate enforce security in &lt; 5ms?</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            The security gate (<code>mcp-gate.sh</code>) is a standalone 180-line Bash hook wired to Claude Code's <code>PreToolUse</code> event. It intercepts every tool invocation matching <code>mcp__.*</code>, extracts the server name, and checks <code>registry/allowlist.json</code> locally. If unapproved or denied, it exits 2 in under 5ms, halting execution before any payload reaches the model's context.
+          </p>
+        </div>
+      </details>
     </div>
   </div>
 </section>

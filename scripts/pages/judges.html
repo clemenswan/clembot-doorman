@@ -124,7 +124,7 @@
             <span class="hud-lbl">Prize Tracks</span>
           </div>
           <div class="hud-metric">
-            <span class="hud-val good">436 Tests</span>
+            <span class="hud-val good">505 Tests</span>
             <span class="hud-lbl">100% Passing</span>
           </div>
         </div>
@@ -203,13 +203,13 @@
           <strong style="color: #ffffff;">Not a Mock or Concept:</strong> Clembot Doorman is fully implemented, fully tested, and already running in active production.
         </p>
         <ul style="font-size: 0.875rem; color: #ffffff; padding-left: var(--sp-4); line-height: 1.55; margin: 0 0 var(--sp-3);">
-          <li><b style="color: #ffffff;">Complete Test Coverage:</b> 399 unit tests and 37 CLI tests passing with zero failures.</li>
+          <li><b style="color: #ffffff;">Complete Test Coverage:</b> 465 unit tests and 40 CLI tests passing with zero failures.</li>
           <li><b style="color: #ffffff;">Real-World Deployment:</b> Guards the active 27-agent roster of <span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="clembot">Clembot</span>, a multi-client marketing agency.</li>
           <li><b style="color: #ffffff;">24 Public Audits:</b> Scanned and graded 24 real third-party MCP servers, publishing reproducible transcript tapes for every single score.</li>
           <li><b style="color: #ffffff;">Live Infrastructure:</b> Deployed on Cloudflare Pages production with custom domain (<a href="https://clembot-doorman.wanessalabs.com" target="_blank" rel="noopener noreferrer" style="color: var(--ink-accent);">clembot-doorman.wanessalabs.com</a>) and Bazantic Gateway (<a href="https://clembot-doorman.bazgateway.com" target="_blank" rel="noopener noreferrer" style="color: var(--ink-accent);">clembot-doorman.bazgateway.com</a>).</li>
         </ul>
         <p style="font-size: 0.75rem; font-family: var(--font-mono); color: var(--ink-accent);">
-          Run suite: npm test · 399 passed, 37 CLI passed
+          Run suite: npm test · 465 unit passed, 40 CLI passed
         </p>
       </article>
 
@@ -347,6 +347,44 @@ curl -i https://clembot-doorman.bazgateway.com/mcp
 
 # 7. Verify Cloudflare Pages production deployment
 curl -i https://clembot-doorman.wanessalabs.com/</code></pre>
+    </div>
+
+    <!-- Judge Verification FAQ Trays -->
+    <div style="margin-top: var(--sp-10);">
+      <p class="eyebrow reveal">Verification FAQ</p>
+      <h3 class="reveal d1" style="font-size: 1.25rem; margin-bottom: var(--sp-4);">Judge Frequently Asked Questions</h3>
+
+      <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+        <details class="distill-tray reveal d2">
+          <summary class="distill-summary">Where are the live 24-server audit tapes and evidence hashes?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Every grade on the 24-server board (e.g. <code>https://clembot-doorman.wanessalabs.com/#audits</code>) links directly to an immutable, replayable transcript tape on <code>scorecard.wanessalabs.com/grade/{audit_id}/transcripts</code> with a verifiable SHA-256 evidence hash. Zero grades are estimated or mocked.
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal d2">
+          <summary class="distill-summary">How does the live x402 Base mainnet gateway challenge return 402?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Send an unauthenticated POST to <code>https://clembot-doorman.bazgateway.com/grade</code>. The response returns an HTTP 402 with base64 <code>PAYMENT-REQUIRED</code> header detailing Base network (<code>eip155:8453</code>), USDC token contract address (<code>0x8335...2913</code>), and exact price (10,000 atomic units = $0.01 USDC).
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal d2">
+          <summary class="distill-summary">Where are the three Bazantic platform recipes committed?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              The three 8-field JSON recipes are located in <code>bazantic/recipes/</code>:
+              <code>01-vet-mcp-candidate.json</code> (Agentify an API),
+              <code>02-deepwiki-pinned-researcher.json</code> (Continuity), and
+              <code>03-governance-pipeline.json</code> (Multi-API Workflow).
+            </p>
+          </div>
+        </details>
+      </div>
     </div>
 
     <div style="display: flex; gap: var(--sp-3); justify-content: center; flex-wrap: wrap; margin-top: var(--sp-8);">

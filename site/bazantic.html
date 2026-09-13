@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Continuous Agent Tool Governance with Bazantic | clembot doorman</title>
-<meta name="description" content="Solving Tool Hallucination & Schema Drift with Bazantic: continuous tool governance, automated recipes, and live gateway proof.">
+<title>Solving Tool Hallucination & Schema Drift with Bazantic | clembot doorman</title>
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -3522,6 +3521,41 @@ x-402-network: base
 {"error":"Payment required","price":"0.01 USDC","network":"base","recipient":"0x..."}</code></pre>
     </div>
 
+    <!-- Bazantic Integration FAQ -->
+    <div style="margin-top: var(--sp-10); margin-bottom: var(--sp-8);">
+      <p class="eyebrow reveal in">Bazantic Q&amp;A</p>
+      <h3 class="reveal in d1" style="font-size: 1.25rem; margin-bottom: var(--sp-4);">Frequently Asked Integration Questions</h3>
+
+      <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+        <details class="distill-tray reveal in d2">
+          <summary class="distill-summary">How does Bazantic recipe compilation achieve an 87.6% token reduction?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Raw third-party OpenAPI and MCP schemas typically carry 3,400+ tokens of bloated JSON properties, marketing descriptions, and nested optional fields. Bazantic recipes compile these into minimal, strictly typed 420-token markdown signatures that provide only the verified parameters an agent actually needs.
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal in d2">
+          <summary class="distill-summary">How do the three native Bazantic platform recipes map to ETHOnline prizes?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Track 1 (Agentify an API): <code>01-vet-mcp-candidate.json</code> turns the Scorecard into a universal agent vetting tool. Track 2 (Continuity): <code>02-deepwiki-pinned-researcher.json</code> eliminates schema drift. Track 3 (Multi-API Workflow): <code>03-governance-pipeline.json</code> chains safety evaluation, Base x402 settlement, and allowlisting into one atomic loop.
+            </p>
+          </div>
+        </details>
+
+        <details class="distill-tray reveal in d2">
+          <summary class="distill-summary">How does Bazantic handle edge authentication and secret masking?</summary>
+          <div class="distill-content">
+            <p style="margin-top: var(--sp-3);">
+              Subagents never handle upstream API keys directly. The Bazantic edge gateway (<code>clembot-doorman.bazgateway.com</code>) injects credentials at the edge, masking provider secrets from client containers while enforcing subdomain-level request isolation.
+            </p>
+          </div>
+        </details>
+      </div>
+    </div>
+
     <div class="tldr-card reveal in d2">
       <div class="tldr-badge">Note for Bazantic Leadership &amp; Engineering</div>
       <p class="tldr-lead">
@@ -3572,6 +3606,7 @@ x-402-network: base
           <p class="footer-col-title">Platform &amp; Defense</p>
           <ul class="footer-col-links">
             <li><a href="/how-it-works.html">How It Works</a></li>
+            <li><a href="/#faq">Architecture &amp; Security FAQ</a></li>
             <li><a href="/how-it-works.html#funnel-pyramid">Layer 0–3 Verification</a></li>
             <li><a href="/bazantic.html">Bazantic Gateway</a></li>
             <li><a href="/clembot.html#roster">Sentinel Gate Hook</a></li>
