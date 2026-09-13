@@ -94,6 +94,38 @@ grader. Same lesson as the rest of tonight: one component of a file being
 current is not evidence about the others.
 
 
+**04:25:23Z: the first payment settled.** Base block 51242088, tx
+`0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0`, USDC 0.01,
+and audit `8ff6bba8` came back **A 91.36** forty seconds later with
+`behavioral_pct 94.75`. Every link in the chain has now run at least once:
+grant, quote, x402 authorisation, on-chain settlement, gateway proxy, permit,
+queue, runner, published grade.
+
+The blocker was mundane and took an hour to see. The gateway's config was
+correct the whole time (`Auth type: API key`, `Key delivery: Authorization
+bearer`, upstream pointed at the right origin); the credential VALUE and the
+Worker's `GRADE_TOKEN` simply disagreed, and each 401 looked like a
+configuration problem rather than a mismatch. Rotating both to the same clean
+43-character base64url value fixed it. Whether the previous 111-character token
+was ALSO being mangled by the dashboard form, which carries `=` and `.`, was
+never established and should not be recorded as the cause.
+
+**Two things the payment revealed that nothing else could.**
+
+The transfer is `0x72Bb2c96 -> 0x72Bb2c96`. The grant's payer address and the
+gateway's payout address are the same, so this proves the mechanism rather than
+a third-party sale. Worth saying out loud rather than letting someone find it on
+Basescan.
+
+And the origin cannot see its own revenue. `/api/ledger` reports `spent: 0` with
+`amount_usd: null` on the paid audit's own rows, because settlement happens at
+the gateway and no receipt is forwarded to the Worker. The RUNBOOK's pass
+criterion for Test 4 said "that number moving is the proof". It does not move,
+and it never will until the origin reads the x402 payment response and records
+it. Corrected in place. A revenue counter that reads zero after a real sale is
+worse than no counter, because it looks like an answer.
+
+
 ## 2026-09-11 - Session 17: the day-one question, a plugin, and a page that lied
 
 **The product gained the stage it was missing.** `doctor` reads what a build HAS,

@@ -388,8 +388,21 @@ curl -s https://scorecard.wanessalabs.com/api/ledger?limit=5
 ```
 
 **Pass:** the audit reaches `complete` with a non-null `behavioral_pct`, and the
-ledger shows the spend. The ledger currently reports `"spent": 0` across 51
-audits, because nothing has ever been paid for. That number moving is the proof.
+`baz curl` response carries a `transaction` hash you can open on Basescan.
+
+**The ledger does NOT move, and this criterion used to say it would.** Corrected
+2026-09-13 after the first real payment. `/api/ledger` still reports
+`"spent": 0` and `amount_usd: null` on the paid audit's own rows, because the
+payment settles at the GATEWAY and nothing forwards a receipt to the origin.
+The Worker never learns it was paid. That number will read 0 no matter how many
+people buy, so it is a measure of nothing until the origin reads the x402
+payment response header and records it. Until then the chain is the proof:
+
+```bash
+curl -s https://scorecard.wanessalabs.com/grade/<audit_id>
+# and the tx from the baz response, which is the authoritative record
+open https://basescan.org/tx/<transaction>
+```
 
 ---
 
@@ -466,11 +479,18 @@ listing under-advertises it.
 - [x] `--once --static-only` grades a live server on this machine
 - [x] a queued audit reaches `complete` (Test 2): `204ac9a0`, 2026-09-11
 - [x] a `complete` audit carries a non-null behavioural layer (Test 3): 91.75
-- [ ] **one paid call settles and delivers** (Test 4)
+- [x] **one paid call settles and delivers** (Test 4). 2026-09-13T04:25:23Z,
+      Base block 51242088, tx
+      `0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0`.
+      USDC 0.01 moved, audit `8ff6bba8` came back **A 91.36** with
+      `behavioral_pct 94.75` forty seconds later.
 - [ ] the gateway advertises what the origin serves: `/feed` and `/badge` still
       404 through it, and there is no CLI path to re-import
+- [ ] **the origin can see its own revenue.** New, and only visible once
+      something was actually paid: the ledger reports `spent: 0` and
+      `amount_usd: null` on the rows of an audit that WAS paid for. Settlement
+      happens at the gateway and no receipt reaches the Worker.
 
-Nine of eleven are done. The paid call is the one everything else waited on, and
-as of 2026-09-12 it is still the only thing standing between this and a complete
-demonstration: `/api/ledger` reports `spent: 0` across 58 audits because no
-payment has ever been attempted, not because one failed.
+Ten of twelve. The paid path is closed. What is left is the gateway advertising
+less than the origin serves, and the origin being unable to account for money it
+has already been paid.
