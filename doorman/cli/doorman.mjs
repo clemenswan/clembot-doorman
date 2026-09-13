@@ -38,7 +38,7 @@ import { join } from 'node:path';
 // Pinned to every other declaration by version.test.mjs. There are FOUR of
 // them (root package.json, doorman/package.json, plugin.json, this) and this
 // one silently reported 0.1.0 out of a 0.2.0 tarball.
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 
 const QUICKSTART = `
 doorman ${VERSION} — Security gate & tool package manager for AI agents

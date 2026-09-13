@@ -77,6 +77,7 @@ The verdict is yours, produced on your machine, from numbers we never receive.
 | `site/` | The live product & explainer at [clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com). |
 | `fixtures/planted-bad-mcp/` | A deliberately hostile MCP server, deployed, so the demo denies something real instead of a line in a JSON file. |
 
+<a id="install"></a>
 ## Quickstart & Installation
 
 **The answer depends on your stack, so run it on yours.**
