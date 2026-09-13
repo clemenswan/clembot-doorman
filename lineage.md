@@ -64,6 +64,36 @@ audits, because none was attempted rather than because one failed. Grant creatio
 needs a human at a browser and cannot be automated. Publishing 0.2.0 to npm is
 also a human step.
 
+**Postscript, later the same night: the third guidance reading arrived, and it
+is a zero.** Chasing a paid call turned into four more audits of deepwiki and
+an answer to the question that had been open since Session 17.
+
+The layer now has three readings on the same server and the same model: 100,
+then 33.33, then 0. `35784eff` scored cold 66 against guided 66, so the recipe
+rule bought nothing at all, and one of its runs came in at 64, below its own
+baseline. Two audits thirty minutes apart, `ac10cd87` at A 92.77 with guidance
+skipped on the `NO_RULES` gate and `35784eff` at B 71.46 with guidance measured
+at zero, differ by a band mostly because one of them happened to derive a rule
+and the other did not. That is not a property of the server being graded. Full
+working in `roadmap.md`; the weighting was deliberately left alone this close to
+the deadline.
+
+Two other things fell out of the same chase. The runner refused to publish a
+partial grade when Gemini returned 429 mid-probe, saying so in the audit record
+rather than renormalising over the layers that did complete, which is the
+behaviour the null-is-not-zero invariant was written for and the first time it
+has fired in anger. And the supersede pointer proved itself on an accident
+nobody staged: the feed headline is now a HIGHER grade that measured LESS, with
+`more_complete_audit` naming the lower three-layer audit in the same row.
+
+The `.dev.vars` trap in the RUNBOOK is real and cost about twenty minutes. Its
+`GRADE_TOKEN` was the production value, which made it tempting to assume the
+`RUNNER_TOKEN` beside it was too. It was not, and the poller 401ed against
+`/api/pending` while an audit sat queued for 400 seconds looking like a hung
+grader. Same lesson as the rest of tonight: one component of a file being
+current is not evidence about the others.
+
+
 ## 2026-09-11 - Session 17: the day-one question, a plugin, and a page that lied
 
 **The product gained the stage it was missing.** `doctor` reads what a build HAS,

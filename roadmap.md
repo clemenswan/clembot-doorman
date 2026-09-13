@@ -284,8 +284,50 @@ Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
       5 mutants caught.
 - [ ] **Decide whether a non-unanimous guidance layer should still carry 20%.**
       It now says so on the report, which is the minimum. Whether a coin flip
-      should move a band at all is a product call, not a bug fix, and it needs
-      more than one server's data to settle.
+      should move a band at all is a product call, not a bug fix, and it needed
+      more than one reading to settle. **It now has three.**
+
+      **2026-09-13 UTC: the layer reads 100, then 33.33, then 0.** Same server,
+      same `gemini-3.5-flash-lite`, same single derived rule:
+
+      | audit | guided runs | layer | grade |
+      |---|---|---|---|
+      | scrollback only, never published | `100` | 100 | A 91.59 |
+      | `204ac9a0` | `67 / 100 / 67` | 33.33 | B 78.26 |
+      | `35784eff` | `67 / 64 / 67` | **0** | B 71.46 |
+
+      `35784eff` is the clearest of the three: cold 66 improved to guided 66,
+      so the rule bought **nothing**, and one run scored 64, BELOW its own
+      baseline. Three readings spanning the entire range of the scale is not a
+      measurement with noise in it. It is noise.
+
+      **And the swing is not theoretical. It happened twice in thirty minutes:**
+
+      ```
+      ac10cd87  static 85.71  behavioral 97.0  guidance NOT measured  ->  A 92.77
+      35784eff  static 85.71  behavioral 91.5  guidance 0             ->  B 71.46
+      ```
+
+      `ac10cd87` skipped the layer on the `NO_RULES` gate, so it renormalises
+      over 80 points of weight. `35784eff` kept all 100 and ate a zero. Holding
+      behavioral fixed, scoring `ac10cd87`'s guidance at 0 rather than skipping
+      it gives 74.21: a drop of 18.56 and a change of band. **Whether a server
+      gets an A or a B currently turns on whether the recipe generator happened
+      to derive a rule, which is not a property of the server.**
+
+      Three options, and this is a recommendation rather than a decision:
+      1. Leave it at 20% and keep disclosing. Defensible, and the status quo.
+      2. **Drop the layer to disclosure-only when `unanimous === false`**, so it
+         is reported and weighted zero, exactly as an unmeasured layer already
+         is. Preferred: it changes nothing about what is measured or shown, only
+         about what a disagreement is allowed to decide.
+      3. Widen `runs` until the layer stabilises. Rejected on cost: the guidance
+         pass re-runs `cold_open`, so every extra run is paid twice, and free
+         tier Gemini is already 429ing at 15 requests per minute on 3.
+
+      Deliberately NOT changed before the ETHOnline deadline. Re-weighting a
+      published grade on the last night, with three data points from one server,
+      would be the kind of change this project exists to argue against.
 
 **Two things recorded here were WRONG and are corrected above:** the guidance
 pass was never n=1 (it has always used `ctx.runs`, same as the probes), and the
