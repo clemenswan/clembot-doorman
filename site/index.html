@@ -3162,9 +3162,9 @@ section[id], div[id].header, div[id].stage, div[id].ink {
               <div class="node-info">
                 <div class="node-header">
                   <span class="node-title"><span class="term-box is-term" tabindex="0" role="button" aria-haspopup="dialog" data-term="x402">x402 Micropayment</span></span>
-                  <span class="node-action">Base USDC</span>
+                  <span class="node-action">Base USDC · No Agent Wallet</span>
                 </div>
-                <p class="node-desc">Autonomous agent micropayment rail via Bazantic gateway.</p>
+                <p class="node-desc">Settles $0.01 on Base via Bazantic hosted grants or single-use EIP-712 permits. Zero private keys in agent context; zero wallet dependencies.</p>
               </div>
             </div>
             <div class="funnel-node">
@@ -3203,13 +3203,16 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 
       <!-- Progressive Disclosure Tray for Deep Methodology -->
       <details class="distill-tray">
-        <summary class="distill-summary">Methodology &amp; Economics: Why only one stage carries a price</summary>
+        <summary class="distill-summary">Methodology, Wallet Architecture &amp; Economics: Why only one stage carries a price</summary>
         <div class="distill-content">
           <p style="margin-top: var(--sp-3);">
-            Five stages run on <strong>your machine</strong> and cost you nothing, because they inspect your build and that information should never leave it. One stage runs on our computers—driving live third-party MCP endpoints against adversarial injection suites.
+            Five stages run on <strong>your machine</strong> and cost you nothing ($0.00), because they inspect your build and that information should never leave it. One stage runs on remote infrastructure—driving live third-party MCP endpoints against adversarial injection suites.
           </p>
           <p>
-            A grade is cached and its transcript tape is free forever, so the first agent pays a cent, and every subsequent agent reads the verdict and tape for nothing. Card fees exceed a fraction of a cent, so this service is impossible without an x402 micropayment rail on Base.
+            <strong>Why the agent never holds a wallet:</strong> Storing private keys or seed phrases in an LLM's prompt context or memory is a severe security vulnerability. Instead, Clembot Doorman decouples intent from custody. Settlements are facilitated through <strong>Bazantic Hosted Grants</strong> (scoped to the service, capped to a ceiling like $1.00, and revocable) or single-use EIP-712 spend permits. The agent never holds private keys, and you never need to install a wallet or Bazantic SDK dependency—everything operates over standard HTTP (status 402, x402 v2 headers) and standard MCP over SSE.
+          </p>
+          <p>
+            A grade is cached and its transcript tape is free forever, so the first agent pays a cent ($0.01 USDC on Base), and every subsequent agent reads the verdict and tape for nothing. Local spend caps in <code>budget.mjs</code> ($1/run, $5/day) reserve funds in an offline append-only ledger before any paid request can fire.
           </p>
         </div>
       </details>
