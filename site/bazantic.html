@@ -534,6 +534,36 @@ pre {
 .preset-pill.active {
   background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-accent);
 }
+.flow-path-selector { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: 2px; }
+.path-label {
+  font-family: var(--font-label); font-size: 0.8125rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);
+}
+.path-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--ink-surface); color: var(--ink-body); border: 1px solid var(--ink-border);
+  border-radius: var(--radius-full); padding: 4px 11px; font-family: var(--font-body);
+  font-size: 0.8125rem; font-weight: 500; cursor: pointer;
+  transition: all .2s var(--ease-signature);
+}
+.path-pill:hover {
+  background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-muted);
+}
+.path-pill.active {
+  background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-accent);
+}
+.path-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--ink-muted); flex: none;
+  transition: all .2s var(--ease-signature);
+}
+.path-pill.active .path-dot {
+  background: var(--ink-accent);
+  box-shadow: 0 0 6px var(--ink-accent);
+}
+.path-pill[data-mode="free"].active .path-dot {
+  background: var(--ink-muted);
+  box-shadow: none;
+}
 .pill-band {
   font-family: var(--font-label); font-size: 0.75rem; font-weight: 600;
   padding: 1px 6px; border-radius: var(--radius-full);

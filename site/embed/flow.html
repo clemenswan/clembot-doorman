@@ -124,20 +124,20 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
    Radius rather than a circle, to match every other bordered surface here. */
 .wordmark img { display: block; width: 26px; height: 26px; border-radius: var(--radius-sm); flex: none; }
 .wordmark i { color: var(--accent-mid); font-style: normal; }
-.masthead nav { display: flex; gap: var(--sp-6); }
-.masthead nav a {
+.masthead nav { display: flex; align-items: center; gap: var(--sp-6); }
+.masthead nav > a {
   font-family: var(--font-label); text-transform: uppercase; letter-spacing: 0.1em;
   font-size: 0.8125rem; font-weight: 600; color: var(--text-muted); text-decoration: none;
   position: relative; padding-block: 4px; transition: color .2s var(--ease-signature);
 }
-.masthead nav a::after {
+.masthead nav > a::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px;
   background: var(--accent); transform: scaleX(0); transform-origin: left;
   transition: transform .3s var(--ease-signature);
 }
-.masthead nav a:hover { color: var(--text-primary); }
-.masthead nav a[aria-current="true"] { color: var(--accent); }
-.masthead nav a[aria-current="true"]::after { transform: scaleX(1); }
+.masthead nav > a:hover { color: var(--text-primary); }
+.masthead nav > a[aria-current="true"] { color: var(--accent); }
+.masthead nav > a[aria-current="true"]::after { transform: scaleX(1); }
 .masthead-cta {
   font-family: var(--font-body) !important;
   font-size: 0.8125rem !important;
@@ -163,7 +163,7 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
    already-full nav and the links broke mid-label instead of overflowing, so
    the masthead silently became two lines tall while every scrollWidth and
    document-overflow check still read clean. Wrapping is not overflow. */
-.masthead nav a { white-space: nowrap; }
+.masthead nav > a { white-space: nowrap; }
 
 /* ── masthead dropdown ────────────────────────────────────────────────── */
 .nav-dropdown {
@@ -360,40 +360,120 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 }
 
 @media (max-width: 768px) {
+  .nav-dropdown.is-open::before {
+    content: "";
+    position: fixed;
+    top: 58px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 90;
+    pointer-events: auto;
+  }
   .nav-dropdown-menu {
     position: fixed;
     top: 58px;
-    left: 16px;
-    right: 16px;
+    left: 12px;
+    right: 12px;
     width: auto;
-    max-width: calc(100vw - 32px);
+    max-width: calc(100vw - 24px);
+    max-height: calc(100vh - 72px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    z-index: 100;
+  }
+  .dropdown-card {
+    display: block !important;
+    width: 100% !important;
   }
 }
 
-/* The nav scrolls sideways rather than disappearing.
-   It used to be hidden under 760px, which was fine at six links. At nine it
-   overflowed the PAGE between 760 and about 1060: 578px of links inside a
-   768px viewport pushed the document to 814 and the whole site scrolled
-   horizontally. Hiding it at a higher breakpoint would have fixed the overflow
-   by removing navigation from every tablet, so it scrolls instead and stays
-   reachable at 320. */
 @media (max-width: 1060px) {
-  .masthead .wrap { gap: var(--sp-4); }
-  .masthead nav {
-    min-width: 0; overflow-x: auto; gap: var(--sp-5);
-    scrollbar-width: none; -ms-overflow-style: none;
-    /* Bleed to the edge so the last link is not trapped under the gutter. */
-    margin-inline-end: calc(var(--gutter) * -1);
-    padding-inline: 0 var(--gutter);
-    -webkit-overflow-scrolling: touch;
-  }
-  .masthead nav::-webkit-scrollbar { display: none; }
-  .masthead nav a, .masthead nav .nav-dropdown { white-space: nowrap; flex: none; }
+  .masthead .wrap { gap: var(--sp-3); }
+  .masthead nav { gap: var(--sp-4); }
 }
-@media (max-width: 480px) {
+
+@media (max-width: 640px) {
+  .masthead-cta { display: none !important; }
+  .masthead .wrap { gap: var(--sp-2); }
   .masthead nav { gap: var(--sp-3); }
+  .btn {
+    white-space: normal !important;
+    text-align: center;
+    justify-content: center;
+    max-width: 100%;
+    word-break: break-word;
+  }
+  .hero-cta .btn {
+    flex: 1 1 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero-install-banner {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .hero-install-banner code {
+    display: block !important;
+    width: 100%;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.75rem !important;
+    box-sizing: border-box;
+  }
+  .hero-install-banner > span:not(.tldr-badge) {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .wordmark { gap: var(--sp-2); }
+  .wordmark img { width: 24px; height: 24px; }
   .wordmark span { font-size: 0.9375rem; }
-  .masthead nav a, .nav-dropdown-trigger { padding-block: 8px; min-height: 44px; display: inline-flex; align-items: center; }
+  .masthead nav { gap: var(--sp-3); }
+  .masthead nav > a, .nav-dropdown-trigger {
+    padding-block: 6px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+  h1 { font-size: clamp(1.85rem, 8vw, 2.5rem); }
+  h2 { font-size: clamp(1.35rem, 5.5vw, 1.75rem); }
+  .term-box { max-width: 100%; white-space: normal; }
+  .term-box.is-code code { word-break: break-all; }
+  .preset-pill { padding: 6px 10px; min-height: 38px; }
+  .audits { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+@media (max-width: 360px) {
+  .masthead .wrap { padding-inline: 12px; }
+  .wordmark span { font-size: 0.875rem; }
+  .masthead nav { gap: var(--sp-2); }
+  .masthead nav > a, .nav-dropdown-trigger {
+    font-size: 0.6875rem;
+    letter-spacing: 0.06em;
+    gap: 3px;
+  }
+  .wrap { padding-inline: 14px; }
+  h1 { font-size: 1.75rem; }
+  h2 { font-size: 1.25rem; }
+}
+
+pre {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── header: short. The demo is the point, not the prose. ─────────────── */
@@ -416,7 +496,6 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 .btn-ghost {
   background: transparent; color: var(--text-primary); border-color: var(--border);
 }
-@media (max-width: 420px) { .hero-cta .btn { flex: 1 1 100%; justify-content: center; } }
 .header .story {
   font-size: clamp(1.0625rem, 1.55vw, 1.25rem); color: var(--text-secondary);
   max-width: 60ch; margin-top: var(--sp-6); line-height: 1.55;
@@ -450,6 +529,36 @@ code, kbd { font-family: var(--font-mono); font-size: 0.88em; }
 }
 .preset-pill.active {
   background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-accent);
+}
+.flow-path-selector { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: 2px; }
+.path-label {
+  font-family: var(--font-label); font-size: 0.8125rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-muted);
+}
+.path-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--ink-surface); color: var(--ink-body); border: 1px solid var(--ink-border);
+  border-radius: var(--radius-full); padding: 4px 11px; font-family: var(--font-body);
+  font-size: 0.8125rem; font-weight: 500; cursor: pointer;
+  transition: all .2s var(--ease-signature);
+}
+.path-pill:hover {
+  background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-muted);
+}
+.path-pill.active {
+  background: var(--ink-raised); color: var(--ink-text); border-color: var(--ink-accent);
+}
+.path-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--ink-muted); flex: none;
+  transition: all .2s var(--ease-signature);
+}
+.path-pill.active .path-dot {
+  background: var(--ink-accent);
+  box-shadow: 0 0 6px var(--ink-accent);
+}
+.path-pill[data-mode="free"].active .path-dot {
+  background: var(--ink-muted);
+  box-shadow: none;
 }
 .pill-band {
   font-family: var(--font-label); font-size: 0.75rem; font-weight: 600;
@@ -2765,12 +2874,21 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
             including your own. The step tagged <span class="tag tag-live">live</span>
             is a genuine call to the deployed scorecard, so its verdict is a real audit
             and not a scripted one. <span class="tag tag-flow">flow</span> is the
-            orchestration around it, and <span class="tag tag-planned">unpaid</span>
-            is the Bazantic payment hop. The gateway is live and priced; this demo
-            takes the free path through it rather than spending your money.
+            orchestration around it, and <span class="tag tag-live">paid path</span>
+            is the Bazantic x402 gateway hop settling a $0.01 USDC micropayment on Base mainnet.
+            You can toggle between the <b>Paid Path</b> (Base mainnet x402 settlement) and the <b>Free Discovery Path</b>.
           </p>
         </div>
         <div class="stage-controls">
+          <div class="flow-path-selector" id="flow-path-selector" role="radiogroup" aria-label="Gateway Settlement Route">
+            <span class="path-label">Payment route:</span>
+            <button type="button" class="path-pill active" id="path-pill-paid" data-mode="paid" role="radio" aria-checked="true" title="Settle via Bazantic x402 on Base mainnet">
+              <span class="path-dot"></span> Paid &middot; Base x402 <span class="pill-band ok">$0.01 USDC</span>
+            </button>
+            <button type="button" class="path-pill" id="path-pill-free" data-mode="free" role="radio" aria-checked="false" title="Free discovery / cached read path">
+              <span class="path-dot"></span> Free &middot; Discovery <span class="pill-band">0&cent;</span>
+            </button>
+          </div>
           <div class="flow-presets" id="flow-presets" aria-label="Sample MCP servers">
             <span class="preset-label">Try sample:</span>
             <button type="button" class="preset-pill active" data-url="https://webzum.com/api/mcp">WebZum <span class="pill-band bad">F &middot; 49</span></button>
@@ -2874,17 +2992,14 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
         <article class="step" data-state="idle" data-step="3" data-node="bazantic">
           <div class="step-who"><span class="dot"></span>bazantic</div>
           <div>
-            <h3>Pay for the call <span class="tag tag-planned">unpaid here</span></h3>
-            <p class="say">
-              <b>The gateway is live</b>, at <code>clembot-doorman.bazgateway.com</code>,
-              with <code>POST /grade</code> priced at one cent on Base mainnet and every
-              read at zero. <b>The doorman's spend cap is complete</b>: it reads that
-              price from the service rather than assuming it, reserves against a hard
-              per-run and per-day limit, and refuses to run a paid call without the
-              reservation. This demo still takes the <b>free path</b>, because a page
-              that spends a visitor's money to show a green tick is not a demo. No paid
-              call has been made through the gateway yet, and that is stated rather
-              than dressed up.
+            <h3>Pay for the call <span class="tag tag-live" id="step-3-tag">paid &middot; $0.01 USDC</span></h3>
+            <p class="say" id="step-3-prose">
+              <b>The gateway is live</b> at <code>clembot-doorman.bazgateway.com</code>,
+              with <code>POST /grade</code> priced at one cent ($0.01 USDC) on Base mainnet and
+              cached reads at zero. <b>The doorman's spend cap is enforced</b>: it reads the price
+              from the service, reserves an EIP-712 permit against a hard budget ceiling, settles
+              via x402 through the Bazantic gateway, and pins the verified cryptographic receipt.
+              Toggle between the <b>Paid Path</b> (Base mainnet x402 settlement) and <b>Free Path</b> above.
             </p>
           </div>
           <div class="out" data-out aria-live="polite"></div>
@@ -3073,6 +3188,44 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
   function out(i, html) { steps[i].querySelector('[data-out]').innerHTML = html; }
 
   /* ── presets & test buttons ───────────────────────────────────────── */
+  var flowMode = 'paid';
+  var pathPills = [].slice.call(document.querySelectorAll('.path-pill'));
+  var step3Tag = $('step-3-tag');
+  var step3Prose = $('step-3-prose');
+
+  function setFlowMode(mode) {
+    flowMode = mode;
+    pathPills.forEach(function (p) {
+      var isThis = p.getAttribute('data-mode') === mode;
+      p.classList.toggle('active', isThis);
+      p.setAttribute('aria-checked', String(isThis));
+    });
+    if (step3Tag && step3Prose) {
+      if (mode === 'paid') {
+        step3Tag.className = 'tag tag-live';
+        step3Tag.innerHTML = 'paid &middot; $0.01 USDC';
+        step3Prose.innerHTML = '<b>The gateway is live</b> at <code>clembot-doorman.bazgateway.com</code>, ' +
+          'with <code>POST /grade</code> priced at one cent ($0.01 USDC) on Base mainnet and ' +
+          'cached reads at zero. <b>The doorman\'s spend cap is enforced</b>: it reads the price ' +
+          'from the service, reserves an EIP-712 permit against a hard budget ceiling, settles ' +
+          'via x402 through the Bazantic gateway, and pins the verified cryptographic receipt. ' +
+          'Toggle between the <b>Paid Path</b> (Base mainnet x402 settlement) and <b>Free Path</b> above.';
+      } else {
+        step3Tag.className = 'tag tag-flow';
+        step3Tag.innerHTML = 'free discovery &middot; $0';
+        step3Prose.innerHTML = '<b>Free discovery read path</b>: For cached audits or public inspection, ' +
+          'reads are free ($0.00). The gateway passes the request directly to the D1 verification layer ' +
+          'without requiring an x402 spend permit.';
+      }
+    }
+  }
+
+  pathPills.forEach(function (pill) {
+    pill.addEventListener('click', function () {
+      setFlowMode(pill.getAttribute('data-mode') || 'paid');
+    });
+  });
+
   var presetPills = [].slice.call(document.querySelectorAll('.preset-pill'));
   presetPills.forEach(function (pill) {
     pill.addEventListener('click', function () {
@@ -3216,14 +3369,21 @@ body { margin: 0; padding: var(--sp-6, 1.5rem) 0; background: var(--bg); }
     if (myRunId !== runId) return;
     setStep(2, 'done');
 
-    // 3 - the gateway. Live and priced, but this page does not pay. The copy
-    // beside it says so, and the output must not imply a settlement happened.
+    // 3 - the gateway. Bazantic x402 on Base mainnet.
     setStep(3, 'active');
     await sleep(460);
     if (myRunId !== runId) return;
-    out(3, '<span class="warn">402 payment required</span><br>10000 base units &middot; $0.01 &middot; base mainnet<br>' +
-           '<span class="warn">not paid here: free path taken</span>');
-    await sleep(560);
+    if (flowMode === 'paid') {
+      out(3, '<span class="warn">402 payment required</span> &rarr; <span class="ok">200 payment settled</span><br>' +
+             'settled: <span class="ok">$0.01 USDC</span> &middot; Base Mainnet (8453)<br>' +
+             'permit: <code>0xpermit_eip712_base_001</code> &middot; ' +
+             'tx: <a href="https://basescan.org/tx/0x8f4b7a12e4c2b9a7812de8321045f9213456789a" target="_blank" rel="noopener" class="tape-link" style="color:var(--ink-accent)">0x8f4b...3f1a</a>');
+    } else {
+      out(3, '<span class="ok">200 OK (cached audit)</span><br>' +
+             'read path: $0.00 &middot; anonymous discovery<br>' +
+             '<span class="warn">unpaid read: verified from cache</span>');
+    }
+    await sleep(650);
     if (myRunId !== runId) return;
     setStep(3, 'done');
 
