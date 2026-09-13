@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "clembot-doorman",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A gate on what your agent is allowed to use. Blocks MCP servers that are not on your trust list, reads your prompt history to find what the build actually needs, and grades candidates before you install them.",
   "author": {
     "name": "Clemens Wan",

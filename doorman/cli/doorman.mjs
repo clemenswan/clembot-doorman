@@ -33,7 +33,10 @@ import { allow, renderAllow, SCOPES } from './allow.mjs';
 import { refreshNotify, consumeDigest, DEFAULT_DIGEST } from './notify.mjs';
 import { join } from 'node:path';
 
-const VERSION = '0.1.0';
+// Pinned to every other declaration by version.test.mjs. There are FOUR of
+// them (root package.json, doorman/package.json, plugin.json, this) and this
+// one silently reported 0.1.0 out of a 0.2.0 tarball.
+const VERSION = '0.2.0';
 
 const HELP = `
 doorman ${VERSION} — measure a candidate, do not just read it
