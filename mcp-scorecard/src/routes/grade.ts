@@ -8,6 +8,8 @@
 
 import { type Env, err, json } from '../index.js';
 import { paidAllowed, secretStrength, spendPermit } from './spend.js';
+import { forwardedHeaderNames, gatewaySettlement } from './payment.js';
+import type { GatewaySettlement } from './payment.js';
 
 export interface GradeRequestItem {
   name?: string;
@@ -54,6 +56,10 @@ export async function handleGrade(req: Request, env: Env): Promise<Response> {
     );
   }
   const paid = paidAllowed(permit);
+  // Settlement happens at the gateway, so this is the only chance to notice it.
+  // Read once per request rather than per item: one payment buys one call.
+  const settlement = paid ? gatewaySettlement(req) : null;
+  const unaccounted = paid && !settlement ? forwardedHeaderNames(req) : null;
 
   const owner = (req.headers.get('x-owner') ?? 'anonymous').slice(0, 120);
   const now = new Date().toISOString();
@@ -63,6 +69,7 @@ export async function handleGrade(req: Request, env: Env): Promise<Response> {
     const { id } = await enqueueAudit(env, {
       url: item.url, name: item.name, needed_for: item.needed_for,
       requestedBy: owner, paidAllowed: paid,
+      settlement, unaccounted,
     });
 
     queued.push({
@@ -283,6 +290,8 @@ export async function enqueueAudit(
     needed_for?: string | null;
     requestedBy: string;
     paidAllowed: 0 | 1;
+    settlement?: GatewaySettlement | null;
+    unaccounted?: string[] | null;
   },
 ): Promise<{ id: string; now: string }> {
   const id = crypto.randomUUID();
@@ -305,6 +314,27 @@ export async function enqueueAudit(
     env.DB.prepare(
       'INSERT INTO ledger (id, audit_id, event, detail, created_at) VALUES (?, ?, ?, ?, ?)',
     ).bind(crypto.randomUUID(), id, 'queued', a.url, now),
+    // `paid` and `amount_usd` were reserved in 0001_init.sql and never written.
+    // amount_usd is usually null on purpose: see GatewaySettlement.
+    ...(a.settlement ? [env.DB.prepare(
+      'INSERT INTO ledger (id, audit_id, event, detail, amount_usd, created_at) ' +
+      'VALUES (?, ?, ?, ?, ?, ?)',
+    ).bind(
+      crypto.randomUUID(), id, 'paid',
+      [a.settlement.header, a.settlement.network ?? 'network unstated',
+       a.settlement.transaction ?? 'no transaction in the receipt'].join(' '),
+      a.settlement.amount_usd, now,
+    )] : []),
+    // An authorised call we could not account for. This is the diagnostic that
+    // tells an operator the gateway forwards nothing readable, instead of the
+    // ledger quietly reading zero forever.
+    ...(a.unaccounted ? [env.DB.prepare(
+      'INSERT INTO ledger (id, audit_id, event, detail, created_at) VALUES (?, ?, ?, ?, ?)',
+    ).bind(
+      crypto.randomUUID(), id, 'paid_unaccounted',
+      'no readable settlement header; forwarded: ' + a.unaccounted.join(','),
+      now,
+    )] : []),
   ]);
   return { id, now };
 }

@@ -314,3 +314,83 @@ export function paymentGate(
     },
   });
 }
+
+/**
+ * What the ORIGIN can learn about a payment that settled somewhere else.
+ *
+ * The gateway takes the money. x402 settlement happens on its side, and this
+ * Worker is the upstream it proxies to, so by default the origin never learns
+ * it was paid at all. That is not a theory: the first real payment settled on
+ * Base on 2026-09-13 (`0xf1d7aa96...`, USDC 0.01) and `/api/ledger` reported
+ * `spent: 0` with `amount_usd: null` on that audit's own rows, because nothing
+ * here looked. A revenue counter that reads zero after a real sale is worse
+ * than no counter, because it looks like an answer.
+ *
+ * NOTHING IS STANDARDISED FOR THE UPSTREAM LEG. x402 v2 standardises what the
+ * client sends (`PAYMENT-SIGNATURE`) and what the resource returns
+ * (`PAYMENT-RESPONSE`). It says nothing about what a gateway forwards to the
+ * API behind it, so this reads a candidate list rather than asserting a shape,
+ * and records WHICH header it came from so a change is visible in the ledger
+ * instead of silently reverting us to blind.
+ *
+ * One thing we already know from the same payment: the gateway does NOT
+ * forward `PAYMENT-SIGNATURE`, because `paymentGate` would have refused it and
+ * the call returned 202.
+ *
+ * THE AMOUNT IS NOT HERE, and cannot be. The receipt we have seen carries
+ * `{ success, transaction, network, payer }` and no figure, and the origin's
+ * own price is zero: the cent is the GATEWAY's price, set out of band, so this
+ * Worker genuinely does not know what was charged. `amount_usd` therefore
+ * stays null unless a gateway sends one, and the ledger records the
+ * transaction hash instead, which is the auditable fact either way.
+ */
+export interface GatewaySettlement {
+  transaction: string | null;
+  network: string | null;
+  /** Which header carried it. Recorded so a gateway change is visible. */
+  header: string;
+  /** Present only if some gateway ever sends a figure. Usually null. */
+  amount_usd: number | null;
+}
+
+/** Checked in order. Lowercase; Headers.get is case-insensitive anyway. */
+export const SETTLEMENT_HEADERS = [
+  'payment-response',
+  'x-payment-response',
+  'x-payment',
+  'x-402-payment-response',
+];
+
+export function gatewaySettlement(req: Request): GatewaySettlement | null {
+  for (const name of SETTLEMENT_HEADERS) {
+    const raw = req.headers.get(name);
+    if (!raw) continue;
+    const body = decodeHeader<Record<string, unknown>>(raw);
+    // A header that is present but unreadable is still evidence that SOMETHING
+    // was forwarded, and losing that would put us back to guessing. Record it
+    // with a null transaction rather than returning null.
+    const tx = typeof body?.transaction === 'string' ? body.transaction : null;
+    const net = typeof body?.network === 'string' ? body.network : null;
+    const amt = typeof body?.amount_usd === 'number' ? body.amount_usd
+      : typeof body?.amountUsd === 'number' ? (body.amountUsd as number)
+      : null;
+    // `success: false` is a settlement that did NOT happen. Recording it as
+    // revenue would be the fabrication this project exists to refuse.
+    if (body && body.success === false) return null;
+    return { transaction: tx, network: net, header: name, amount_usd: amt };
+  }
+  return null;
+}
+
+/**
+ * Header NAMES only, never values, sorted, capped.
+ *
+ * Written to the ledger when an authorised call arrives carrying no settlement
+ * we can read. It is the only way to find out what a gateway actually forwards
+ * without another paid call, and names alone cannot leak a credential.
+ */
+export function forwardedHeaderNames(req: Request): string[] {
+  const names: string[] = [];
+  req.headers.forEach((_v, k) => names.push(k.toLowerCase()));
+  return [...new Set(names)].sort().slice(0, 40);
+}
