@@ -3262,8 +3262,11 @@ claude plugin install clembot-doorman
 # Option B: Global CLI via npm
 npm install -g clembot-doorman
 
-# Run L0 Doctor
-doorman doctor</code></pre>
+# Unified Audit & Recommendations (doctor + prompt needs + recommended tools)
+doorman audit
+
+# Schedule Automated Weekly Reports (GitHub Actions, crontab, agent timer)
+doorman schedule</code></pre>
     </div>
 
     <p class="reveal in d2" style="font-size: 0.9375rem; color: var(--text-secondary); margin-bottom: var(--sp-3);">
@@ -3496,6 +3499,16 @@ exactly that — run `doorman eval` with your key and find out.</code></pre>
           Equip any agent harness with the Doorman skill. When the agent is tasked with adding a capability
           (like searching the web or inspecting database schemas), it triggers <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-needs"><code>doorman needs</code></span> or
           <span class="term-box is-code" tabindex="0" role="button" aria-haspopup="dialog" data-term="doorman-report"><code>doorman report</code></span> to evaluate options before asking you to install them.
+        </p>
+      </div>
+      <div class="arch-node">
+        <div class="arch-tag">Workflow D <span>Automation & CI/CD</span></div>
+        <h3>Scheduled Audits & Reports</h3>
+        <div class="arch-files">doorman schedule --github &middot; /schedule</div>
+        <p>
+          Configure continuous tool governance without manual overhead. Run <code>doorman schedule --github</code>
+          to install a weekly GitHub Action that audits project posture and tool recommendations, or trigger
+          periodic scans via your agent harness or crontab.
         </p>
       </div>
     </div>

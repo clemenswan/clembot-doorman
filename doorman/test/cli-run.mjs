@@ -14,6 +14,8 @@ import { estimateEval, priceFor, worstCaseRunUsd } from '../cli/cost.mjs';
 import { turnsWithinBudget } from '../cli/eval.mjs';
 import { ADAPTERS, credentialCheck, resolveAdapter, unmeasured } from '../cli/agents.mjs';
 import { doctor, renderDoctor } from '../cli/doctor.mjs';
+import { auditProject, renderAudit, renderAuditMarkdown } from '../cli/audit.mjs';
+import { schedule, renderSchedule } from '../cli/schedule.mjs';
 
 let pass = 0, fail = 0;
 const results = [];
@@ -356,6 +358,52 @@ it('reports an unreadable config rather than skipping it', async () => {
   const d = await doctor(dir);
   eq(d.servers.length, 1);
   truthy(d.servers[0].note.includes('not valid JSON'), 'must surface it, not swallow it');
+});
+
+/* ── audit: unified report ───────────────────────────────────────────── */
+
+it('runs a unified audit report combining doctor, needs, and watch', async () => {
+  const os = await import('node:os');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'audit-'));
+  const outFile = path.join(dir, 'audit-out.md');
+  const r = await auditProject(dir, { out: outFile });
+  truthy(r.ok, 'audit succeeded');
+  truthy(r.posture, 'posture included');
+  truthy(r.needs, 'needs included');
+  truthy(Array.isArray(r.recommendations), 'recommendations array');
+  const rendered = renderAudit(r);
+  truthy(rendered.includes('CLEMBOT DOORMAN · UNIFIED AUDIT'), 'header rendered');
+  const outContent = await fs.readFile(outFile, 'utf8');
+  truthy(outContent.includes('Clembot Doorman Security & Tool Recommendation Report'), 'file written');
+});
+
+/* ── schedule: automation configs ────────────────────────────────────── */
+
+it('generates GitHub Actions workflow with doorman schedule --github', async () => {
+  const os = await import('node:os');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'schedule-'));
+  const r = await schedule(dir, { github: true });
+  truthy(r.ok, 'schedule succeeded');
+  eq(r.mode, 'github');
+  const wf = await fs.readFile(r.path, 'utf8');
+  truthy(wf.includes('doorman audit'), 'workflow contains doorman audit');
+});
+
+it('renders schedule guidance when called without flags', async () => {
+  const os = await import('node:os');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'sched-guide-'));
+  const r = await schedule(dir);
+  truthy(r.ok, 'schedule succeeded');
+  eq(r.mode, 'guide');
+  const text = renderSchedule(r);
+  truthy(text.includes('AUTOMATED AUDIT SCHEDULING'), 'guide rendered');
+  truthy(text.includes('/schedule'), 'mentions agent /schedule');
 });
 
 /* ── report ──────────────────────────────────────────────────────────── */

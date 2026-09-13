@@ -183,6 +183,20 @@ export function renderInstall(res) {
     L.push('');
   }
 
-  L.push('Done. Run `doorman doctor` to verify your installation.');
+  L.push('════════════════════════════════════════════════════════════════');
+  L.push('  INSTALLATION COMPLETE · GETTING STARTED GUIDANCE');
+  L.push('════════════════════════════════════════════════════════════════');
+  L.push('  1. Run unified health & tool check:');
+  L.push('     doorman audit');
+  L.push('');
+  L.push('  2. In Claude Code, manage your gate interactively:');
+  L.push('     /doorman');
+  L.push('');
+  L.push('  3. Audit any candidate tool before adoption:');
+  L.push('     /vet <mcp_server_url>');
+  L.push('');
+  L.push('  4. Set up recurring automated audit digests:');
+  L.push('     doorman schedule');
+  L.push('════════════════════════════════════════════════════════════════');
   return L.join('\n');
 }

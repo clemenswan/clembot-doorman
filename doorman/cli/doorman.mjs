@@ -31,6 +31,8 @@ import { needs as readNeeds, render as renderNeedsCli } from './needs.mjs';
 import { install, renderInstall } from './install.mjs';
 import { allow, renderAllow, SCOPES } from './allow.mjs';
 import { refreshNotify, consumeDigest, DEFAULT_DIGEST } from './notify.mjs';
+import { auditProject, renderAudit } from './audit.mjs';
+import { schedule as scheduleReport, renderSchedule } from './schedule.mjs';
 import { join } from 'node:path';
 
 // Pinned to every other declaration by version.test.mjs. There are FOUR of
@@ -38,8 +40,38 @@ import { join } from 'node:path';
 // one silently reported 0.1.0 out of a 0.2.0 tarball.
 const VERSION = '0.2.0';
 
+const QUICKSTART = `
+doorman ${VERSION} — Security gate & tool package manager for AI agents
+
+QUICKSTART (3 SIMPLE STEPS):
+  1. doorman audit        Run full build check & get vetted MCP recommendations
+  2. /vet <url>           Audit an untrusted candidate MCP server before adoption
+  3. doorman schedule     Configure automated weekly/daily audit reports
+
+COMMON COMMANDS:
+  doorman audit [path]    Unified scan: doctor + prompt needs + recommended tools
+  doorman schedule        Configure recurring automated reports (cron, GitHub Actions)
+  doorman doctor [path]   L0 build & gate inspection (free, offline, <5ms)
+  doorman needs [path]    L0.5 scan prompt history for missing capabilities
+  doorman watch [path]    Check public feed for newly graded tools
+  doorman allow <server>  Trust an MCP server by name on your local allowlist
+  doorman install [path]  Install the gate & hooks into this project
+
+Run \`doorman --help\` for full manual and advanced benchmark flags.
+`;
+
 const HELP = `
 doorman ${VERSION} — measure a candidate, do not just read it
+
+  doorman audit [path] [--out FILE] [--json]
+      Unified security audit & capability recommendations. Runs doctor,
+      prompt-history needs, and watch in one fast command. Produces an
+      executive report with security posture, capability gaps, and top
+      verified tools.
+
+  doorman schedule [path] [--github]
+      Set up automated recurring audit reports via GitHub Actions, system
+      cron, or session-notify hooks.
 
   doorman doctor [path]
       L0. What is in YOUR build: which harness, which MCP servers your agents can
@@ -125,7 +157,7 @@ Options
  */
 const BOOLEAN_FLAGS = new Set([
   'json', 'dry-run', 'all', 'estimate', 'help', 'version', 'allow-network',
-  'static-only', 'no-feed',
+  'static-only', 'no-feed', 'github', 'cron', 'weekly',
 ]);
 
 function parseArgs(argv) {
@@ -149,12 +181,34 @@ const log = (m) => console.error(`${new Date().toISOString().slice(11, 19)} ${m}
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   if (args.version) { console.log(VERSION); return; }
-  if (args.help || args._.length === 0) { console.log(HELP); return; }
-
-  // `doctor` is the one command that needs no link: it reads the project.
-
+  if (args.help) { console.log(HELP); return; }
+  if (args._.length === 0) { console.log(QUICKSTART); return; }
 
   const [cmd, link] = args._;
+
+  if (cmd === 'audit' || cmd === 'scan' || cmd === 'recommend') {
+    const target = args._[1] || process.cwd();
+    const r = await auditProject(target, {
+      out: typeof args.out === 'string' ? args.out : null,
+      api: typeof args.api === 'string' ? args.api : undefined,
+      historyDir: typeof args.history === 'string' ? args.history : undefined,
+    });
+    if (!r.ok) { console.error(`audit: ${r.why}`); process.exitCode = 1; return; }
+    if (args.json) { console.log(JSON.stringify(r, null, 2)); return; }
+    console.log(renderAudit(r));
+    return;
+  }
+
+  if (cmd === 'schedule') {
+    const target = args._[1] || process.cwd();
+    const r = await scheduleReport(target, {
+      github: Boolean(args.github),
+    });
+    if (!r.ok) { console.error(`schedule: ${r.why}`); process.exitCode = 1; return; }
+    if (args.json) { console.log(JSON.stringify(r, null, 2)); return; }
+    console.log(renderSchedule(r));
+    return;
+  }
 
   if (cmd === 'doctor') {
     const d = await doctor(args._[1] || process.cwd());

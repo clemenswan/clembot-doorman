@@ -330,19 +330,22 @@ claude plugin marketplace add clemenswan/clembot-doorman && claude plugin instal
 git clone https://github.com/clemenswan/clembot-doorman.git
 cd clembot-doorman
 
-# 2. Run the complete test suite (399 unit tests + 37 CLI tests)
+# 2. Run the complete test suite (465 unit tests + 40 CLI tests)
 npm test
 
-# 3. Test the offline zero-dependency doctor on this project
-node doorman/bin/doorman.mjs doctor
+# 3. Test the unified scan (doctor + needs + recommendations in one sweep)
+node doorman/cli/doorman.mjs audit
 
-# 4. Test reverse-needs prompt history analysis
-node doorman/bin/doorman.mjs needs
+# 4. Test automated scheduling (cron, GitHub Actions, /schedule)
+node doorman/cli/doorman.mjs schedule
 
-# 5. Verify the live Bazantic gateway endpoint
+# 5. Test reverse-needs prompt history analysis
+node doorman/cli/doorman.mjs needs
+
+# 6. Verify the live Bazantic gateway endpoint
 curl -i https://clembot-doorman.bazgateway.com/mcp
 
-# 6. Verify Cloudflare Pages production deployment
+# 7. Verify Cloudflare Pages production deployment
 curl -i https://clembot-doorman.wanessalabs.com/</code></pre>
     </div>
 
