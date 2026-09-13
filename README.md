@@ -1,13 +1,15 @@
-<img src="logo.png" alt="Clembot Doorman" width="150" align="right">
+<p align="center">
+  <img src="media/hero.png" alt="Clembot Doorman - The Package Manager and Security Gate for AI Agents" width="100%">
+</p>
 
 # Clembot Doorman
 
-> **The Package Manager & Security Doorman for Clembot.**  
+> **The Package Manager & Security Doorman for AI Agents.**  
 > Inspect your build. Recommend vetted MCPs from prompt history. Block rogue tools before they reach context.
 
 [![Live Explainer & Simulator](https://img.shields.io/badge/Live%20Explainer-clembot--doorman.wanessalabs.com-green.svg)](https://clembot-doorman.wanessalabs.com)
 [![Gateway](https://img.shields.io/badge/Bazantic%20Gateway-active-blue.svg)](https://clembot-doorman.bazgateway.com)
-[![Tests](https://img.shields.io/badge/Tests-403%20passing-brightgreen.svg)](RUNBOOK.md)
+[![Tests](https://img.shields.io/badge/Tests-505%20passing-brightgreen.svg)](RUNBOOK.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
