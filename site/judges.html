@@ -3394,7 +3394,7 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 
           <ul style="list-style: none; padding: 0; margin: 0 0 var(--sp-4); font-size: 0.875rem; color: #ffffff; line-height: 1.7;">
             <li>✅ <strong style="color: #ffffff;">x402 Protocol Compliance:</strong> Responds to HTTP 402 Payment Required with structured EIP-712 payment payloads.</li>
-            <li>✅ <strong style="color: #ffffff;">Base USDC Micropayments:</strong> Configured for $0.01 USDC audits on Base, proving cost-effective agent evaluation.</li>
+            <li>✅ <strong style="color: #ffffff;">Base USDC Micropayments:</strong> Two payments SETTLED on Base mainnet on 13 September, <a href="#settled" style="color: var(--ink-accent);">tx <code style="color: var(--ink-accent);">0xf1d7aa96</code> and <code style="color: var(--ink-accent);">0x2748fc43</code></a>. One delivered a grade. One bought nothing and exposed a real gap in the pattern.</li>
             <li>✅ <strong style="color: #ffffff;">Bounded Spend Caps:</strong> Hard limits enforced by <code>src/budget.mjs</code> ($1 per run, $5 per day); unspent allowances auto-released.</li>
             <li>✅ <strong style="color: #ffffff;">Free Tier First:</strong> Zero network and zero tokens spent on redundant candidates; Base payments trigger only for novel tools.</li>
           </ul>
@@ -3409,6 +3409,98 @@ section[id], div[id].header, div[id].stage, div[id].ink {
 </div>
 
 <!-- ── SECTION 3: REPRODUCTION RUNBOOK ─────────────────────────────── -->
+<section id="settled" style="padding: clamp(48px, 6vh, 72px) 0;">
+  <div class="wrap">
+    <p class="eyebrow reveal in">Settlement</p>
+    <h2 class="reveal in d1">Two payments settled on Base. One delivered.</h2>
+    <p class="section-intro reveal in d2">
+      Both are real transactions on Base mainnet and both are yours to check. The second
+      one is the more useful evidence, because it bought nothing and the service could not
+      tell.
+    </p>
+
+    <div class="terminal reveal in d2" style="margin-bottom: var(--sp-6);">
+      <div class="terminal-bar">Base mainnet &middot; 13 September 2026</div>
+      <pre><code>0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0
+  USDC 0.01   block 51242088   audit 8ff6bba8   grade A 91.36, delivered in 40s
+
+0x2748fc43c34d632d1a88c0bce25ace12b0a93dc477cb2676bd2717416a5b045f
+  USDC 0.01                    audit 11364ba2   FAILED, no grade published</code></pre>
+    </div>
+
+    <p class="reveal in d2" style="margin-bottom: var(--sp-6);">
+      The second audit hit a model rate limit mid-probe. The runner refused to publish a
+      partial grade, which is correct and is the behaviour this whole project argues for.
+      The buyer still paid. Three things follow, and none of them is a bug in the code:
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">The money settles before the work, at enqueue</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            <code>POST /grade</code> answers <code>202</code> when the audit joins the queue.
+            The gateway settles against that 202. Grading happens minutes later on a probe
+            runner the gateway never hears from, because a Cloudflare Worker cannot spawn a
+            process and the static layer shells out to Python. Charging at enqueue was never
+            an examined decision. It was a default that no money had ever run through until
+            13 September.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">The gateway forwards no evidence that payment happened</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            Measured, not assumed. A paid request reaches the origin carrying 29 headers and
+            not one of them concerns payment: proxy plumbing, <code>cf-*</code>,
+            <code>fly-*</code>, <code>x-forwarded-*</code>, and the configured credential.
+            No <code>payment-response</code>, no <code>x-payment</code>, nothing x402.
+          </p>
+          <p style="margin-top: var(--sp-3);">
+            This is a property of the gateway pattern rather than a defect in anyone&rsquo;s
+            implementation. x402 v2 standardises what the client sends and what the resource
+            returns, and says nothing about what a gateway tells the API behind it.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">So the service cannot tell that it owes a refund</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            It cannot count its own revenue either. <code>/api/ledger</code> reports
+            <code>spent: 0</code> after two real payments, and that number is honest rather
+            than broken: the origin has no way to know. Rather than leave a counter that
+            reads zero and looks like an answer, every authorised call now writes a
+            <code>paid_unaccounted</code> row naming the headers that did arrive. The gap is
+            recorded instead of silent.
+          </p>
+          <p style="margin-top: var(--sp-3);">
+            Closing it properly needs three changes, all of them out of scope for a hackathon
+            weekend: charge on delivery rather than on enqueue, forward a settlement receipt
+            upstream, and give the runner a model budget that cannot exhaust mid-audit.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal in d2">
+        <summary class="distill-summary">Disclosure: payer and payee are the same address</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            The grant paying and the gateway receiving both resolve to
+            <code>0x72Bb&hellip;586D</code>, so these transfers prove the mechanism end to end
+            rather than a third-party sale. Every step is real, including on-chain
+            settlement. The counterparty is not. Said here rather than left on Basescan for
+            someone to find.
+          </p>
+        </div>
+      </details>
+    </div>
+  </div>
+</section>
+
 <section id="runbook">
   <div class="wrap">
     <p class="eyebrow reveal in">Verification</p>

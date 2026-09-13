@@ -375,6 +375,81 @@
   </section>
 </div>
 
+<section id="drift" style="padding: clamp(48px, 6vh, 72px) 0;">
+  <div class="wrap">
+    <p class="eyebrow reveal">Where this goes</p>
+    <h2 class="reveal d1">Nobody can see anyone else&rsquo;s build</h2>
+    <p class="section-intro reveal d2">
+      Grading a server answers &ldquo;is this safe and worth adopting&rdquo;. There is a
+      larger question underneath it that nothing currently answers: <strong>why is my agent
+      worse than yours?</strong>
+    </p>
+
+    <p class="reveal d2" style="margin-bottom: var(--sp-6);">
+      Everyone on a team runs a different harness. Different MCP servers, different skills,
+      different versions, different permissions, different things silently blocked. When
+      something works on one machine and not another, the honest answer today is a shrug,
+      because the two builds are not comparable and never were. Call it harness drift. It is
+      the same class of problem as dependency drift, twenty years less mature, and currently
+      invisible.
+    </p>
+
+    <p class="reveal d2" style="margin-bottom: var(--sp-6);">
+      Most of the parts already exist and were built for the single-user case.
+      <code>doorman doctor</code> inventories a build and reports what is gated.
+      <code>doorman needs</code> matches that build against what its own prompt history
+      keeps asking for. The feed is a shared catalogue where every grade links to a
+      replayable transcript. And the gate resolves its trust list project first, then user,
+      then shipped default. That resolution order is the load-bearing part: a team layer
+      slots between project and user without a redesign, and a plugin update still cannot
+      overwrite a choice somebody made.
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: var(--sp-3);">
+      <details class="distill-tray reveal d2">
+        <summary class="distill-summary">1. Publish an inventory as a baseline</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            A working build becomes a snapshot somebody else can adopt: which servers, which
+            versions, which are graded and which are merely allowed. The distinction between
+            graded and allowed is the whole point, and it is already tracked.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal d2">
+        <summary class="distill-summary">2. Diff two builds</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            &ldquo;You run deepwiki graded A, I have nothing. You have chrome-devtools, mine
+            is blocked. Your scorecard plugin is a version behind.&rdquo; This is the feature
+            people would open daily, and the one that turns a security gate into something a
+            team notices.
+          </p>
+        </div>
+      </details>
+
+      <details class="distill-tray reveal d2">
+        <summary class="distill-summary">3. A team trust list the gate already knows how to read</summary>
+        <div class="distill-content">
+          <p style="margin-top: var(--sp-3);">
+            One list, agreed once, enforced offline on every machine, with the same
+            fail-closed behaviour and the same rule that an ungraded server is not a trusted
+            one. No new mechanism is needed: the gate&rsquo;s existing resolution order
+            accepts another layer.
+          </p>
+        </div>
+      </details>
+    </div>
+
+    <p class="reveal d2" style="margin-top: var(--sp-6);">
+      None of this is built. It is written here because the grading engine is what would
+      make the answer credible. A config diff tells you two machines differ. A graded
+      catalogue tells you which one is right.
+    </p>
+  </div>
+</section>
+
 <section id="built">
   <div class="wrap">
     <p class="eyebrow reveal">The line, drawn where it falls</p>
