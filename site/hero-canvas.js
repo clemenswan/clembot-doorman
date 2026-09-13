@@ -294,53 +294,88 @@
       emitParticles(width * 0.1, height * 0.5, 20, '#2f6b4f', 4, 1.2);
     }
 
+    function drawGateBadge(x, y, w, h, bgSolid, bgTint, strokeColor, textColor, text) {
+      ctx.save();
+      // Drop shadow so badge floats cleanly over lines and canvas background
+      ctx.shadowColor = 'rgba(18, 17, 16, 0.12)';
+      ctx.shadowBlur = 8;
+      ctx.shadowOffsetY = 2;
+
+      // 1. Solid opaque base so lines and moving items never show through
+      ctx.fillStyle = bgSolid;
+      if (typeof ctx.roundRect === 'function') {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 4);
+        ctx.fill();
+      } else {
+        ctx.fillRect(x, y, w, h);
+      }
+
+      // Reset shadow for inner tint and border
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetY = 0;
+
+      // 2. Tinted overlay fill & stroke border
+      ctx.fillStyle = bgTint;
+      if (typeof ctx.roundRect === 'function') {
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 4);
+        ctx.fill();
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.25;
+        ctx.stroke();
+      } else {
+        ctx.fillRect(x, y, w, h);
+        ctx.strokeStyle = strokeColor;
+        ctx.lineWidth = 1.25;
+        ctx.strokeRect(x, y, w, h);
+      }
+
+      // 3. Crisp centered label
+      ctx.fillStyle = textColor;
+      ctx.font = '600 11px "Barlow Condensed", sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, x + w / 2, y + h / 2 + 0.5);
+      ctx.restore();
+    }
+
     function render(dt) {
       var gate1X = getGate1X();
       var gate2X = gate1X + (width - gate1X) * 0.52;
 
-      // Draw Gate 1: Phase 1 Local Free Fit ($0.00) - Same line as home page threshold
+      // Draw Gate 1: Phase 1 Local Free Fit ($0.00) line (split around badge height: 16 to 42)
       ctx.save();
       ctx.strokeStyle = '#2f6b4f';
       ctx.lineWidth = 2;
       ctx.setLineDash([]);
       ctx.beginPath();
       ctx.moveTo(gate1X, 0);
+      ctx.lineTo(gate1X, 16);
+      ctx.moveTo(gate1X, 42);
       ctx.lineTo(gate1X, height);
       ctx.stroke();
 
-      // Gate 1 Badge - positioned cleanly on the threshold line at the top
-      ctx.fillStyle = 'rgba(47, 107, 79, 0.14)';
-      ctx.fillRect(gate1X - 64, 16, 128, 24);
-      ctx.strokeStyle = '#2f6b4f';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(gate1X - 64, 16, 128, 24);
-      ctx.fillStyle = '#2f6b4f';
-      ctx.font = '600 11px "Barlow Condensed", sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('PHASE 1: LOCAL FIT ($0.00)', gate1X, 32);
+      // Gate 2 Laser Glow (split around badge height: 16 to 42)
+      ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+      ctx.lineWidth = 14;
+      ctx.beginPath();
+      ctx.moveTo(gate2X, 0);
+      ctx.lineTo(gate2X, 16);
+      ctx.moveTo(gate2X, 42);
+      ctx.lineTo(gate2X, height);
+      ctx.stroke();
 
-      // Draw Gate 2: Phase 2 Base Scorecard ($0.01)
+      // Draw Gate 2: Phase 2 Base Scorecard ($0.01) core line (split around badge height: 16 to 42)
       ctx.strokeStyle = 'rgba(16, 185, 129, 0.85)';
       ctx.lineWidth = 3;
       ctx.beginPath();
       ctx.moveTo(gate2X, 0);
+      ctx.lineTo(gate2X, 16);
+      ctx.moveTo(gate2X, 42);
       ctx.lineTo(gate2X, height);
       ctx.stroke();
-
-      // Gate 2 Laser Glow
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
-      ctx.lineWidth = 14;
-      ctx.stroke();
-
-      // Gate 2 Badge
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
-      ctx.fillRect(gate2X - 70, 16, 140, 24);
-      ctx.strokeStyle = 'rgba(16, 185, 129, 0.8)';
-      ctx.lineWidth = 1;
-      ctx.strokeRect(gate2X - 70, 16, 140, 24);
-      ctx.fillStyle = '#10b981';
-      ctx.font = '600 11px "Barlow Condensed", sans-serif';
-      ctx.fillText('PHASE 2: BASE SCORE ($0.01)', gate2X, 32);
       ctx.restore();
 
       // Render & update items
@@ -410,6 +445,10 @@
           ctx.restore();
         }
       }
+
+      // Draw Gate Badges IN FRONT of lines and items
+      drawGateBadge(gate1X - 68, 16, 136, 26, '#ffffff', 'rgba(47, 107, 79, 0.12)', '#2f6b4f', '#2f6b4f', 'PHASE 1: LOCAL FIT ($0.00)');
+      drawGateBadge(gate2X - 74, 16, 148, 26, '#ffffff', 'rgba(16, 185, 129, 0.15)', 'rgba(16, 185, 129, 0.9)', '#059669', 'PHASE 2: BASE SCORE ($0.01)');
     }
 
     return { init: init, render: render, trigger: trigger };
