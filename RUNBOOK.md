@@ -330,13 +330,22 @@ Two routes, and they are not equivalent.
 | Self-custody wallet | no | no | the doorman refuses it |
 
 ```bash
-baz grant create --name doorman --cap 1 --service clembot-doorman
+# the slug is the `slug` FIELD from `baz gateway list --json`, not the subdomain
+baz grant create --name doorman --cap 1 --service fcpwnq7vanbpdjyv7lzyy2icha
 ```
 
-`--cap 1` is one USDC, which at a cent a call is 100 grades. `--service`
-restricts the credential to this one gateway. The command prints an approval URL
-and waits for you to approve it in a browser, cross-checking a device
-fingerprint. It cannot be done unattended.
+`--cap 1` is one USDC, which at a cent a call is 100 grades. But **a cap is a
+ceiling, not a prefund**: the hosted balance is the real limit, and it was $0.23
+on 2026-09-11, which is 23 calls. `--service` restricts the credential to this
+one gateway. The command prints an approval URL and waits for you to approve it
+in a browser, cross-checking a device fingerprint. It cannot be done unattended.
+
+**The service slug is opaque.** `gateway list --json` returns
+`slug: fcpwnq7vanbpdjyv7lzyy2icha` for the gateway whose endpoint is
+`clembot-doorman.bazgateway.com`, so the two are not the same string and the
+subdomain is derived from the listing name. This file said `--service
+clembot-doorman` until 2026-09-11. Which string the flag accepts is `[VERIFY]`:
+the command has never been run. Read the field, do not type either one.
 
 `--network` accepts `base` or `base-sepolia` and defaults to `base` on
 production. **A sepolia grant cannot pay a mainnet gateway**, and this gateway is
@@ -346,15 +355,30 @@ registered on mainnet, so leave the default alone.
 
 ```bash
 baz curl https://clembot-doorman.bazgateway.com/grade \
-  --account doorman --max-amount 0.05 --source hosted --json \
+  --account doorman --max-amount 0.05 --json \
   -X POST -H "content-type: application/json" \
   -d '{"url":"https://mcp.deepwiki.com/mcp","needed_for":"paid end to end test"}'
 ```
 
-**`--source hosted` is not optional.** Without it, a missing device key falls
-back to your self-custody wallet for that call, which is uncapped and
-irrevocable. Bazantic documents this behaviour; the doorman refuses to run
-without the flag for exactly this reason.
+**There is no `--source` flag.** This file required `--source hosted` and called
+it not optional until 2026-09-11, when `baz curl --help` was finally read on the
+installed CLI 0.8.0. Its flags are `--method --header --data --account
+--max-amount --network --x402-version --passphrase-stdin --json --yes`, and that
+is the whole list. The hazard was real; the guard was imaginary. What actually
+holds a call to the hosted balance is `--account <grant-name>`, because `wallet`
+and `local` are reserved names that reach the self-custody wallet instead.
+`grant list` reports `wallet none`, so there is currently nothing to fall
+through to. Fund a wallet and that stops being true.
+
+**Check what the gateway forwards upstream before trusting the result.**
+`spendPermit` (`mcp-scorecard/src/routes/spend.ts`) reads
+`Authorization: Bearer <GRADE_TOKEN>`; with no header it returns `anonymous`,
+which sets `paid_allowed: 0` and grades static-only. If the Doorman listing was
+registered with the default `--auth-type x402-mpp` and carries no provider
+credential, a buyer pays a cent and receives a 30-percent-weight static grade
+with nothing raising an error. `gateway list --json` does not return `authType`,
+so this is `[VERIFY]` from the Bazantic side, and it is the first thing to
+confirm once a grant exists.
 
 ### 4d. Confirm the money bought something
 
@@ -393,6 +417,25 @@ else: no update, no refresh, no rm. Changing the spec on the origin does not
 change what the gateway advertises, and re-running `gateway add` creates a
 second gateway with a new slug rather than updating the first.
 
+Measured 2026-09-12, all 8 described operations against the live gateway:
+
+| Routed | 404 |
+|---|---|
+| `/health` `/api/ledger` `/grade` (GET+POST) `/grade/{audit_id}` `/mcp` | **`/feed`** and **`/badge/{server}.svg`** |
+
+`/feed` fits the snapshot story exactly: it entered the spec in `c5424022` on
+2026-09-10 and the gateway registered on 2026-09-08, so the gateway has never
+seen it. **`/badge` does not.** It has been in the spec since `164110a5` on
+2026-09-01, a week before registration, and still 404s, so something other than
+staleness is dropping it. `[VERIFY]`, and not from this side: `gateway list
+--json` returns no routing table.
+
+This matters more than it looks. `/feed` is the operation the whole push model
+reads, so an agent that reaches the doorman THROUGH Bazantic cannot see new
+grades at all. Direct callers to `scorecard.wanessalabs.com/feed` are unaffected,
+and that is what the shipped CLI uses, so the product works and the gateway
+listing under-advertises it.
+
 ---
 
 ## Troubleshooting
@@ -421,10 +464,13 @@ second gateway with a new slug rather than updating the first.
 - [x] the served OpenAPI spec describes 8 operations, and the two runner routes
       are neither described nor reachable through the gateway
 - [x] `--once --static-only` grades a live server on this machine
-- [ ] **a queued audit reaches `complete`** (Test 2)
-- [ ] **a `complete` audit carries a non-null behavioural layer** (Test 3)
+- [x] a queued audit reaches `complete` (Test 2): `204ac9a0`, 2026-09-11
+- [x] a `complete` audit carries a non-null behavioural layer (Test 3): 91.75
 - [ ] **one paid call settles and delivers** (Test 4)
-- [ ] `tools/list` returns 9 after a dashboard re-import
+- [ ] the gateway advertises what the origin serves: `/feed` and `/badge` still
+      404 through it, and there is no CLI path to re-import
 
-The first seven are done. The last four are what is left, and the fourth from
-last is the one everything else waits on.
+Nine of eleven are done. The paid call is the one everything else waited on, and
+as of 2026-09-12 it is still the only thing standing between this and a complete
+demonstration: `/api/ledger` reports `spent: 0` across 58 audits because no
+payment has ever been attempted, not because one failed.

@@ -1,6 +1,6 @@
 {
   "name": "clembot-doorman",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "The Package Manager & Security Doorman for Claude Code: inspect your build, recommend vetted MCPs from prompt history, and block rogue tools before context.",
   "homepage": "https://clembot-doorman.wanessalabs.com",
   "type": "module",

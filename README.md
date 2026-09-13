@@ -117,11 +117,11 @@ components that never register:
 claude plugin details clembot-doorman
 #   Skills (3)  doorman, doorman-guide, vet
 #   Agents (1)  doorman
-#   Hooks (1)   PreToolUse
+#   Hooks (2)   PreToolUse, SessionStart
 #   MCP servers (1)  scorecard
 ```
 
-### 2. The CLI: doctor, needs, report, watch, eval
+### 2. The CLI: doctor, needs, report, watch, notify, eval
 
 ```bash
 npm i -g clembot-doorman
@@ -129,6 +129,12 @@ doorman --version
 ```
 
 Node 20+. Zero runtime dependencies, deliberately: every dependency is one more thing that can fail to install on your machine.
+
+**`notify` and the SessionStart hook need 0.2.0 or later.** The 0.1.0 on npm was
+published before they landed, so `doorman --version` reporting `0.1.0` means the
+push half is absent and no session will ever announce anything. Nothing errors:
+that build simply stays quiet forever, which is indistinguishable from having no
+news.
 
 **New here?** [`WALKTHROUGH.md`](WALKTHROUGH.md) runs the first ten minutes
 against three real builds: one with a long history, one brand new, and one in
