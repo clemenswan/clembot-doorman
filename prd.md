@@ -1,9 +1,9 @@
 ---
 project: clembot-doorman
 cluster: agency
-status: active
+status: production
 blocked: false
-updated: 2026-09-01
+updated: 2026-09-13
 ---
 
 # Clembot Doorman - PRD
