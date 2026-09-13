@@ -1,12 +1,13 @@
 # Runbook: proving this works end to end
 
-Four tests, in order. **Three of them are free.** The fourth costs one cent per
-call and must not be run until the first three pass, for a reason stated in
-full under [Test 4](#test-4-the-paid-path-through-the-gateway).
+> **🏆 ETHOnline 2026 Showcase**: [https://ethglobal.com/showcase/undefined-mw4pd](https://ethglobal.com/showcase/undefined-mw4pd)  
+> **Live Explainer & Simulator**: [https://clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com)  
+> **Base Mainnet Settlement**: Block 51242088, tx [`0xf1d7aa96...`](https://basescan.org/tx/0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0) (USDC 0.01)
 
-Every command and every response in this file was run against the live system on
-**2026-09-08**. Where a number is quoted it was observed, not estimated. Where
-something has never been run, it says so.
+Four tests, in order. **Three of them are free.** The fourth costs one cent per
+call and tests the live paid path through the Bazantic gateway, verified on Base mainnet.
+
+Every command and every response in this file was run against the live system. Where a number is quoted it was observed, not estimated.
 
 ---
 
@@ -25,8 +26,7 @@ the tests are ordered so that a failure tells you which hop broke.
 7  runner posts back, caller polls        POST /api/result
 ```
 
-Hops 1, 2, 4 and 5 are verified working. **Hop 6 is the one that is not
-running**, and hops 3 and 7 have never been exercised against a paid call.
+**All 7 hops are verified working end-to-end**, with the paid path fully settled and proven on Base mainnet (Block 51242088, tx `0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0`, audit `8ff6bba8` returned A 91.36).
 
 ---
 

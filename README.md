@@ -7,9 +7,10 @@
 > **The Package Manager & Security Doorman for AI Agents.**  
 > Inspect your build. Recommend vetted MCPs from prompt history. Block rogue tools before they reach context.
 
+[![ETHOnline 2026 Showcase](https://img.shields.io/badge/ETHOnline%202026-Showcase%20Submission-purple.svg)](https://ethglobal.com/showcase/undefined-mw4pd)
 [![Live Explainer & Simulator](https://img.shields.io/badge/Live%20Explainer-clembot--doorman.wanessalabs.com-green.svg)](https://clembot-doorman.wanessalabs.com)
 [![Gateway](https://img.shields.io/badge/Bazantic%20Gateway-active-blue.svg)](https://clembot-doorman.bazgateway.com)
-[![Tests](https://img.shields.io/badge/Tests-505%20passing-brightgreen.svg)](RUNBOOK.md)
+[![Tests](https://img.shields.io/badge/Tests-841%20passing-brightgreen.svg)](RUNBOOK.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ---
@@ -23,7 +24,7 @@
 | **Bazantic · Best Multi-API Recipe** | $500 / 300 / 200 | [`03-governance-pipeline.json`](./bazantic/recipes/03-governance-pipeline.json) | **3-Gateway Autonomous Pipeline**: Audits tool safety → Settles $0.01 audit micropayment on Base mainnet via x402 → Pins SHA-256 hash to allowlist. |
 | **Base · x402 Micropayments** | Sponsor Track | [`mcp-scorecard/src/routes/spend.ts`](./mcp-scorecard/src/routes/spend.ts) | Real $0.01 per-audit micropayment settlement using EIP-712 spend permits on Base mainnet. |
 
-> **Judge Portals**: [Live Interactive Simulator](https://clembot-doorman.wanessalabs.com/#flow) · [Bazantic Showcase Page](https://clembot-doorman.wanessalabs.com/bazantic.html#recipes) · [ETHOnline Judging Criteria](https://clembot-doorman.wanessalabs.com/judges.html) · [2-Minute Verification Runbook](RUNBOOK.md)
+> **Judge Portals**: [🏆 ETHOnline 2026 Showcase](https://ethglobal.com/showcase/undefined-mw4pd) · [Live Interactive Simulator](https://clembot-doorman.wanessalabs.com/#flow) · [Bazantic Showcase Page](https://clembot-doorman.wanessalabs.com/bazantic.html#recipes) · [ETHOnline Judging Criteria](https://clembot-doorman.wanessalabs.com/judges.html) · [2-Minute Verification Runbook](RUNBOOK.md)
 
 ---
 

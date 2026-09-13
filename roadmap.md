@@ -1,12 +1,15 @@
 ---
 project: clembot-doorman
 cluster: agency
-updated: 2026-09-05
+updated: 2026-09-13
 ---
 
 # Roadmap
 
-Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.
+Deadline: **Sunday 13 September 2026, 12:00 EDT.** Twelve days from kickoff.  
+**Status: SUBMITTED TO ETHONLINE 2026.** Showcase: [https://ethglobal.com/showcase/undefined-mw4pd](https://ethglobal.com/showcase/undefined-mw4pd)  
+**Live Explainer & Simulator**: [https://clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com)  
+**Base Mainnet Settlement**: Block 51242088, tx [`0xf1d7aa96...`](https://basescan.org/tx/0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0) (USDC 0.01)
 
 ## Done (2026-09-01, session 1)
 

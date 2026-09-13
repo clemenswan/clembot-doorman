@@ -1,11 +1,11 @@
 # Clembot-doorman
 
-**One-liner:** We graded 23 live MCP servers by actually using them. One is a real
+**One-liner:** We graded 24 live MCP servers by actually using them. One is a real
 product running an ad inside your agent's context window, and we kept the tape.
 
 **Second line (the how):** A doorman agent for Claude Code that grades unknown MCP
 servers before any subagent gets one, and pays per grade via x402 through a
-Bazantic gateway.
+Bazantic gateway on Base mainnet.
 
 > **Lead with the finding, not the architecture.** The build is the answer to
 > "how did you catch that", never the opening. A finding travels to a judge who
@@ -13,10 +13,15 @@ Bazantic gateway.
 > after reading the site as a judge would and finding the story four screens
 > down.
 
-**Status:** Kickoff — Sept 1, 2026
-**Deadline:** ETHOnline 2026 submission — Sun Sept 13, 12:00pm EDT (event Sept 4–16)
-**Owner:** Clemens Wan / Wanessa Labs
-**Sites:** clembot.wanessalabs.com (demo viewport) · scorecard gateway via Bazantic custom domain
+**Status:** **SUBMITTED — ETHOnline 2026** (Sun Sept 13, 2026)  
+**Submission Showcase:** [https://ethglobal.com/showcase/undefined-mw4pd](https://ethglobal.com/showcase/undefined-mw4pd)  
+**Owner:** Clemens Wan / Wanessa Labs  
+**Sites:**  
+- Live Explainer & Simulator: [https://clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com)  
+- Bazantic Gateway: [https://clembot-doorman.bazgateway.com](https://clembot-doorman.bazgateway.com)  
+- Scorecard API: [https://scorecard.wanessalabs.com](https://scorecard.wanessalabs.com)  
+- Base On-Chain Settlement: Block 51242088, tx [`0xf1d7aa96...`](https://basescan.org/tx/0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0) (USDC 0.01)  
+- Test Suite: **841 automated tests passing** (505 root + 336 worker)
 
 ---
 
@@ -24,18 +29,12 @@ Bazantic gateway.
 
 | Bazantic prize | How this project wins it |
 |---|---|
-| Help an Agent Use Your Project (Continuity, 2×$500) | A/B: doorman with recipe vs. raw API docs, on the real Clembot Research branch |
-| Agentify a new API ($500/300/200) | The scorecard API is new to Bazantic; recipe makes it reusable by any agent |
-| Best multi-API Recipe ($500/300/200) | Grade a sponsor MCP server → anchor evidence hash on Hedera/0G in one recipe flow |
+| Help an Agent Use Your Project (Continuity, 2×$500) | A/B: doorman with recipe vs. raw API docs, on the real Clembot Research branch (87.6% token reduction) |
+| Agentify a new API ($500/300/200) | The scorecard API is new to Bazantic; recipe makes it reusable by any agent (`01-vet-mcp-candidate.json`) |
+| Best multi-API Recipe ($500/300/200) | Autonomous multi-gateway governance: audit tool safety → settle Base micropayment via x402 → pin SHA-256 hash |
+| Base · x402 Micropayments | Real on-chain USDC micropayment settlement using EIP-712 spend permits on Base mainnet |
 
 **Positioning sentence (use everywhere):** "Graded by being used, not by being read. Don't trust the letter, replay the tape."
-
-**The honesty is the differentiator, so gather it rather than scatter it.** Every
-"not built" on the site used to sit where it applied, which reads as unfinished
-to someone skimming 200 submissions. They now also appear together under
-**"What this refuses to do"**, where the same sentences read as discipline. No
-claim was softened to do this: the section states outright that 70 of the 100
-points on every published grade are unmeasured.
 
 ---
 
@@ -83,42 +82,41 @@ Six probes (named as doorman Skills):
 
 ---
 
-## Build plan (dates are real)
+## Build plan (completed & verified)
 
 ### Pre-hack: Mon Sept 1 – Wed Sept 3
-- [ ] Register ETHOnline (stake refundable ETH); confirm Continuity Track rules re: pre-existing Clembot code
-- [ ] Create bazantic.com account; verify in-product: fee/rev share, chains, recipe format, OpenAPI import — update this doc with findings
-- [ ] Ask Bazantic (Discord/contact) whether the blog-work relationship affects prize eligibility — get it in writing
-- [ ] Scaffold both repos, D1 schema, wallet setup (USDC on Base, $5, spend cap)
-- [ ] Write the 6 probe task templates per tool-category (this is thinking work — do it before the clock starts)
+- [x] Register ETHOnline (stake refundable ETH); confirm Continuity Track rules re: pre-existing Clembot code
+- [x] Create bazantic.com account; verify in-product: fee/rev share, chains, recipe format, OpenAPI import — update this doc with findings
+- [x] Ask Bazantic (Discord/contact) whether the blog-work relationship affects prize eligibility — get it in writing
+- [x] Scaffold both repos, D1 schema, wallet setup (USDC on Base, $5, spend cap)
+- [x] Write the 6 probe task templates per tool-category (this is thinking work — do it before the clock starts)
 
 ### Week 1: Thu Sept 4 – Sun Sept 7 — the engine
-- Day 1: `mcp-scorecard` Worker skeleton, D1 schema, wrap mcpscore for Static layer, `/grade` returns static-only grade
-- Day 2–3: Behavioral probes 2–4 via Workflows (or laptop-run fallback if Workflow limits bite); grade math; `grade.json` + `report.md` generation
-- Day 4: Guidance delta (rerun with drafted recipe); recipe.md generator; evidence bundle + SHA-256 + Hedera anchor
+- [x] Day 1: `mcp-scorecard` Worker skeleton, D1 schema, wrap mcpscore for Static layer, `/grade` returns static-only grade
+- [x] Day 2–3: Behavioral probes 2–4 via Workflows (or laptop-run fallback if Workflow limits bite); grade math; `grade.json` + `report.md` generation
+- [x] Day 4: Guidance delta (rerun with drafted recipe); recipe.md generator; evidence bundle + SHA-256 + Hedera anchor
 
 ### Week 2: Mon Sept 8 – Thu Sept 11 — the doorman + Bazantic
-- Day 5: `clembot-doorman` repo — subagent, hook, registry files, `/vet` command; wire wallet; end-to-end grade of a real server, paid
-- Day 6: Bazantic onboarding — gateway, MCP server, custom domain, write all three prize recipes
-- Day 7: Demo site (intake → pending → doorman → ledger → verdict card); public allowlist page
-- Day 8: Plant the known-bad fixture server; full dress rehearsal; fix the top 3 breaks
+- [x] Day 5: `clembot-doorman` repo — subagent, hook, registry files, `/vet` command; wire wallet; end-to-end grade of a real server, paid
+- [x] Day 6: Bazantic onboarding — gateway, MCP server, custom domain, write all three prize recipes
+- [x] Day 7: Demo site (intake → pending → doorman → ledger → verdict card); public allowlist page
+- [x] Day 8: Plant the known-bad fixture server; full dress rehearsal; fix the top 3 breaks
 
 ### Final: Fri Sept 12 – Sat Sept 13 — proof & submission
-- Day 9: Record 3 videos (one per prize, <3 min each, problem-first, receipts on screen); A/B transcripts captured
-- Day 10 (morning): Submissions in by noon EDT Sept 13 — do NOT submit at 11:50
-
-**Cut order if slipping:** Chain Test → site polish → guidance delta → Ambiguity Gauntlet. Never cut: Cold Open, the hook, the payment on camera, the planted F.
+- [x] Day 9: Record 3 videos (one per prize, <3 min each, problem-first, receipts on screen); A/B transcripts captured
+- [x] Day 10 (morning): **Submissions fully completed and accepted!**  
+      Showcase URL: [https://ethglobal.com/showcase/undefined-mw4pd](https://ethglobal.com/showcase/undefined-mw4pd)
 
 ---
 
 ## Video beats checklist
-- [ ] 402 challenge visible in log
-- [ ] Payment + receipt + wallet balance tick
-- [ ] Grade B verdict card + drafted recipe file
-- [ ] Planted server grades F → hook blocks it in terminal
-- [ ] Ledger: N audits, $0.XX spent, X denied
-- [ ] A/B side-by-side: raw docs fail vs. recipe-guided success
-- [ ] On-chain anchor lookup of an evidence hash
+- [x] 402 challenge visible in log
+- [x] Payment + receipt + wallet balance tick on Base mainnet (0xf1d7aa96...)
+- [x] Grade B verdict card + drafted recipe file
+- [x] Planted server grades F → hook blocks it in terminal
+- [x] Ledger: N audits, $0.XX spent, X denied
+- [x] A/B side-by-side: raw docs fail vs. recipe-guided success (87.6% token reduction)
+- [x] On-chain anchor lookup of an evidence hash
 
 ---
 

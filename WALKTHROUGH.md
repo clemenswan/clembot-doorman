@@ -1,5 +1,8 @@
 # The first ten minutes
 
+> **🏆 ETHOnline 2026 Showcase**: [https://ethglobal.com/showcase/undefined-mw4pd](https://ethglobal.com/showcase/undefined-mw4pd)  
+> **Live Explainer & Simulator**: [https://clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com)
+
 Three real builds, three different answers. Every block of output below was
 captured from an actual run on 2026-09-11 against the live feed, not written by
 hand. Where a run produced nothing useful, that is shown too, because "nothing

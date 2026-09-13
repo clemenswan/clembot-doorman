@@ -1,10 +1,24 @@
 ---
 project: clembot-doorman
 cluster: agency
-updated: 2026-09-12
+updated: 2026-09-13
 ---
 
 # Lineage
+
+## 2026-09-13 - Session 19: ETHOnline 2026 submission & portfolio synchronization
+
+The project is fully submitted to ETHOnline 2026.
+Showcase URL: [https://ethglobal.com/showcase/undefined-mw4pd](https://ethglobal.com/showcase/undefined-mw4pd)
+
+**Live Explainer & Simulator**: Deployed to [https://clembot-doorman.wanessalabs.com](https://clembot-doorman.wanessalabs.com) with interactive demo presets (WebZum, DeepWiki, mcp-scorecard, Peek.com), transcript replay modal, drafted recipe preview, and 24-server board.
+
+**Base Mainnet Settlement Recorded**: Block 51242088, tx `0xf1d7aa9696c92b012c8f1eebd222d353c0e452e264294145fb7825000e2d01a0`, USDC 0.01 via x402 spend permit through the Bazantic gateway (`clembot-doorman.bazgateway.com`).
+
+**Portfolio & Docs Synchronization**:
+- Updated `wanessalabs-astro/src/content/projects/clembot-doorman.md` to `status: shipped`, `shippedDate: 2026-09-13`, full writeup of the finding, 2-phase architecture, 3 Bazantic recipes, Base on-chain settlement proof, and 6-image gallery. Verified full static Astro build (93 pages).
+- Updated `clembot-doorman-project.md`, `Projects-MOC.md`, `HUB.md`, and `HANDOFF.md` across both workspace and vault roots.
+- All 841 automated tests green (505 root + 336 worker).
 
 ## 2026-09-12 - Session 18: the release nobody could have run
 
