@@ -42,6 +42,56 @@
 
 ---
 
+## 📸 Architecture & Platform Gallery
+
+<table>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="media/gallery-03-two-phase-solution.png"><img src="media/gallery-03-two-phase-solution.png" alt="2 phase solution with Clembot Doorman" width="100%"></a><br>
+      <b>2-Phase Defense Solution with Clembot Doorman</b><br>
+      <i>$0.00 local pre-screening before $0.01 Base mainnet verification</i>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="media/gallery-04-tiered-architecture.png"><img src="media/gallery-04-tiered-architecture.png" alt="Tiered Clembot-doorman Architecture" width="100%"></a><br>
+      <b>Tiered Clembot-Doorman Architecture</b><br>
+      <i>Four modular layers (L0 Doctor → L1 Needs → L2 Offline Gate → L3 Scorecard)</i>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="media/gallery-01-bazantic-gateway.png"><img src="media/gallery-01-bazantic-gateway.png" alt="Bazantic doorman gateway" width="100%"></a><br>
+      <b>Bazantic Doorman Gateway</b><br>
+      <i>Live edge gateway (<code>clembot-doorman.bazgateway.com</code>) with 10 managed tools</i>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="media/gallery-02-bazantic-recipes.png"><img src="media/gallery-02-bazantic-recipes.png" alt="Bazantic recipes" width="100%"></a><br>
+      <b>Bazantic Recipes</b><br>
+      <i>Three published production recipes delivering 87% context token reduction</i>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" align="center" valign="top">
+      <a href="media/gallery-05-powered-by-bazantic.png"><img src="media/gallery-05-powered-by-bazantic.png" alt="Powered by Bazantic" width="100%"></a><br>
+      <b>Powered by Bazantic</b><br>
+      <i>Deep technical integration: Continuity, Edge Infrastructure, and Cryptographic Allowlisting</i>
+    </td>
+    <td width="50%" align="center" valign="top">
+      <a href="media/gallery-06-doorman-demo.png"><img src="media/gallery-06-doorman-demo.png" alt="Doorman demo" width="100%"></a><br>
+      <b>Doorman Demo</b><br>
+      <i>Interactive flow testing real MCPs with toggleable Base x402 micropayments</i>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="center" valign="top">
+      <a href="media/gallery-07-clembot-org-chart.png"><img src="media/gallery-07-clembot-org-chart.png" alt="Clembot org chart" width="100%"></a><br>
+      <b>Clembot Organization Chart</b><br>
+      <i>27 autonomous agents across 5 divisions: Design Director is the sole surface gated by Doorman</i>
+    </td>
+  </tr>
+</table>
+
+---
+
 ## What this is for
 
 Doorman measures whether a candidate tool actually helps **your** agent, and gives you a report about **your** build.
