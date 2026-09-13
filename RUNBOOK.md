@@ -408,6 +408,35 @@ open https://basescan.org/tx/<transaction>
 
 ## Hazards
 
+**THE MONEY SETTLES BEFORE THE WORK, AND NOBODY CAN TELL.** Proven with real
+funds on Base, 2026-09-13, at a cost of one cent. `POST /grade` answers **202 at
+queue time**, the gateway settles against that 202, and grading happens minutes
+later on a machine the gateway never hears from. Two paid calls:
+
+| tx | delivered |
+|---|---|
+| `0xf1d7aa96...` | A 91.36 |
+| `0x2748fc43...` | **nothing.** Gemini 429 mid-probe, no grade published |
+
+The second call is the whole problem in one line. The buyer paid, the runner
+correctly refused to publish a partial grade, and **the origin does not know a
+payment happened**, so there is no refund path and no way to even detect the
+loss from the service's own data. Three separate things have to change before
+this is a product: charge on delivery rather than on enqueue, or hold the
+settlement until the audit completes; forward a settlement receipt upstream;
+and give the runner a model budget that cannot 429 mid-audit.
+
+**The gateway forwards no payment evidence at all.** Measured, not assumed. A
+paid call arrives at the origin carrying 29 headers, and not one is about
+payment: `accept`, `accept-encoding`, `accept-language`, `authorization`,
+`cf-*`, `fly-*`, `host`, `user-agent`, `via`, `x-forwarded-*`, `x-real-ip`,
+`x-request-start`. No `payment-response`, no `x-payment`, nothing x402. This is
+a property of the gateway pattern rather than a bug here: x402 v2 standardises
+the client leg and the resource leg and says nothing about what a gateway tells
+the API behind it. `gatewaySettlement()` reads for it anyway and
+`paid_unaccounted` records the miss, so the ledger states the gap instead of
+reading zero and looking like an answer.
+
 **`--static-only` on the poller applies to paid jobs too.** The runner computes
 `jobStaticOnly = staticOnly || !permitted`, so a poller started with
 `--static-only` grades everything static-only, including audits someone paid a

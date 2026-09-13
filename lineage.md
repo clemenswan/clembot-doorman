@@ -126,6 +126,40 @@ it. Corrected in place. A revenue counter that reads zero after a real sale is
 worse than no counter, because it looks like an answer.
 
 
+**And then a second paid call bought nothing, which is the finding.** Fired too
+soon after the previous audit, it hit the Gemini free tier's 15-per-minute cap
+mid-probe. `0x2748fc43...` settled on Base for USDC 0.01; the runner refused to
+publish a partial grade, correctly; and the buyer got an audit stuck at
+`failed`.
+
+Every piece of that behaved as designed and the outcome is still that money was
+taken for nothing. `POST /grade` answers 202 at ENQUEUE, the gateway settles
+against the 202, and the grading happens minutes later somewhere the gateway
+cannot see. Charging before the work is a design decision that was never
+examined, because until tonight no money had ever moved through it.
+
+The blindness compounds it. A paid request reaches the origin carrying 29
+headers and not one mentions payment: proxy plumbing, `cf-*`, `fly-*`, and the
+`authorization` credential. x402 v2 standardises the client leg and the resource
+leg and is silent on what a gateway forwards upstream, so this is a property of
+the pattern rather than a defect in anyone's implementation. The consequence is
+concrete: the service cannot tell that it owes a refund, cannot count its own
+revenue, and cannot reconcile either against work delivered.
+
+Shipped in response, deployed as `19372e4f`: `gatewaySettlement()` reads a
+candidate list of settlement headers, names the one it read so a gateway change
+is visible, refuses `success: false` rather than booking a failed settlement as
+revenue, and distinguishes an unreadable header from an absent one. When nothing
+readable arrives on an authorised call, `paid_unaccounted` records the header
+names that did. `amount_usd` stays null deliberately: the receipt carries no
+figure and the cent is the gateway's price, so writing 0.01 would be a
+hardcoded revenue number that happens to be right today. 336 tests, both new
+guards mutation-checked.
+
+Two cents spent in total, one grade delivered. That ratio is the honest headline
+and it is worth more to the write-up than a clean demo would have been.
+
+
 ## 2026-09-11 - Session 17: the day-one question, a plugin, and a page that lied
 
 **The product gained the stage it was missing.** `doctor` reads what a build HAS,
