@@ -1,10 +1,68 @@
 ---
 project: clembot-doorman
 cluster: agency
-updated: 2026-09-11
+updated: 2026-09-12
 ---
 
 # Lineage
+
+## 2026-09-12 - Session 18: the release nobody could have run
+
+Cutting a stable version for the ETHOnline submission. The intent was a version
+bump. Four defects surfaced instead, and every one of them was invisible from
+inside this worktree.
+
+**The published package could never receive a notification.** `clembot-doorman@0.1.0`
+went to npm at 17:44 UTC on 2026-09-11. `notify` and the SessionStart hook landed
+in `d7252490` at 21:02 UTC, four hours later. Same version number, so `npm install`
+would not even have offered the update. Bumped to 0.2.0.
+
+**The security gate has never been executable for an npm install.** `npm pack` on
+Windows drops the executable bit from every file. Downloaded the published 0.1.0
+tarball and read its headers: `mcp-gate.sh`, `resolve-cli.sh` and `install.sh` are
+all `-rw-r--r--`. On any POSIX machine the PreToolUse hook points at a path that
+cannot execute, and a hook that cannot spawn does not exit 2. **The gate fails
+open**, which its own header says is the one thing it must never do. Setting the
+bit in git does not fix it, because packing is what strips it. Both hooks now run
+through `bash`, and `install.mjs` chmods the copy it makes, because `copyFileSync`
+inherits the source mode and its shell twin had carried that chmod all along.
+
+**The 0.2.0 tarball reported itself as 0.1.0.** Found by extracting the artifact
+and running it rather than trusting the pack. The version lives in four places:
+root `package.json`, `doorman/package.json`, `.claude-plugin/plugin.json`, and a
+hardcoded constant in `cli/doorman.mjs`. Two were stale. `doorman --version` is
+the command the README tells people to run to check whether they have the push
+half, and it was answering with the version that does not have it.
+
+**Two advertised gateway operations 404.** Measured all eight paths in the public
+spec against the live Bazantic gateway: `/feed` and `/badge/{server}.svg` return
+404, the other six route. `/feed` fits the registration-snapshot hazard exactly,
+since it entered the spec on 2026-09-10 and the gateway registered on 2026-09-08.
+`/badge` predates registration by a week and still 404s, so something else drops
+it, and `gateway list --json` exposes no routing table to say what. Left
+`[VERIFY]`. The consequence is that an agent reaching the doorman THROUGH Bazantic
+cannot read the feed, so the push model does not work over the gateway. Direct
+callers are unaffected, and that is what the shipped CLI uses.
+
+**The through-line.** Three of the four were invisible here because the global
+`doorman` on this machine symlinks to this worktree. Local testing has always run
+the source, never the artifact. The fix was not cleverness, it was building the
+tarball, unpacking it, and running that. `lesson-run-the-code-reviews` again, one
+layer further out: it is not enough to execute the code, you have to execute the
+thing you are about to hand someone.
+
+**Proof.** 465 tests across 18 files, plus 37 CLI, 38 gate, and the poller suite.
+Both new assertions mutation-checked: reverting either hook to a bare path fails,
+and reverting `plugin.json` alone fails. The 0.2.0 artifact was extracted and run:
+version 0.2.0 on all four surfaces, both hooks wired through `bash`, and the gate
+exits 2 from the unpacked 644 package, which is the fail-closed behaviour that was
+impossible before. Commits `1b005866`, `9be48517`, `10d4bb4a`, `c6e6cd74`.
+
+**Still open, and not hidden.** No payment has ever settled. `baz grant list`
+reports `hosted none, wallet none` and `/api/ledger` reports `spent: 0` across 58
+audits, because none was attempted rather than because one failed. Grant creation
+needs a human at a browser and cannot be automated. Publishing 0.2.0 to npm is
+also a human step.
 
 ## 2026-09-11 - Session 17: the day-one question, a plugin, and a page that lied
 
