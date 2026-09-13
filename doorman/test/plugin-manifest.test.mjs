@@ -167,3 +167,42 @@ describe('plugin: the commands do not assume a global CLI install');
   check('no command block calls a bare `doorman`, which may not exist',
     bare.length === 0, bare.map((m) => m[0]).join(', '));
 }
+
+/**
+ * The mode bug, made structural.
+ *
+ * npm pack on Windows drops the executable bit from every file it packs. The
+ * published 0.1.0 tarball was downloaded on 2026-09-12 and mcp-gate.sh in it
+ * is `-rw-r--r--`, so on any POSIX machine the gate could not be invoked by
+ * path at all. That does not produce a refusal. A hook that cannot spawn never
+ * runs, never exits 2, and the tool call proceeds: the security control FAILS
+ * OPEN, which its own header says must never happen.
+ *
+ * Checking the file mode here would prove nothing, because the mode is right
+ * in git and wrong only after packing, and a test cannot see the tarball. So
+ * the invariant is moved somewhere a test CAN see: the command must not depend
+ * on the bit at all.
+ */
+{
+  describe('hook commands do not depend on the executable bit');
+
+  const hooks = JSON.parse(readFileSync(join(ROOT, 'hooks', 'hooks.json'), 'utf8'));
+  const commands = [];
+  for (const entries of Object.values(hooks.hooks)) {
+    for (const entry of entries) for (const h of entry.hooks) commands.push(h.command);
+  }
+
+  check('both hooks are wired', commands.length === 2, `found ${commands.length}`);
+  for (const cmd of commands) {
+    check(`runs through an interpreter: ${cmd.split('/').pop()}`,
+      /^(bash|sh) /.test(cmd),
+      `"${cmd}" is invoked by path, so a 644 file silently fails to spawn`);
+  }
+
+  // The other half of the same bug: copyFileSync preserves the source mode,
+  // and the source inside an installed package is 644.
+  const installer = readFileSync(join(ROOT, 'cli', 'install.mjs'), 'utf8');
+  check('the installer re-marks the copied gate executable',
+    installer.includes('chmodSync') && installer.includes('0o755'),
+    'copyFileSync inherits 644 from the package and the gate lands unrunnable');
+}

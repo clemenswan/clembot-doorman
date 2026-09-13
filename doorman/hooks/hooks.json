@@ -11,7 +11,16 @@
     "",
     "Timeout matches .claude/settings.json. The gate does no network and no",
     "subprocess, so 5s is generous; it exists so a wedged hook fails rather",
-    "than hanging every tool call."
+    "than hanging every tool call.",
+    "",
+    "BOTH COMMANDS RUN THROUGH `bash` ON PURPOSE. npm pack on Windows drops",
+    "the executable bit from every file, so the .sh files inside an installed",
+    "package are 644 and cannot be invoked by path. Verified against the",
+    "published 0.1.0 tarball on 2026-09-12: mcp-gate.sh ships -rw-r--r--.",
+    "A gate that cannot start does not exit 2, it fails to spawn, so the",
+    "security control FAILS OPEN, which is the one thing its design forbids.",
+    "Invoking through the interpreter makes the mode irrelevant on every",
+    "platform. Do not `simplify` this back to a bare path."
   ],
   "hooks": {
     "PreToolUse": [
@@ -20,7 +29,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/mcp-gate.sh",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/mcp-gate.sh",
             "timeout": 5
           }
         ]
@@ -31,7 +40,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-notify.sh",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/.claude/hooks/session-notify.sh",
             "timeout": 10
           }
         ]

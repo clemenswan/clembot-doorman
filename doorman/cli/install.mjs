@@ -14,7 +14,7 @@
  * And safely inspects/wires .claude/settings.json without destructive clobbering.
  */
 
-import { existsSync, mkdirSync, copyFileSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, copyFileSync, readFileSync, writeFileSync, chmodSync } from 'node:fs';
 import { resolve, join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -58,6 +58,19 @@ export async function install(targetDir = process.cwd(), { dryRun = false } = {}
 
   // 1. Hooks, Subagent, Command
   copy('.claude/hooks/mcp-gate.sh', '.claude/hooks/mcp-gate.sh');
+  // copyFileSync preserves the SOURCE mode, and the source inside an installed
+  // npm package is 644: npm pack on Windows drops the executable bit from every
+  // file. Verified against the published 0.1.0 tarball, 2026-09-12. Without this
+  // the gate lands non-executable, fails to SPAWN rather than exiting 2, and the
+  // security control fails open. install.sh has carried the same chmod since it
+  // was written; this path never did.
+  if (!dryRun) {
+    try {
+      chmodSync(join(absTarget, '.claude/hooks/mcp-gate.sh'), 0o755);
+    } catch {
+      warnings.push('could not mark .claude/hooks/mcp-gate.sh executable; run: chmod +x .claude/hooks/mcp-gate.sh');
+    }
+  }
   copy('agents/doorman.md', '.claude/agents/doorman.md');
   copy('commands/vet.md', '.claude/commands/vet.md');
 
