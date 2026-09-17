@@ -41,6 +41,27 @@ const RUNNER_CANDIDATES = [
 
 const RUNNER = RUNNER_CANDIDATES.find((p) => existsSync(p)) ?? RUNNER_CANDIDATES[1];
 
+/**
+ * Why the runner produced no grade, from what it printed. `hint` is null when
+ * the cause is not recognised: a wrong hint is worse than none, and the old
+ * one ("mcpscore is not on PATH") was wrong for both failures seen on the day.
+ */
+export function diagnose(detail = '') {
+  if (/HTTP 40[13]\b|invalid_token|unauthori[sz]ed/i.test(detail)) {
+    return { status: 'auth-required',
+      hint: 'the server requires a login, so its tools could not be listed. Nothing behind the login was measured.' };
+  }
+  if (/ERR_MODULE_NOT_FOUND[\s\S]*runner[\\/]lib\.mjs/.test(detail)) {
+    return { status: 'runner-not-built',
+      hint: 'mcp-scorecard/runner/lib.mjs is a build artifact: cd mcp-scorecard && npm ci && npm run build:shared' };
+  }
+  if (/spawn mcpscore ENOENT/.test(detail)) {
+    return { status: 'mcpscore-missing',
+      hint: 'pip install mcpscore, then put the interpreter Scripts/ (or bin/) dir on PATH' };
+  }
+  return { status: 'failed', hint: null };
+}
+
 export async function report({ link, out, neededFor, log }) {
   if (!existsSync(RUNNER)) {
     return {
@@ -74,13 +95,13 @@ export async function report({ link, out, neededFor, log }) {
 
   const gradePath = path.join(out, 'grade.json');
   if (!existsSync(gradePath)) {
+    const detail = (r.stderr || r.stdout).slice(-1500);
+    const d = diagnose(detail);
     return {
       ok: false,
-      why: 'the runner produced no grade.json',
-      detail: (r.stderr || r.stdout).slice(-1500),
-      hint:
-        'The most common cause is that `mcpscore` is not on PATH. It is a Python ' +
-        'console script: pip install mcpscore, then export the interpreter Scripts/ dir.',
+      why: `the runner produced no grade.json (${d.status})`,
+      detail,
+      hint: d.hint ?? 'Cause not recognised. The runner output above is the evidence.',
     };
   }
 

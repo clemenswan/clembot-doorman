@@ -171,6 +171,12 @@ export function toStaticLayer(report: McpscoreReport): StaticLayer {
       message: stripGlyphs(r.message),
     })),
     hard_fail,
+    partial: Boolean(report.partial),
+    partial_reason: report.partial_reason ?? null,
+    authenticated: report.authenticated,
+    coverage: report.summary
+      ? { ran: report.summary.total, skipped: report.summary.skipped }
+      : null,
   };
   layer.pct = staticPct(layer);
   return layer;

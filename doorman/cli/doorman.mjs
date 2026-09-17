@@ -32,6 +32,8 @@ import { install, renderInstall } from './install.mjs';
 import { allow, renderAllow, SCOPES } from './allow.mjs';
 import { refreshNotify, consumeDigest, DEFAULT_DIGEST } from './notify.mjs';
 import { auditProject, renderAudit } from './audit.mjs';
+import { dashboard, renderDashboard } from './dashboard.mjs';
+import { review, renderReview } from './review.mjs';
 import { schedule as scheduleReport, renderSchedule } from './schedule.mjs';
 import { join } from 'node:path';
 
@@ -62,6 +64,24 @@ Run \`doorman --help\` for full manual and advanced benchmark flags.
 
 const HELP = `
 doorman ${VERSION} — measure a candidate, do not just read it
+
+  doorman review [path] [--json]
+      L1 over everything doctor found. Runs the free static report against
+      each distinct remote server url and keeps the results in
+      .doorman/reviews.json for the dashboard. Never runs a stdio server, never
+      grades a login page (a 401 is recorded as auth-required with no band),
+      and never touches the trust list. Makes one request per server url.
+
+  doorman dashboard [path] [--review] [--no-open] [--json]
+      The audit as a page. Runs the same sweep as doorman audit, grades the
+      doctor half against a visible scorecard, diffs it against the last run on
+      a different day, and writes one self-contained HTML file to
+      .doorman/report.html, then opens it. --review runs doorman review first,
+      so the servers table shows fresh results.
+
+      No server, no port, no dependency. Snapshots land in .doorman/runs/ so
+      next week's page can say what moved. Schedule it with your OS, not with
+      a daemon this tool does not ship.
 
   doorman audit [path] [--out FILE] [--json]
       Unified security audit & capability recommendations. Runs doctor,
@@ -157,7 +177,7 @@ Options
  */
 const BOOLEAN_FLAGS = new Set([
   'json', 'dry-run', 'all', 'estimate', 'help', 'version', 'allow-network',
-  'static-only', 'no-feed', 'github', 'cron', 'weekly',
+  'static-only', 'no-feed', 'github', 'cron', 'weekly', 'no-open', 'review',
 ]);
 
 function parseArgs(argv) {
@@ -185,6 +205,31 @@ async function main() {
   if (args._.length === 0) { console.log(QUICKSTART); return; }
 
   const [cmd, link] = args._;
+
+  if (cmd === 'dashboard' || cmd === 'panel') {
+    const target = args._[1] || process.cwd();
+    if (args.review) {
+      const rv = await review(target, { log });
+      if (!rv.ok) { console.error(`review: ${rv.why}`); process.exitCode = 1; return; }
+    }
+    const r = await dashboard(target, {
+      open: !args['no-open'],
+      api: typeof args.api === 'string' ? args.api : undefined,
+      historyDir: typeof args.history === 'string' ? args.history : undefined,
+    });
+    if (!r.ok) { console.error(`dashboard: ${r.why}`); process.exitCode = 1; return; }
+    if (args.json) { console.log(JSON.stringify(r, null, 2)); return; }
+    console.log(renderDashboard(r));
+    return;
+  }
+
+  if (cmd === 'review') {
+    const r = await review(args._[1] || process.cwd(), { log });
+    if (!r.ok) { console.error(`review: ${r.why}`); process.exitCode = 1; return; }
+    if (args.json) { console.log(JSON.stringify(r, null, 2)); return; }
+    console.log(renderReview(r));
+    return;
+  }
 
   if (cmd === 'audit' || cmd === 'scan' || cmd === 'recommend') {
     const target = args._[1] || process.cwd();
@@ -375,8 +420,9 @@ async function main() {
     const g = r.grade;
     console.log('');
     console.log(`L1 static report for ${link}`);
-    console.log(`  grade         ${g.grade ?? 'n/a'} ${typeof g.score === 'number' ? `(${g.score})` : ''}`);
+    console.log(`  grade         ${g.band ?? 'n/a'} ${typeof g.score === 'number' ? `(${g.score})` : ''}`);
     console.log(`  hard fail     ${g.hard_fail ? 'YES' : 'no'}`);
+    if (g.static_partial) console.log(`  PARTIAL       ${g.static_partial.reason ?? 'only part of the server was reachable'}`);
     console.log(`  written to    ${r.out}`);
     console.log('');
     console.log('This is the static layer only. It says nothing about whether an agent');

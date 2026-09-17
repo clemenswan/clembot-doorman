@@ -343,7 +343,7 @@ it('finds MCP servers and says where each was declared', async () => {
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-'));
   await fs.writeFile(path.join(dir, '.mcp.json'),
     JSON.stringify({ mcpServers: { a: { type: 'http', url: 'https://x.example/mcp' } } }));
-  const d = await doctor(dir);
+  const d = await doctor(dir, { env: { HOME: dir, USERPROFILE: dir } });
   eq(d.servers.length, 1);
   eq(d.servers[0].name, 'a');
   eq(d.servers[0].source, '.mcp.json');
@@ -355,9 +355,49 @@ it('reports an unreadable config rather than skipping it', async () => {
   const path = await import('node:path');
   const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-'));
   await fs.writeFile(path.join(dir, '.mcp.json'), '{ this is not json');
-  const d = await doctor(dir);
+  const d = await doctor(dir, { env: { HOME: dir, USERPROFILE: dir } });
   eq(d.servers.length, 1);
   truthy(d.servers[0].note.includes('not valid JSON'), 'must surface it, not swallow it');
+});
+
+it('reads the trust list where the GATE reads it, including ~/.doorman/registry', async () => {
+  const os = await import('node:os');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-'));
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-home-'));
+  const reg = path.join(home, '.doorman', 'registry');
+  await fs.mkdir(reg, { recursive: true });
+  await fs.writeFile(path.join(reg, 'allowlist.json'), JSON.stringify({ servers: { claude_ai_Notion: { decision: 'allow' } } }));
+  await fs.writeFile(path.join(reg, 'denylist.json'), JSON.stringify({ servers: { plugin_marketing_canva: { decision: 'deny' } } }));
+  const d = await doctor(dir, { env: { HOME: home, USERPROFILE: home } });
+  truthy(d.gate.registry, 'user-level registry found');
+  eq(d.gate.allowed, ['claude_ai_Notion']);
+  eq(d.gate.denied, ['plugin_marketing_canva']);
+});
+
+it('says nothing is trusted when there is no trust list, instead of skipping the check', async () => {
+  const os = await import('node:os');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-'));
+  const d = await doctor(dir, { env: { HOME: dir, USERPROFILE: dir } });
+  eq(d.gate.allowed, []);
+});
+
+it('does not report a gate installed for a DIFFERENT project', async () => {
+  const os = await import('node:os');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-'));
+  const home = await fs.mkdtemp(path.join(os.tmpdir(), 'doctor-home-'));
+  await fs.mkdir(path.join(home, '.claude', 'plugins'), { recursive: true });
+  const record = path.join(home, '.claude', 'plugins', 'installed_plugins.json');
+  const install = (entry) => fs.writeFile(record, JSON.stringify({ version: 2, plugins: { 'clembot-doorman@clembot-doorman': [entry] } }));
+  await install({ scope: 'project', projectPath: path.join(os.tmpdir(), 'elsewhere'), installPath: home });
+  eq((await doctor(dir, { env: { HOME: home, USERPROFILE: home } })).gate.plugin.present, false);
+  await install({ scope: 'project', projectPath: dir, installPath: home });
+  eq((await doctor(dir, { env: { HOME: home, USERPROFILE: home } })).gate.plugin.present, true);
 });
 
 /* ── audit: unified report ───────────────────────────────────────────── */

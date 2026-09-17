@@ -1,0 +1,759 @@
+{
+  "schema_version": 1,
+  "mcpscore_version": "1.11.0",
+  "generated_at": "2026-09-17T14:41:45.021149+00:00",
+  "target": "https://mcp.notion.com/mcp",
+  "transport": null,
+  "score": 27,
+  "max_score": 27,
+  "authenticated": false,
+  "partial": true,
+  "partial_reason": "Server requires authentication (HTTP 401); scored the unauthenticated surface only \u2014 pass a token to audit behind the gate.",
+  "incomplete_listings": [],
+  "server_info": null,
+  "package": null,
+  "summary": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "skipped": 68,
+    "by_severity": {
+      "CRITICAL": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0
+      },
+      "HIGH": {
+        "total": 5,
+        "passed": 5,
+        "failed": 0
+      },
+      "MEDIUM": {
+        "total": 3,
+        "passed": 3,
+        "failed": 0
+      },
+      "LOW": {
+        "total": 1,
+        "passed": 1,
+        "failed": 0
+      }
+    }
+  },
+  "results": [
+    {
+      "rule_id": "security_tls_enabled",
+      "rule_name": "HTTPS/TLS Enabled",
+      "severity": "CRITICAL",
+      "severity_value": 5,
+      "passed": true,
+      "message": "\u2705 Server uses HTTPS with valid TLS (TLSv1.3)",
+      "details": {
+        "url": "https://mcp.notion.com/mcp",
+        "tls_version": "TLSv1.3",
+        "basis": "MCP 2025-11-25 Transports \u00a7Streamable HTTP Security Warning; TLS transport-security best practice"
+      }
+    },
+    {
+      "rule_id": "security_error_data_leak",
+      "rule_name": "No Sensitive Data in Error Messages",
+      "severity": "MEDIUM",
+      "severity_value": 2,
+      "passed": true,
+      "message": "\u2705 Error messages do not appear to leak sensitive data",
+      "details": {
+        "error_response_length": 79,
+        "basis": "MCP 2025-11-25 Tools \u00a7Security Considerations (sanitize outputs); error-hygiene best practice"
+      }
+    },
+    {
+      "rule_id": "auth_www_authenticate",
+      "rule_name": "Auth - WWW-Authenticate Challenge",
+      "severity": "HIGH",
+      "severity_value": 3,
+      "passed": true,
+      "message": "\u2705 HTTP 401 responses carry a WWW-Authenticate challenge: 'Bearer realm=\"OAuth\", resource_metadata=\"https://mcp.notion.com/.well-known/oauth-protected-resource/mcp\", error=\"invalid_token\", error_description=\"Missing or invalid access token\"'",
+      "details": {
+        "basis": "MCP Authorization (2025-06-18+); RFC 9728 \u00a75.1",
+        "www_authenticate": "Bearer realm=\"OAuth\", resource_metadata=\"https://mcp.notion.com/.well-known/oauth-protected-resource/mcp\", error=\"invalid_token\", error_description=\"Missing or invalid access token\""
+      }
+    },
+    {
+      "rule_id": "auth_protected_resource_metadata",
+      "rule_name": "Auth - Protected Resource Metadata",
+      "severity": "HIGH",
+      "severity_value": 3,
+      "passed": true,
+      "message": "\u2705 Protected resource metadata found at 'https://mcp.notion.com/.well-known/oauth-protected-resource/mcp'",
+      "details": {
+        "basis": "RFC 9728 \u00a73 (well-known location), \u00a72 (resource)",
+        "urls_tried": [
+          "https://mcp.notion.com/.well-known/oauth-protected-resource/mcp"
+        ],
+        "http_status": 200,
+        "metadata_url": "https://mcp.notion.com/.well-known/oauth-protected-resource/mcp",
+        "resource": "https://mcp.notion.com/mcp",
+        "authorization_servers": [
+          "https://mcp.notion.com"
+        ],
+        "scopes_supported": [
+          "default"
+        ],
+        "auth_server_issuer": "https://mcp.notion.com",
+        "auth_server_metadata_present": true,
+        "auth_server_metadata_url": "https://mcp.notion.com/.well-known/oauth-authorization-server",
+        "auth_server_has_endpoints": true,
+        "auth_server_pkce_s256": true,
+        "resource_matches": true
+      }
+    },
+    {
+      "rule_id": "auth_authorization_servers_https",
+      "rule_name": "Auth - Authorization Servers Present and HTTPS",
+      "severity": "HIGH",
+      "severity_value": 3,
+      "passed": true,
+      "message": "\u2705 All 1 authorization server(s) use HTTPS",
+      "details": {
+        "basis": "RFC 9728 \u00a72 (authorization_servers)",
+        "authorization_servers": [
+          "https://mcp.notion.com"
+        ],
+        "invalid": []
+      }
+    },
+    {
+      "rule_id": "auth_challenge_references_metadata",
+      "rule_name": "Auth - Challenge References Resource Metadata",
+      "severity": "MEDIUM",
+      "severity_value": 2,
+      "passed": true,
+      "message": "\u2705 The HTTP 401 challenge references the resource metadata: 'https://mcp.notion.com/.well-known/oauth-protected-resource/mcp'",
+      "details": {
+        "basis": "RFC 9728 \u00a75.1 (resource_metadata parameter)",
+        "resource_metadata": "https://mcp.notion.com/.well-known/oauth-protected-resource/mcp"
+      }
+    },
+    {
+      "rule_id": "auth_metadata_https",
+      "rule_name": "Auth - Resource Metadata Uses HTTPS",
+      "severity": "MEDIUM",
+      "severity_value": 2,
+      "passed": true,
+      "message": "\u2705 The protected-resource metadata URL and resource identifier use HTTPS",
+      "details": {
+        "basis": "RFC 9728 \u00a72 (resource), \u00a73 (HTTPS well-known)",
+        "metadata_url": "https://mcp.notion.com/.well-known/oauth-protected-resource/mcp",
+        "resource": "https://mcp.notion.com/mcp"
+      }
+    },
+    {
+      "rule_id": "auth_scopes_advertised",
+      "rule_name": "Auth - Scopes Advertised",
+      "severity": "LOW",
+      "severity_value": 1,
+      "passed": true,
+      "message": "\u2705 The protected-resource metadata advertises 1 scope(s)",
+      "details": {
+        "basis": "RFC 9728 \u00a72 (scopes_supported)",
+        "scopes_supported": [
+          "default"
+        ]
+      }
+    },
+    {
+      "rule_id": "auth_server_metadata_present",
+      "rule_name": "Auth - Authorization Server Metadata Present",
+      "severity": "HIGH",
+      "severity_value": 3,
+      "passed": true,
+      "message": "\u2705 Authorization server 'https://mcp.notion.com' publishes RFC 8414 metadata with the required endpoints",
+      "details": {
+        "basis": "RFC 8414 \u00a73 (well-known location), \u00a72 (endpoints)",
+        "issuer": "https://mcp.notion.com",
+        "present": true,
+        "has_endpoints": true
+      }
+    },
+    {
+      "rule_id": "auth_server_metadata_pkce",
+      "rule_name": "Auth - Authorization Server Enforces PKCE (S256)",
+      "severity": "HIGH",
+      "severity_value": 3,
+      "passed": true,
+      "message": "\u2705 The authorization server advertises PKCE with S256",
+      "details": {
+        "basis": "RFC 9700 \u00a72.1.1 (PKCE); RFC 8414 \u00a72 (code_challenge_methods_supported)",
+        "issuer": "https://mcp.notion.com"
+      }
+    }
+  ],
+  "skipped_rules": [
+    {
+      "rule_id": "protocol_version_allowed",
+      "rule_name": "MCP Protocol Version - Allowed Versions",
+      "reason": "insufficient-data",
+      "group_name": "protocol_version"
+    },
+    {
+      "rule_id": "protocol_version_not_deprecated",
+      "rule_name": "MCP Protocol Version - Deprecated Version",
+      "reason": "insufficient-data",
+      "group_name": "protocol_version"
+    },
+    {
+      "rule_id": "protocol_version_latest",
+      "rule_name": "MCP Protocol Version - Latest Version",
+      "reason": "insufficient-data",
+      "group_name": "protocol_version"
+    },
+    {
+      "rule_id": "protocol_version_supported_versions_include_negotiated",
+      "rule_name": "MCP Protocol Version - Supported Versions Include Negotiated",
+      "reason": "not-applicable",
+      "group_name": "protocol_version"
+    },
+    {
+      "rule_id": "server_name_present",
+      "rule_name": "Server Info - Name Present",
+      "reason": "insufficient-data",
+      "group_name": "server_info"
+    },
+    {
+      "rule_id": "server_version_present",
+      "rule_name": "Server Info - Version Present",
+      "reason": "insufficient-data",
+      "group_name": "server_info"
+    },
+    {
+      "rule_id": "server_title_present",
+      "rule_name": "Server Info - Title Present",
+      "reason": "insufficient-data",
+      "group_name": "server_info"
+    },
+    {
+      "rule_id": "server_instructions_present",
+      "rule_name": "Server Info - Instructions Present",
+      "reason": "insufficient-data",
+      "group_name": "server_info"
+    },
+    {
+      "rule_id": "server_websiteurl_present",
+      "rule_name": "Server Info - Website URL Present",
+      "reason": "insufficient-data",
+      "group_name": "server_info"
+    },
+    {
+      "rule_id": "server_icons_present",
+      "rule_name": "Server Info - Icons Present and Valid",
+      "reason": "insufficient-data",
+      "group_name": "server_info"
+    },
+    {
+      "rule_id": "capability_tools_present",
+      "rule_name": "Capabilities - Tools Declared Consistently",
+      "reason": "insufficient-data",
+      "group_name": "capabilities"
+    },
+    {
+      "rule_id": "capability_tools_list_changed",
+      "rule_name": "Capabilities - Tools listChanged Implemented",
+      "reason": "insufficient-data",
+      "group_name": "capabilities"
+    },
+    {
+      "rule_id": "capability_prompts_present",
+      "rule_name": "Capabilities - Prompts Declared Consistently",
+      "reason": "insufficient-data",
+      "group_name": "capabilities"
+    },
+    {
+      "rule_id": "capability_prompts_list_changed",
+      "rule_name": "Capabilities - Prompts listChanged Implemented",
+      "reason": "insufficient-data",
+      "group_name": "capabilities"
+    },
+    {
+      "rule_id": "capability_resources_present",
+      "rule_name": "Capabilities - Resources Declared Consistently",
+      "reason": "insufficient-data",
+      "group_name": "capabilities"
+    },
+    {
+      "rule_id": "capability_resources_list_changed",
+      "rule_name": "Capabilities - Resources listChanged Implemented",
+      "reason": "insufficient-data",
+      "group_name": "capabilities"
+    },
+    {
+      "rule_id": "security_malformed_request_handling",
+      "rule_name": "Malformed Request Handling",
+      "reason": "not-applicable",
+      "group_name": "security"
+    },
+    {
+      "rule_id": "tools_at_least_one",
+      "rule_name": "Tools - At least one tool must exist",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_name_present_in_all",
+      "rule_name": "Tools - All tools must have a Name",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_names_unique",
+      "rule_name": "Tools - All tool names must be unique",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_names_valid_format",
+      "rule_name": "Tools - All tool names must follow the format",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_title_present_in_all",
+      "rule_name": "Tools - All tools should have a display title",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_description_present_in_all",
+      "rule_name": "Tools - All tools must have a Description",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_input_schema_valid",
+      "rule_name": "Tools - All tools must have a valid input schema",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_output_schema_valid",
+      "rule_name": "Tools - All tools must have a valid output schema",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_annotations_present",
+      "rule_name": "Tools - All tools should declare behavior annotations",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_execution_consistent",
+      "rule_name": "Tools - Task Execution Backed by Tasks Capability",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_mcp_headers_valid_names",
+      "rule_name": "Tools - MCP header names must be valid",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_mcp_headers_unique",
+      "rule_name": "Tools - MCP header names must be unique",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_mcp_headers_primitive_types",
+      "rule_name": "Tools - MCP headers must annotate supported primitive types",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_mcp_headers_statically_reachable",
+      "rule_name": "Tools - MCP header parameters must be statically reachable",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_mcp_headers_not_sensitive",
+      "rule_name": "Tools - MCP headers should not expose sensitive parameters",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_icons_valid",
+      "rule_name": "Tools - Declared icons must be valid",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_input_properties_documented",
+      "rule_name": "Tools - Input properties should be documented",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "tools_output_schema_root_object",
+      "rule_name": "Tools - Output schemas must be object-rooted on this revision",
+      "reason": "insufficient-data",
+      "group_name": "tools"
+    },
+    {
+      "rule_id": "transport_streamable_http",
+      "rule_name": "Streamable HTTP Transport",
+      "reason": "insufficient-data",
+      "group_name": "transport"
+    },
+    {
+      "rule_id": "resources_uris_valid",
+      "rule_name": "Resources - All resource URIs must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_names_present",
+      "rule_name": "Resources - All resources must have a name",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_sizes_valid",
+      "rule_name": "Resources - Declared sizes must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_mime_types_valid",
+      "rule_name": "Resources - Declared MIME types must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_annotations_valid",
+      "rule_name": "Resources - Declared annotations must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_description_present",
+      "rule_name": "Resources - All resources should have a description",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_uris_unique",
+      "rule_name": "Resources - Resource URIs must be unique",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_titles_present",
+      "rule_name": "Resources - All resources should have a display title",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resources_icons_valid",
+      "rule_name": "Resources - Declared icons must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resources"
+    },
+    {
+      "rule_id": "resource_templates_uri_templates_valid",
+      "rule_name": "Resource Templates - URI templates must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "resource_templates_unique",
+      "rule_name": "Resource Templates - URI templates must be unique",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "resource_templates_names_present",
+      "rule_name": "Resource Templates - All templates must have a name",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "resource_templates_icons_valid",
+      "rule_name": "Resource Templates - Declared icons must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "resource_templates_mime_types_valid",
+      "rule_name": "Resource Templates - Declared MIME types must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "resource_templates_annotations_valid",
+      "rule_name": "Resource Templates - Declared annotations must be valid",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "resource_templates_description_present",
+      "rule_name": "Resource Templates - All templates should have a description",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "resource_templates_titles_present",
+      "rule_name": "Resource Templates - All templates should have a display title",
+      "reason": "insufficient-data",
+      "group_name": "resource_templates"
+    },
+    {
+      "rule_id": "prompts_argument_names_unique",
+      "rule_name": "Prompts - Argument names must be unique",
+      "reason": "insufficient-data",
+      "group_name": "prompts"
+    },
+    {
+      "rule_id": "prompts_argument_names_present",
+      "rule_name": "Prompts - All arguments must have a name",
+      "reason": "insufficient-data",
+      "group_name": "prompts"
+    },
+    {
+      "rule_id": "prompts_description_present",
+      "rule_name": "Prompts - All prompts should have a description",
+      "reason": "insufficient-data",
+      "group_name": "prompts"
+    },
+    {
+      "rule_id": "prompts_arguments_documented",
+      "rule_name": "Prompts - All prompt arguments should be documented",
+      "reason": "insufficient-data",
+      "group_name": "prompts"
+    },
+    {
+      "rule_id": "prompts_names_unique",
+      "rule_name": "Prompts - Prompt names must be unique",
+      "reason": "insufficient-data",
+      "group_name": "prompts"
+    },
+    {
+      "rule_id": "prompts_titles_present",
+      "rule_name": "Prompts - All prompts should have a display title",
+      "reason": "insufficient-data",
+      "group_name": "prompts"
+    },
+    {
+      "rule_id": "prompts_icons_valid",
+      "rule_name": "Prompts - Declared icons must be valid",
+      "reason": "insufficient-data",
+      "group_name": "prompts"
+    },
+    {
+      "rule_id": "pagination_tools_invalid_cursor",
+      "rule_name": "Tools Invalid Pagination Cursor",
+      "reason": "insufficient-data",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "pagination_resources_invalid_cursor",
+      "rule_name": "Resources Invalid Pagination Cursor",
+      "reason": "insufficient-data",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "pagination_resource_templates_invalid_cursor",
+      "rule_name": "Resource Templates Invalid Pagination Cursor",
+      "reason": "insufficient-data",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "pagination_prompts_invalid_cursor",
+      "rule_name": "Prompts Invalid Pagination Cursor",
+      "reason": "insufficient-data",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "pagination_cache_scope_consistent",
+      "rule_name": "Pagination Cache Scope Consistent",
+      "reason": "not-applicable",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "tools_catalog_connection_independent",
+      "rule_name": "Tools Catalog Connection Independent",
+      "reason": "not-applicable",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "resources_catalog_connection_independent",
+      "rule_name": "Resources Catalog Connection Independent",
+      "reason": "not-applicable",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "prompts_catalog_connection_independent",
+      "rule_name": "Prompts Catalog Connection Independent",
+      "reason": "not-applicable",
+      "group_name": "pagination"
+    },
+    {
+      "rule_id": "readiness_2026_meta_validation",
+      "rule_name": "Readiness 2026-07-28 - _meta validation",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_header_validation",
+      "rule_name": "Readiness 2026-07-28 - HTTP header validation",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_cache_metadata",
+      "rule_name": "Readiness 2026-07-28 - caching hints",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_unsupported_version_error",
+      "rule_name": "Readiness 2026-07-28 - unsupported-version errors",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_error_code_migration",
+      "rule_name": "Readiness 2026-07-28 - error-code migration",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_result_type",
+      "rule_name": "Readiness 2026-07-28 - resultType on results",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_deprecated_features",
+      "rule_name": "Readiness 2026-07-28 - deprecated features",
+      "reason": "insufficient-data",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_tool_schema_dialect",
+      "rule_name": "Readiness 2026-07-28 - tool schema dialect",
+      "reason": "insufficient-data",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_no_session_id",
+      "rule_name": "Readiness 2026-07-28 - no session IDs",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_removed_methods",
+      "rule_name": "Readiness 2026-07-28 - removed methods",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_supported_versions",
+      "rule_name": "Readiness 2026-07-28 - supported versions listed",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_origin_validation",
+      "rule_name": "Readiness 2026-07-28 - invalid Origin rejected",
+      "reason": "not-applicable",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_unknown_method_error",
+      "rule_name": "Readiness 2026-07-28 - unknown method error",
+      "reason": "not-applicable",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_response_content_type",
+      "rule_name": "Readiness 2026-07-28 - response content type",
+      "reason": "requires-modern-support",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_missing_protocol_version_rejected",
+      "rule_name": "Readiness 2026-07-28 - missing protocol-version header rejected",
+      "reason": "not-applicable",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_missing_method_header_rejected",
+      "rule_name": "Readiness 2026-07-28 - missing method header rejected",
+      "reason": "not-applicable",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_resource_name_header_mismatch_rejected",
+      "rule_name": "Readiness 2026-07-28 - resource name-header mismatch rejected",
+      "reason": "not-applicable",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_prompt_name_header_mismatch_rejected",
+      "rule_name": "Readiness 2026-07-28 - prompt name-header mismatch rejected",
+      "reason": "not-applicable",
+      "group_name": "readiness"
+    },
+    {
+      "rule_id": "readiness_2026_no_get_stream",
+      "rule_name": "Readiness 2026-07-28 - no standalone GET stream",
+      "reason": "not-applicable",
+      "group_name": "readiness"
+    }
+  ],
+  "spec": {
+    "negotiated_version": null,
+    "latest_version": "2026-07-28",
+    "readiness_target": "2026-07-28",
+    "era": null
+  },
+  "readiness": {
+    "score": 0,
+    "max_score": 10,
+    "counted_in_main": false,
+    "results": [
+      {
+        "rule_id": "readiness_2026_server_discover",
+        "rule_name": "Readiness 2026-07-28 - server/discover",
+        "severity": "CRITICAL",
+        "severity_value": 5,
+        "passed": false,
+        "message": "\u274c Server does not answer server/discover \u2014 mandatory from 2026-07-28 (SEP-2575)",
+        "details": {
+          "sep": "SEP-2575",
+          "target_version": "2026-07-28",
+          "http_status": 401,
+          "content_type": "application/json"
+        }
+      },
+      {
+        "rule_id": "readiness_2026_stateless_request",
+        "rule_name": "Readiness 2026-07-28 - stateless requests",
+        "severity": "CRITICAL",
+        "severity_value": 5,
+        "passed": false,
+        "message": "\u274c Server rejects stateless requests \u2014 from 2026-07-28 the initialize handshake is removed and every request carries its context in _meta (SEP-2575)",
+        "details": {
+          "sep": "SEP-2575",
+          "target_version": "2026-07-28",
+          "http_status": 401,
+          "content_type": "application/json"
+        }
+      }
+    ],
+    "assessed": 2,
+    "skipped": 19,
+    "total": 21
+  }
+}

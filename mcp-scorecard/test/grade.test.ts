@@ -252,3 +252,23 @@ describe('end-to-end grade shape', () => {
     expect(g.probe_scores.cold_open).toBe(80);
   });
 });
+
+describe('partial static layer', () => {
+  it('is carried onto the grade, so grade.json and the feed cannot drop it', () => {
+    const g = grade(input({
+      static: {
+        ...baseStatic, score: 27, max_score: 27, pct: 100, partial: true,
+        partial_reason: 'Server requires authentication (HTTP 401)',
+        coverage: { ran: 10, skipped: 68 },
+      },
+    }));
+    expect(g.static_partial).toEqual({
+      reason: 'Server requires authentication (HTTP 401)',
+      coverage: { ran: 10, skipped: 68 },
+    });
+  });
+
+  it('is null on a complete static layer', () => {
+    expect(grade(input()).static_partial).toBeNull();
+  });
+});

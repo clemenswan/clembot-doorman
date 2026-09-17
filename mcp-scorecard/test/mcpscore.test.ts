@@ -117,3 +117,30 @@ describe('exit codes', () => {
     expect(describeExit(3)).toMatch(/completed/);
   });
 });
+
+/**
+ * A server behind a login answers mcpscore with a 401, and mcpscore says so:
+ * `partial: true`, 10 rules run, 68 skipped. Its score over what ran is 27/27.
+ * Dropping the flag turned that into a clean 100% static layer for Notion,
+ * which is invariant 3 pointed at coverage: 10 of 78 rules is not a measurement
+ * of the server, it is a measurement of its front door. Captured 2026-09-17 by
+ * `mcpscore --json https://mcp.notion.com/mcp` with no token.
+ */
+describe('partial mcpscore report (401, unauthenticated)', () => {
+  const notion = JSON.parse(readFileSync(fileURLToPath(
+    new URL('./fixtures/mcpscore-notion-unauthenticated.json', import.meta.url).href,
+  ), 'utf8')) as McpscoreReport;
+
+  it('carries the partial flag, the reason, and the rule coverage', () => {
+    const layer = toStaticLayer(notion);
+    expect(layer.partial).toBe(true);
+    expect(layer.authenticated).toBe(false);
+    expect(layer.partial_reason).toMatch(/401/);
+    expect(layer.coverage).toEqual({ ran: 10, skipped: 68 });
+  });
+
+  it('a complete report is not partial', () => {
+    const layer = toStaticLayer(real);
+    expect(layer.partial).toBe(false);
+  });
+});

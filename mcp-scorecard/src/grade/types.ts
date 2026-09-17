@@ -58,6 +58,16 @@ export interface StaticLayer {
   failed_rules: Array<{ rule_id: string; severity: string; message: string }>;
   hard_fail?: string;         // e.g. TLS disabled
   /**
+   * mcpscore could only reach part of the server, usually a 401 on a server
+   * behind a login. `pct` is then over the rules that RAN, which for an
+   * unauthenticated remote is its front door and nothing else. Every reader
+   * that prints `pct` must print this beside it.
+   */
+  partial?: boolean;
+  partial_reason?: string | null;
+  authenticated?: boolean;
+  coverage?: { ran: number; skipped: number } | null;
+  /**
    * Forward-compat rules for a not-yet-mandatory protocol version. UNGRADED
    * and excluded from score/max_score above: mcpscore folds these into its
    * totals for some servers and not others, which made normalised percentages
@@ -98,4 +108,6 @@ export interface GradeResult {
   worst_failure_modes: string[];
   graded_at: string;
   mcpscore_version: string;
+  /** Set when the static layer only reached part of the server. See StaticLayer.partial. */
+  static_partial: { reason: string | null; coverage: { ran: number; skipped: number } | null } | null;
 }

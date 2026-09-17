@@ -18,6 +18,8 @@
 import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { gradeBuild } from '../src/harness-grade.mjs';
+import { toolPrefix, userScopeServers } from '../src/reachable-servers.mjs';
 
 const read = async (p) => {
   try { return await readFile(p, 'utf8'); } catch { return null; }
@@ -78,7 +80,9 @@ async function detectMcpServers(root) {
     for (const [name, cfg] of Object.entries(block)) {
       servers.push({
         name,
+        gateName: toolPrefix(name),
         source: rel,
+        sources: [rel],
         transport: cfg?.type || (cfg?.command ? 'stdio' : cfg?.url ? 'http' : 'unknown'),
         target: cfg?.url || cfg?.command || null,
         args: Array.isArray(cfg?.args) ? cfg.args.length : 0,
@@ -122,18 +126,51 @@ async function detectGate(root, { env = process.env } = {}) {
   const installed = existsSync(hook);
   const settings = await read(path.join(root, '.claude', 'settings.json'));
   const wired = Boolean(settings && settings.includes('mcp-gate.sh'));
-  const registry = existsSync(path.join(root, 'registry', 'allowlist.json'));
+  // Resolved in the gate's own order: explicit dir, this project, the user's
+  // ~/.doorman/registry. Reading only the project list graded a build whose
+  // user-level list trusted everything as trusting nothing.
+  const home = env.DOORMAN_HOME || env.HOME || env.USERPROFILE;
+  const registryDir = env.DOORMAN_REGISTRY_DIR
+    || [path.join(root, 'registry'), home && path.join(home, '.doorman', 'registry')]
+      .filter(Boolean).find((d) => existsSync(path.join(d, 'allowlist.json')))
+    || null;
+  const allowlistPath = registryDir ? path.join(registryDir, 'allowlist.json') : null;
+  const registry = Boolean(allowlistPath && existsSync(allowlistPath));
+
+  // WHICH servers are trusted, not merely whether a list exists. A build with a
+  // registry and three unlisted servers is a different build from one where the
+  // list covers everything, and presence alone cannot tell them apart.
+  //
+  // `null` rather than `[]` when the file is missing or unreadable: an empty
+  // list means "nothing is trusted", and that is a much stronger claim than
+  // "we could not find out". Invariant 3, pointed at a trust list.
+  //
+  // A MISSING list is different again: the gate refuses every server when it
+  // finds none, so "nothing is trusted" is exactly true and `[]` says it.
+  let allowed = registry ? null : [];
+  let denied = [];
+  if (registry) {
+    const j = await readJson(allowlistPath);
+    if (j && !j.__unparseable && j.servers && typeof j.servers === 'object') {
+      allowed = Object.keys(j.servers);
+    }
+    const dl = await readJson(path.join(registryDir, 'denylist.json'));
+    if (dl && !dl.__unparseable && dl.servers && typeof dl.servers === 'object') denied = Object.keys(dl.servers);
+  }
 
   // A user-scope plugin gates every project, so its absence from THIS project
   // says nothing. Detected by looking for an installed plugin that ships the
   // hook, not by asking the harness, so this stays offline and dependency-free.
-  const plugin = detectPluginGate(env);
+  const plugin = detectPluginGate(env, root);
 
   const anyGate = installed || plugin.present;
   return {
     installed,
     wired,
     registry,
+    registryPath: allowlistPath,
+    allowed,
+    denied,
     plugin,
     // The distinction that matters: a gate that is present and not wired is a
     // gate that is not running, and it looks exactly like one that is.
@@ -146,7 +183,7 @@ async function detectGate(root, { env = process.env } = {}) {
 }
 
 /** An installed Claude Code plugin that ships mcp-gate.sh. Read-only. */
-function detectPluginGate(env) {
+function detectPluginGate(env, root) {
   const home = env.USERPROFILE || env.HOME;
   if (!home) return { present: false, why: 'no home directory in the environment' };
   const record = path.join(home, '.claude', 'plugins', 'installed_plugins.json');
@@ -155,12 +192,16 @@ function detectPluginGate(env) {
   try { raw = JSON.parse(readFileSync(record, 'utf8')); } catch {
     return { present: false, why: 'installed_plugins.json did not parse' };
   }
-  // The shape of that file is the harness's business and it has changed before,
-  // so match on content rather than on a path into it.
-  const text = JSON.stringify(raw);
-  const named = /"(clembot-doorman[^"]*)"/.exec(text);
-  if (!named) return { present: false, why: 'no clembot-doorman plugin installed' };
-  return { present: true, name: named[1], record };
+  // A project-scope install gates THAT project only. Matching the plugin's name
+  // anywhere in the file reported a gate here that was installed for a sibling.
+  const here = (p) => path.resolve(p).toLowerCase() === path.resolve(root).toLowerCase();
+  for (const [id, installs] of Object.entries(raw?.plugins || {})) {
+    if (!id.startsWith('clembot-doorman')) continue;
+    const applies = (Array.isArray(installs) ? installs : [])
+      .some((e) => e.scope === 'user' || (e.projectPath && here(e.projectPath)));
+    if (applies) return { present: true, name: id, record };
+  }
+  return { present: false, why: 'no clembot-doorman plugin installed for this project' };
 }
 
 /** What an eval could drive. Presence only: nothing is executed. */
@@ -187,6 +228,11 @@ export async function doctor(root, opts = {}) {
   const [harnesses, servers, agents, gate, runners] = await Promise.all([
     detectHarness(abs), detectMcpServers(abs), detectAgents(abs), detectGate(abs, opts), detectAgentRunners(abs),
   ]);
+  const env = opts.env || process.env;
+  const seen = new Set(servers.map((s) => s.gateName));
+  for (const s of userScopeServers(abs, { home: env.HOME || env.USERPROFILE })) {
+    if (!seen.has(s.gateName)) servers.push(s);
+  }
   return { ok: true, root: abs, harnesses, servers, agents, gate, runners };
 }
 
@@ -198,6 +244,8 @@ export function renderDoctor(d) {
   L.push('');
   L.push('Read-only. Nothing here was executed, sent anywhere, or billed.');
   L.push('');
+
+  L.push(renderGrade(gradeBuild(d)));
 
   L.push('## Harness');
   L.push('');
@@ -214,10 +262,10 @@ export function renderDoctor(d) {
   if (!d.servers.length) {
     L.push('None declared. Nothing to grade yet, and nothing to gate.');
   } else {
-    L.push('| Server | Transport | Declared in | Target |');
+    L.push('| Server (as the gate sees it) | Transport | Declared in | Target |');
     L.push('|---|---|---|---|');
     for (const s of d.servers) {
-      L.push(`| \`${s.name}\` | ${s.transport ?? '?'} | \`${s.source}\` | ${s.target ? '`' + String(s.target).slice(0, 60) + '`' : '-'} |`);
+      L.push(`| \`${s.gateName ?? s.name}\` | ${s.transport ?? '?'} | ${(s.sources || [s.source]).map((x) => '`' + x + '`').join(', ')} | ${s.target ? '`' + String(s.target).slice(0, 60) + '`' : '-'} |`);
     }
     L.push('');
     L.push(`**${d.servers.length} server(s).** Each one describes its own tools to your`);
@@ -279,4 +327,44 @@ export function renderDoctor(d) {
   L.push('_`doorman doctor`. Static, local, free. It reports what is here; it does not');
   L.push('say whether any of it works. That is `doorman report` and `doorman eval`._');
   return L.join('\n') + '\n';
+}
+
+const MARK = { pass: '+', warn: '~', fail: '!', 'n/a': '-' };
+
+/**
+ * The scorecard, printed in full.
+ *
+ * The letter alone would be exactly the thing invariant 9 forbids: a number
+ * nobody can check. Printing every check with its points, its evidence file and
+ * its reason means a reader can recompute the letter by hand and argue with any
+ * line of it. Skipped checks print too, with why, so an A on a small build is
+ * visibly an A over four checks rather than a silent five.
+ */
+export function renderGrade(g) {
+  const L = [];
+  L.push('## Grade');
+  L.push('');
+  if (g.letter === null) {
+    L.push('Not graded: nothing here could be measured.');
+    L.push('');
+    return L.join('\n');
+  }
+  L.push(`**${g.letter}**  ${g.earned}/${g.possible} (${g.pct}%)`);
+  L.push('');
+  for (const c of g.checks) {
+    const score = c.state === 'n/a' ? 'skipped' : `${c.points}/${c.max}`;
+    const where = c.evidence ? `  \`${c.evidence}\`` : '';
+    L.push(`- \`${MARK[c.state]}\` **${c.label}** ${score}${where}`);
+    if (c.note) L.push(`  - ${c.note}`);
+  }
+  L.push('');
+  L.push('Skipped checks are left out of the denominator rather than scored zero:');
+  L.push('a build with no subagents has no exposure to measure, and punishing it');
+  L.push('for that would rank it below a build whose agents are wired badly.');
+  L.push('');
+  L.push('Capability gaps from `doorman needs` are NOT in this grade. A missing');
+  L.push('tool is a recommendation about what you do not have, not a defect in');
+  L.push('what you do.');
+  L.push('');
+  return L.join('\n');
 }

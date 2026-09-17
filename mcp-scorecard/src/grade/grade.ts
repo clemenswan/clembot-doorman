@@ -166,6 +166,9 @@ export function grade(input: GradeInput): GradeResult {
     worst_failure_modes: worstFailureModes(input),
     graded_at: new Date().toISOString(),
     mcpscore_version: input.static.mcpscore_version,
+    static_partial: input.static.partial
+      ? { reason: input.static.partial_reason ?? null, coverage: input.static.coverage ?? null }
+      : null,
   };
 }
 

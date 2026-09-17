@@ -29,7 +29,8 @@ export async function runAudit(job, opts = {}) {
   const staticLayer = toStaticLayer(report);
   log(
     `[static] ${staticLayer.score}/${staticLayer.max_score} = ${staticLayer.pct}% ` +
-    `(mcpscore exit ${exitCode})`,
+    `(mcpscore exit ${exitCode})` +
+    (staticLayer.partial ? ` PARTIAL: ${staticLayer.partial_reason ?? 'mcpscore reached only part of the server'}` : ''),
   );
   if (staticLayer.hard_fail) log(`[static] HARD FAIL: ${staticLayer.hard_fail}`);
 

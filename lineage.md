@@ -1689,3 +1689,68 @@ saying that raising it requires upgrading wrangler first.
 - Worker round trip: enqueue, claim, post result, read back, badge, ledger
 - Browser: form submits, ledger polls, totals update against the live Worker
 - Runner without a key: runs static, refuses to fabricate, posts an honest failure
+
+## 2026-09-13: the project reaches `main`, as one history
+
+Landed as ClemVault PR #89, squash-merged at `cfd8210b`. Until that merge **none of this
+project was on `main`**: `clembot-doorman/` read as untracked in the vault root while its
+work sat across three branches that all pointed at the same directory.
+
+**One PR, not three.** `feat/doorman-adoption` (127 commits, 292 files) held every commit
+of `clemenswan/clembot-doorman` (PR #21) and 43 of `feat/doorman-site-ia`'s 45 (PR #70),
+so both were closed as superseded rather than merged. Merging all three would have written
+the same files three times and left three partial histories of one project.
+
+**The two commits not carried, and why.** PR #70's "put the ninety-second read first"
+restructured the hero around "One is running an ad inside your agent's context window."
+Adoption's own later hero work replaced that with "Inspect your build. Recommend vetted
+MCPs. Block rogue tools before context." plus the term-box glossary integration, so
+re-applying the older structure would have undone newer deliberate work. The
+"If you are here for one thing" quick-links block it added is **not on main**: it was an
+ETHOnline judging aid and the submission has shipped. The branch stays on the remote if
+that section is ever wanted back.
+
+**Proof.** `npm test` from `clembot-doorman/`: 506 tests across 20 files, plus 40 CLI
+tests, all passing. The package still declares zero dependencies, which is the reason it
+can be tested straight off node in a tree with no install.
+
+## 2026-09-17: doorman reviews the harness it runs in
+
+Pointed at ClemVault, doorman could not review a single MCP server the session had.
+Four defects, each quiet:
+
+**doctor saw 0 of 41 reachable servers.** It read five project files. The vault's
+servers live in `~/.claude.json` (claude.ai connectors), synced plugins, and installed
+plugins. `src/reachable-servers.mjs` reads all of them offline and keys each server by
+the `mcp__<server>__` prefix, because that is the only identity the gate can match.
+The trust list is now resolved in the gate's own order, which found a user-level
+`~/.doorman/registry` allowing 11 servers that doctor had never read. A doorman plugin
+installed for a *different* project no longer reads as a gate here.
+
+**A 401 graded as 100%.** mcpscore marks an unauthenticated scan `partial: true`
+(Notion: 10 rules ran, 68 skipped), and `toStaticLayer` dropped the flag. The flag,
+reason and coverage now ride on `StaticLayer` and `GradeResult`, and `report.md` prints
+PARTIAL. Test fixture is a real capture, `mcpscore-notion-unauthenticated.json`.
+
+**Every runner failure blamed PATH.** The two failures actually seen were an unbuilt
+`runner/lib.mjs` and a 401. `diagnose()` reads the runner output; an unrecognised cause
+gets no hint rather than a wrong one. `doorman report` also printed `g.grade`, a field
+that does not exist, so its grade line always said n/a.
+
+**Nothing connected doctor to the dashboard.** `doorman review` runs the free static
+report once per distinct url and writes `.doorman/reviews.json`; `dashboard --review`
+refreshes it and renders an MCP servers table. Review never runs a stdio server, never
+bands a login page, never touches the trust list.
+
+**Result on ClemVault, 2026-09-17.** 41 reachable servers, 6 allowed, 35 undecided.
+22 distinct urls reviewed: 21 answered 401 (each verified in the stored detail), 1
+graded (BigQuery, A 89.74 static, lists tools without a login). 7 claude.ai connectors
+are not reviewable locally. The gate is **not installed** for the vault, so none of
+these trust decisions are enforced yet.
+
+**Proof.** scorecard 340 vitest + tsc clean; doorman 552 unit, 43 CLI, 38 gate,
+16 install, poller. Every new rule mutation-checked: scope, enabled, empty url, local
+project, deny-counts-as-reviewed, plugin gate scope, user registry, stdio skip, 401
+diagnosis, band-on-401, escaping, connector cell. The connector-cell mutant survived
+the first pass (the row's source label satisfied the assertion), and the assertion was
+tightened until it failed.

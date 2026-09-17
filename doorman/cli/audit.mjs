@@ -16,8 +16,17 @@ import { doctor } from './doctor.mjs';
 import { needs as readNeeds } from './needs.mjs';
 import { watch } from './watch.mjs';
 
+/**
+ * `needsImpl` and `watchImpl` are injection seams, matching `fetchImpl` in
+ * needs.mjs. Both layers read the machine's own prompt history and the live
+ * feed, so a test that did not replace them would assert against whatever this
+ * laptop happened to contain that day. Real inputs make a slow test; they also
+ * make one that passes or fails for reasons unrelated to the code.
+ */
 export async function auditProject(targetDir = process.cwd(), opts = {}) {
   const absRoot = resolve(targetDir);
+  const needsImpl = opts.needsImpl || readNeeds;
+  const watchImpl = opts.watchImpl || watch;
 
   // 1. Run Doctor (L0: Harness, Gate, Installed servers)
   const doc = await doctor(absRoot, opts);
@@ -28,7 +37,7 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
   // 2. Run Needs (L0.5: Prompt history scan for capability gaps)
   let needsResult = null;
   try {
-    needsResult = await readNeeds({
+    needsResult = await needsImpl({
       root: absRoot,
       historyDir: opts.historyDir,
       candidateFile: opts.candidateFile,
@@ -41,7 +50,7 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
   // 3. Run Watch (L2: Classified feed of newly graded tools & threats)
   let watchResult = null;
   try {
-    watchResult = await watch({
+    watchResult = await watchImpl({
       root: absRoot,
       api: opts.api,
       all: true,
@@ -56,8 +65,26 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
   const harnesses = (doc.harnesses || []).map((h) => h.harness);
   const installedCount = (doc.servers || []).length;
 
-  const gaps = (needsResult?.matches || []).filter((m) => m.status === 'GAP' || m.status === 'UNMET');
-  const covered = (needsResult?.matches || []).filter((m) => m.status === 'COVERED');
+  // `suggest()` returns `needs[]` with a `covered` BOOLEAN and `prompts_read`.
+  // This used to read `matches[]` with a `status` STRING, which exists nowhere:
+  // every key missed, so the gap list was always empty and the report always
+  // said "No active capability gaps detected" no matter what the history held.
+  // It failed quiet, and a recommendation engine that silently recommends
+  // nothing looks exactly like a build with nothing to recommend.
+  const rawNeeds = needsResult?.needs || [];
+  const shape = (n) => ({
+    id: n.id,
+    title: n.label,
+    why: n.why,
+    promptsCount: n.hits,
+    sessions: n.sessions,
+    examples: n.examples || [],
+    isGap: Boolean(n.gap),
+    coveredBy: n.covered_by || null,
+    topCandidates: (n.candidates || []).slice(0, 2),
+  });
+  const gaps = rawNeeds.filter((n) => !n.covered).map(shape);
+  const covered = rawNeeds.filter((n) => n.covered).map(shape);
 
   const candidates = watchResult?.candidates || [];
   const recommended = candidates
@@ -72,6 +99,11 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
     ok: true,
     root: absRoot,
     timestamp: new Date().toISOString(),
+    // The raw doctor result, not only the summarised posture. `doorman
+    // dashboard` grades off this. Re-running doctor there instead would be two
+    // reads of the same files that can disagree, which is invariant 2 pointed
+    // at an inspection rather than at grade math.
+    doctor: doc,
     posture: {
       gateStatus,
       isGateWired,
@@ -80,7 +112,7 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
       agentsCount: doc.agents?.count ?? 0,
     },
     needs: {
-      totalPrompts: needsResult?.promptCount ?? 0,
+      totalPrompts: needsResult?.prompts_read ?? 0,
       gaps,
       covered,
     },

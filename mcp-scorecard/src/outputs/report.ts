@@ -83,7 +83,7 @@ function scoreTable(i: ReportInput): string[] {
     '',
     '| Layer | Result | Weight | Points |',
     '|---|---|---|---|',
-    row('Static (mcpscore)', L.static),
+    row('Static (mcpscore)', L.static, partialNote(i.grade.static_partial)),
     row('Behavioral (probes)', L.behavioral),
     row('Guidance delta', L.guidance, guidanceNote(i.guidance)),
     '| **Final** | | | **' + i.grade.score + '/100** |',
@@ -103,6 +103,13 @@ function scoreTable(i: ReportInput): string[] {
     );
   }
   return rows;
+}
+
+/** A partial static score is over the rules that ran, so it never prints bare. */
+function partialNote(p: GradeResult['static_partial'] | undefined): string | undefined {
+  if (!p) return undefined;
+  const cov = p.coverage ? p.coverage.ran + ' rules ran, ' + p.coverage.skipped + ' skipped' : 'coverage unknown';
+  return 'PARTIAL, ' + cov + (p.reason ? ' (' + p.reason + ')' : '');
 }
 
 function row(
