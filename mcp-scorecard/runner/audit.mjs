@@ -12,20 +12,29 @@ import {
   hashBundle, measureGuidance, runAllProbes, toGradeInput, toStaticLayer,
   transcriptsToJsonl,
 } from './lib.mjs';
-import { AnthropicLlmClient, HttpMcpClient, runMcpscore } from './host-node.mjs';
+import { AnthropicLlmClient, HttpMcpClient, authOptions, runMcpscore } from './host-node.mjs';
 import { GeminiLlmClient } from './gemini.mjs';
 
 /**
  * @param {object} job          { audit_id, server_url, needed_for, model, temperature, runs }
- * @param {object} opts         { apiKey, mcpscoreBin, log, skipBehavioral, skipGuidance }
+ * @param {object} opts         { apiKey, mcpscoreBin, log, skipBehavioral, skipGuidance, authToken }
+ *
+ * `opts.authToken` is a bearer credential for a server behind a login. It goes
+ * to BOTH halves of the audit or neither: authenticating the Node handshake
+ * while mcpscore stayed outside the login would produce one grade over two
+ * different surfaces. It is never logged and never placed in argv; the caller
+ * logs the env var NAME it came from, which is the only part safe to print.
  */
 export async function runAudit(job, opts = {}) {
   const log = opts.log ?? (() => {});
   const started = Date.now();
+  const authToken = opts.authToken || null;
 
   // --- Static layer -------------------------------------------------------
   log(`[static] running mcpscore against ${job.server_url}`);
-  const { report, exitCode } = await runMcpscore(job.server_url, { bin: opts.mcpscoreBin });
+  const { report, exitCode } = await runMcpscore(job.server_url, {
+    bin: opts.mcpscoreBin, token: authToken,
+  });
   const staticLayer = toStaticLayer(report);
   log(
     `[static] ${staticLayer.score}/${staticLayer.max_score} = ${staticLayer.pct}% ` +
@@ -63,7 +72,7 @@ export async function runAudit(job, opts = {}) {
   const gradedBy = modelThatGraded(staticOnly, job.model);
 
   // --- Handshake & inventory ---------------------------------------------
-  const mcp = new HttpMcpClient(job.server_url);
+  const mcp = new HttpMcpClient(job.server_url, authOptions(authToken));
   const inventory = await handshake(mcp, job.server_url, staticLayer.server_name);
   log(`[inventory] ${inventory.tools.length} tools: ${inventory.tools.map((t) => t.name).join(', ')}`);
 
@@ -71,7 +80,7 @@ export async function runAudit(job, opts = {}) {
   if (inventory.tools.length === 0) {
     const g = grade({
       server_url: job.server_url, model: gradedBy, static: staticLayer,
-      probes: [], guidance: null,
+      probes: [], guidance: null, authenticated: Boolean(authToken),
     });
     return finish({
       job, g, probes: [], inventory, staticLayer, started, log,
@@ -138,6 +147,7 @@ export async function runAudit(job, opts = {}) {
     static: staticLayer,
     probes,
     guidance: null,
+    authenticated: Boolean(authToken),
   };
 
   let guidance = {

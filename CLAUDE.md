@@ -194,6 +194,24 @@ These are not preferences. Breaking one silently makes the product dishonest.
     prose needs precision (`search` would match "search the codebase"), a
     product name does not (`exa-search-server` is unambiguous).
 
+30. **A credential is named, never passed.** `--token-env NAME` and
+    `.doorman/tokens.json` carry the NAME of an environment variable. The value
+    reaches the runner and mcpscore by environment INHERITANCE and appears in no
+    argv anywhere in the chain, because a command line is readable from the OS
+    process list and can land in shell history. mcpscore's env path
+    (`MCPSCORE_TOKEN`, `cli.py:271`) exists only for a bearer token, so a
+    bearer is all this offers: an arbitrary-header option could only have been
+    built by putting a secret in argv. One credential goes to BOTH halves of an
+    audit or neither, or the grade spans two surfaces. A mapped variable that
+    is not set is a REFUSAL, not an anonymous audit, because the anonymous
+    audit SUCCEEDS and hands back a confident grade of a login page. This is
+    invariant 9 pointed at a credential. Every grade, review row and dashboard
+    cell carries `authenticated`: two rows both reading A over different
+    surfaces invite a comparison that cannot be made. No refusal echoes what
+    was passed, so a token typed where a name belongs does not land in a log.
+    `--poll` refuses the flag outright: the queue is open, so one token would
+    be presented to every url anyone queued.
+
 ## Testing
 
 **End-to-end proof lives in `RUNBOOK.md`**, not here. This section is the
@@ -207,15 +225,20 @@ worktree usually needs `pip install mcpscore` and the interpreter's `Scripts/`
 before it grades anything.
 
 ```bash
-cd mcp-scorecard && npm test              # 228 unit
+cd mcp-scorecard && npm test              # 363 unit, measured 2026-09-17
 node test/smoke-grade.mjs                 # grades a live public server
 node test/smoke-api.mjs                   # 75 assertions, needs wrangler dev
 node test/smoke-x402.mjs                  # 20, needs wrangler dev with PAYMENTS_REQUIRED
-cd ../doorman && node test/run.mjs        # 382, all offline
-bash test-gate.sh                         # 33 adversarial
+cd ../doorman && node test/run.mjs        # 610, all offline
+node test/cli-run.mjs                     # 48, the CLI's own parsers and guards
+bash test-gate.sh                         # 38 adversarial
 bash test-install.sh                      # 16, installs into temp dirs
 node test-poller.mjs
 ```
+
+Counts drift as tests are added, and a count that will not move is the tell for
+a suite that stopped loading. Each figure above is what the command printed on
+the date named, not a target.
 
 The doorman suite runs with `globalThis.fetch` replaced by a throw as part of
 verification. Every network and every paid call is injected.
@@ -251,6 +274,10 @@ Never in a file. `wrangler secret put`:
 | `ANTHROPIC_API_KEY` | behavioural probes |
 | `RUNNER_TOKEN` | the probe runner claiming and posting work |
 | `GRADE_TOKEN` | authorising a PAID audit on `POST /grade` and the MCP `grade` tool |
+
+A credential for a THIRD-PARTY server being audited is not a project secret and
+is never one of these: it lives in your own environment and is referenced by
+NAME from `.doorman/tokens.json` or `--token-env`. See invariant 30.
 
 `GRADE_TOKEN` unset is a supported state and is what is deployed today: every
 caller is anonymous, every audit is static-only, and nothing can spend. It is

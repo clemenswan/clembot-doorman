@@ -16,6 +16,7 @@ import { ADAPTERS, credentialCheck, resolveAdapter, unmeasured } from '../cli/ag
 import { doctor, renderDoctor } from '../cli/doctor.mjs';
 import { auditProject, renderAudit, renderAuditMarkdown } from '../cli/audit.mjs';
 import { schedule, renderSchedule } from '../cli/schedule.mjs';
+import { tokenEnvProblem } from '../cli/report.mjs';
 
 let pass = 0, fail = 0;
 const results = [];
@@ -446,7 +447,90 @@ it('renders schedule guidance when called without flags', async () => {
   truthy(text.includes('/schedule'), 'mentions agent /schedule');
 });
 
-/* ── report ──────────────────────────────────────────────────────────── */
+/* ── report: --token-env is a NAME, and it is documented ─────────────── */
+
+it('report refuses a --token-env that is not an environment variable name', () => {
+  const bad = tokenEnvProblem('sk-ant-live-abcdef', {});
+  truthy(bad, 'should have refused a token value');
+  truthy(/not a token value/.test(bad.why), 'says what it wanted');
+  // The leak this guard exists to close: an error message is a log entry that
+  // outlives the typo, so it must not carry the thing that was mistyped.
+  truthy(!JSON.stringify(bad).includes('sk-ant-live-abcdef'), 'must not echo the value');
+});
+
+it('report refuses a --token-env naming an unset variable, rather than auditing anonymously', () => {
+  const bad = tokenEnvProblem('LINEAR_MCP_TOKEN', {});
+  truthy(bad, 'should have refused');
+  truthy(/LINEAR_MCP_TOKEN/.test(bad.why), 'names the variable so it can be set');
+  truthy(/anonymous/.test(bad.hint), 'says why there is no fallback');
+});
+
+it('report accepts a --token-env naming a set variable', () => {
+  eq(tokenEnvProblem('LINEAR_MCP_TOKEN', { LINEAR_MCP_TOKEN: 'x' }), null);
+});
+
+it('report passes the NAME to the runner and never a value', async () => {
+  // The whole chain in one assertion: whatever doorman hands the runner, the
+  // credential is not in it. RUNNER is resolved by report.mjs, so pointing
+  // DOORMAN_SCORECARD_RUNNER at a file that does not exist gives the "runner
+  // not found" refusal before anything spawns; instead, drive the argv builder
+  // the same way report() does and assert on what it produced.
+  const os = await import('node:os');
+  const fs = await import('node:fs/promises');
+  const path = await import('node:path');
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'tokenenv-'));
+  const fake = path.join(dir, 'runner.mjs');
+  // A runner that writes down its own argv and its own view of the env, then
+  // produces no grade.json. report() reports the failure; we read the file.
+  await fs.writeFile(fake, [
+    'import { writeFileSync } from "node:fs";',
+    'writeFileSync(process.env.ARGV_DUMP, JSON.stringify({',
+    '  argv: process.argv.slice(2),',
+    '  saw: process.env.LINEAR_MCP_TOKEN ?? null,',
+    '}));',
+  ].join('\n'), 'utf8');
+
+  const dump = path.join(dir, 'argv.json');
+  process.env.DOORMAN_SCORECARD_RUNNER = fake;
+  process.env.ARGV_DUMP = dump;
+  process.env.LINEAR_MCP_TOKEN = 'sk-cli-test-NEVER-PRINT';
+  // report.mjs resolves RUNNER at import time, so import it only now.
+  const { report: reportImpl } = await import('../cli/report.mjs?tokenenv');
+  const r = await reportImpl({
+    link: 'https://x.example/mcp', out: path.join(dir, 'out'),
+    log: () => {}, tokenEnv: 'LINEAR_MCP_TOKEN',
+  });
+  truthy(!r.ok, 'the fake runner writes no grade.json, so this is a failure');
+
+  const seen = JSON.parse(await fs.readFile(dump, 'utf8'));
+  truthy(seen.argv.includes('--token-env'), 'the flag was passed: ' + seen.argv.join(' '));
+  truthy(seen.argv.includes('LINEAR_MCP_TOKEN'), 'the NAME was passed');
+  truthy(!seen.argv.join(' ').includes('sk-cli-test-NEVER-PRINT'),
+    'the VALUE must not be in argv: ' + seen.argv.join(' '));
+  // And the value did reach the child, by environment inheritance, which is
+  // the mechanism that makes the argv assertion above possible at all.
+  eq(seen.saw, 'sk-cli-test-NEVER-PRINT');
+  truthy(!JSON.stringify(r).includes('sk-cli-test-NEVER-PRINT'), 'not in the result either');
+
+  delete process.env.DOORMAN_SCORECARD_RUNNER;
+  delete process.env.ARGV_DUMP;
+  delete process.env.LINEAR_MCP_TOKEN;
+});
+
+it('--help documents --token-env and tokens.json', async () => {
+  // Driven through the real CLI rather than by reading the source, so the
+  // assertion is about what a user sees. Offline: --help spawns nothing else.
+  const { execFile } = await import('node:child_process');
+  const path = await import('node:path');
+  const { fileURLToPath } = await import('node:url');
+  const cli = path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'cli', 'doorman.mjs');
+  const out = await new Promise((res) =>
+    execFile(process.execPath, [cli, '--help'], (e, so) => res(so ?? '')));
+  truthy(/--token-env NAME/.test(out), '--token-env is in the manual');
+  truthy(/tokens\.json/.test(out), 'the review map is in the manual');
+  truthy(/process list/.test(out), 'the argv exposure is named, not glossed over');
+  truthy(/MCPSCORE_TOKEN/.test(out), 'the env path mcpscore actually offers is named');
+});
 
 await Promise.all(pending);
 

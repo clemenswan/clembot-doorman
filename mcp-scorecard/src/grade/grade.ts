@@ -169,6 +169,12 @@ export function grade(input: GradeInput): GradeResult {
     static_partial: input.static.partial
       ? { reason: input.static.partial_reason ?? null, coverage: input.static.coverage ?? null }
       : null,
+    // Two independent witnesses, OR'd. The runner knows whether it handed a
+    // credential to either client; mcpscore reports the same fact about its
+    // own request headers. Requiring BOTH would report `false` on a real
+    // authenticated audit whenever one of them stayed quiet, and the default
+    // has to be the claim that needs no evidence: anonymous.
+    authenticated: input.authenticated === true || input.static.authenticated === true,
   };
 }
 

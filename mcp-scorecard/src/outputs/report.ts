@@ -193,6 +193,18 @@ function provenance(i: ReportInput): string[] {
         ', model `' + g.model + '` at temperature 0',
     );
   }
+  // WHICH SURFACE THIS GRADE IS OVER.
+  //
+  // Printed on both branches, unlike every other optional line here, because
+  // the dangerous reading is the silent one: an anonymous audit of a private
+  // server produces a confident partial result that looks complete. The env var
+  // the credential came from is NOT named. A report is a public artifact and
+  // the name of a secret is a hint about where to look for it.
+  lines.push(
+    g.authenticated
+      ? 'a credential was presented: this grade is over the AUTHENTICATED surface'
+      : 'no credential was presented: this grade is over the PUBLIC surface only',
+  );
   if (scanRan.length > 0) {
     lines.push(
       scanRan.map((p) => '`' + p.probe_id + '`').join(', ') +

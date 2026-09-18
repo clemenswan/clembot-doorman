@@ -145,6 +145,23 @@ export class HttpMcpClient {
   }
 }
 
+/**
+ * Client options carrying a bearer credential, or nothing at all.
+ *
+ * Returns `{}` rather than `{ headers: {} }` for the anonymous case so that an
+ * audit nobody gave a token to sends no Authorization header, instead of one
+ * built from an empty string. A server answering a `Bearer ` with no value can
+ * fail in a third way that is neither authenticated nor anonymous.
+ *
+ * Bearer only, deliberately: see mcpscoreSpawn for why the static half cannot
+ * safely carry an arbitrary header, and a credential that reached one half of
+ * the audit and not the other would produce a grade over two different
+ * surfaces.
+ */
+export function authOptions(token) {
+  return token ? { headers: { authorization: `Bearer ${token}` } } : {};
+}
+
 /** Streamable HTTP may answer as SSE. Pull the JSON payload out of either. */
 export function parseMaybeSse(body) {
   const trimmed = body.trim();
@@ -266,6 +283,56 @@ export function normaliseSchema(schema) {
  * ---------------------------------------------------------------------- */
 
 /**
+ * The mcpscore invocation, split into argv and child environment.
+ *
+ * Separate from runMcpscore so a test can assert WHICH of the two a credential
+ * lands in without spawning a process.
+ *
+ * WHY A TOKEN GOES IN THE ENVIRONMENT AND NEVER ON THE COMMAND LINE.
+ *
+ * mcpscore 1.11.0 offers three ways to authenticate and they are not equally
+ * safe. `--token TOKEN` and `--header 'Authorization: Bearer ...'` both put the
+ * secret in argv, which any other local user can read out of the process list
+ * and which a shell may persist in its history. The third way is an
+ * environment variable, and mcpscore's own `--help` says so:
+ *
+ *   --token TOKEN   Convenience for --header 'Authorization: Bearer <TOKEN>'.
+ *                   Defaults to the MCPSCORE_TOKEN environment variable
+ *                   (keeps tokens out of shell history).
+ *
+ * Verified in its source, not taken from the help text alone: `collect_headers`
+ * at mcpscore/cli.py:271 reads `args.token or os.environ.get("MCPSCORE_TOKEN")`
+ * and turns it into `Authorization: Bearer <token>`. So the env form is
+ * exactly equivalent to `--token` with none of the exposure, and it is the only
+ * form this runner uses.
+ *
+ * The consequence, stated because it is a real limit and not an oversight:
+ * mcpscore has NO env-var path for an arbitrary header NAME. `--header` is argv
+ * only. That is why this runner authenticates with a bearer token and offers no
+ * general `--header` flag of its own: the general version could only have been
+ * built by putting a secret in argv.
+ *
+ * The `headers` option below is the pre-existing escape hatch and IS argv
+ * exposed. Nothing in this repo passes it. Do not route a credential through it.
+ */
+export function mcpscoreSpawn(target, { headers = [], token = null, env = process.env } = {}) {
+  const args = ['--json'];
+  // ARGV EXPOSED. Anything passed here is visible in the OS process list.
+  for (const h of headers) args.push('--header', h);
+  args.push(target);
+
+  const childEnv = { ...env };
+  // An anonymous audit must be anonymous. Without this delete, an ambient
+  // MCPSCORE_TOKEN in the parent shell would silently authenticate a run the
+  // caller asked to be public, and the grade's `authenticated` flag would be
+  // correct while the caller's belief about what was measured was wrong.
+  delete childEnv.MCPSCORE_TOKEN;
+  if (token) childEnv.MCPSCORE_TOKEN = token;
+
+  return { args, env: childEnv };
+}
+
+/**
  * Shell out to the mcpscore CLI and return its parsed JSON report.
  *
  * This function is the reason the Worker cannot do this job: mcpscore is
@@ -274,14 +341,15 @@ export function normaliseSchema(schema) {
  *
  * Exit 3 means "graded, and it scored badly" - a RESULT, not a failure. Only
  * exits 1 and 2 mean the audit did not happen.
+ *
+ * `token`, when given, is a bearer credential. It is never logged, never
+ * printed, and never placed in argv: see mcpscoreSpawn.
  */
-export function runMcpscore(target, { bin = 'mcpscore', timeoutMs = 240_000, headers = [] } = {}) {
+export function runMcpscore(target, { bin = 'mcpscore', timeoutMs = 240_000, headers = [], token = null } = {}) {
   return new Promise((resolve, reject) => {
-    const args = ['--json'];
-    for (const h of headers) args.push('--header', h);
-    args.push(target);
+    const { args, env } = mcpscoreSpawn(target, { headers, token });
 
-    const child = spawn(bin, args, { windowsHide: true });
+    const child = spawn(bin, args, { windowsHide: true, env });
     let stdout = '';
     let stderr = '';
     const timer = setTimeout(() => {

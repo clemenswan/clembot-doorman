@@ -20,6 +20,7 @@ import { readFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { isEnvName } from './tokens.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 /**
@@ -46,6 +47,37 @@ const RUNNER = RUNNER_CANDIDATES.find((p) => existsSync(p)) ?? RUNNER_CANDIDATES
  * the cause is not recognised: a wrong hint is worse than none, and the old
  * one ("mcpscore is not on PATH") was wrong for both failures seen on the day.
  */
+/**
+ * Why a `--token-env NAME` cannot be used, or null when it can.
+ *
+ * Checked HERE as well as in the runner so the refusal arrives before a
+ * process is spawned and an output directory is created, and so the message
+ * comes from the command the user actually typed.
+ *
+ * Neither branch repeats what was passed. If this fired because a token was
+ * pasted where a name belongs, echoing it would copy the secret into an error
+ * message that outlives the typo.
+ */
+export function tokenEnvProblem(tokenEnv, env = process.env) {
+  if (!isEnvName(tokenEnv)) {
+    return {
+      why: '--token-env takes the NAME of an environment variable, not a token value.',
+      hint: 'What was passed is not a valid environment variable name, so it is not repeated\n' +
+        'here. Set the variable first, then name it:\n' +
+        '  LINEAR_MCP_TOKEN=... doorman report <url> --token-env LINEAR_MCP_TOKEN',
+    };
+  }
+  if (!env[tokenEnv]) {
+    return {
+      why: `--token-env ${tokenEnv} was given, but ${tokenEnv} is not set in this environment.`,
+      hint: `Set ${tokenEnv} and run again. doorman will not fall back to an anonymous audit:\n` +
+        'an anonymous audit of a server behind a login grades its front door and reports\n' +
+        'a confident partial result that reads like a complete one.',
+    };
+  }
+  return null;
+}
+
 export function diagnose(detail = '') {
   if (/HTTP 40[13]\b|invalid_token|unauthori[sz]ed/i.test(detail)) {
     return { status: 'auth-required',
@@ -62,7 +94,23 @@ export function diagnose(detail = '') {
   return { status: 'failed', hint: null };
 }
 
-export async function report({ link, out, neededFor, log }) {
+/**
+ * @param {object} o
+ * @param {string} [o.tokenEnv]
+ *   The NAME of an environment variable holding a bearer token for a server
+ *   behind a login. The NAME, never the token.
+ *
+ *   The value is not read here and is not passed to the child process as data.
+ *   `execFile` inherits this process's environment, so the runner reads the
+ *   variable itself, in its own process. The credential therefore appears in
+ *   no argument list anywhere in the chain, which is the point: a command line
+ *   is readable out of the OS process list by any other local user and a shell
+ *   may persist it in history.
+ *
+ *   Refuses when the variable is unset. Never falls back to an anonymous
+ *   audit: that would succeed, returning a confident grade of a login page.
+ */
+export async function report({ link, out, neededFor, log, tokenEnv }) {
   if (!existsSync(RUNNER)) {
     return {
       ok: false,
@@ -73,6 +121,11 @@ export async function report({ link, out, neededFor, log }) {
         'Set DOORMAN_SCORECARD_RUNNER to its path, or run doorman from a clone of\n' +
         'the repo, where the in-repo path resolves.',
     };
+  }
+
+  if (tokenEnv != null) {
+    const bad = tokenEnvProblem(tokenEnv);
+    if (bad) return { ok: false, why: bad.why, hint: bad.hint };
   }
 
   await mkdir(out, { recursive: true });
@@ -86,6 +139,8 @@ export async function report({ link, out, neededFor, log }) {
     '--out', out,
   ];
   if (neededFor) args.push('--needed-for', neededFor);
+  // The NAME, and never the value. See the tokenEnv note on this function.
+  if (tokenEnv != null) args.push('--token-env', tokenEnv);
 
   const r = await new Promise((res) =>
     execFile(process.execPath, args, { maxBuffer: 32 * 1024 * 1024 }, (err, stdout, stderr) =>

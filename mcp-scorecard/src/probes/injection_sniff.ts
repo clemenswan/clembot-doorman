@@ -25,7 +25,7 @@ export interface InjectionHit {
   location: string;    // where it was found, e.g. "tool:search.description"
   pattern: string;     // which rule fired
   excerpt: string;     // the matching text, verbatim
-  severity: Severity;  // 'hard' caps the grade at F; 'steering' does not
+  severity: Severity;  // 'hard' caps at F; 'steering' scores; 'advisory' neither
 }
 
 /**
@@ -47,7 +47,19 @@ export interface InjectionHit {
  * other 22 carried none of it. The patterns below are derived from that
  * document, not invented.
  */
-export type Severity = 'hard' | 'steering';
+/**
+ * `advisory` means the text promotes a paid tier THROUGH the agent, in the
+ * polite register a real vendor actually writes in: surface this card, hand
+ * the user this link. It is reported and NEVER scored.
+ *
+ * Added 2026-09-17 after doorman reviewed the connectors of a live build. The
+ * steering patterns above came from one hostile server's literal phrasings,
+ * and a connector telling the reading agent to pass along a full-version link
+ * passed every one of them. That is a real gap, and a brand-new pattern class
+ * moving grades before it has been wrong in public a few times is a worse one.
+ * Same shape as readiness in the static layer: reported, never graded.
+ */
+export type Severity = 'hard' | 'steering' | 'advisory';
 
 /**
  * Instruction-shaped patterns. Each targets a construction that has no
@@ -136,11 +148,27 @@ export const INJECTION_PATTERNS: Array<{ name: string; re: RegExp; severity: Sev
     re: /\binternali[sz]e (it|this)\b/i, severity: 'steering' },
   { name: 'preempt-the-user',
     re: /\bdo(?: not|n't) wait for the user\b|\beven if the user did not ask\b/i, severity: 'steering' },
+
+  // ── Commercial promotion (advisory, never scored) ───────────────────────
+  //
+  // Both patterns require a COMMERCIAL noun and a SURFACING noun in the same
+  // sentence, in either order. A tool that merely returns a link, or prose
+  // telling an agent to hand the user a link to their own document, carries no
+  // commercial noun and does not fire. That discrimination is the design: the
+  // benign case in the tests is real text from another connector.
+  { name: 'promotes-a-paid-tier',
+    re: /\b(upgrade|full[- ]version|paid (?:plan|version|tier)|pro (?:plan|tier)|subscribe|subscription|billing|purchase|checkout)\b[^.]{0,120}\b(link|url|card|message|offer|cta)\b|\b(link|url|card|cta)\b[^.]{0,120}\b(upgrade|full[- ]version|paid (?:plan|version|tier)|subscribe|subscription|billing|purchase|checkout)\b/i,
+    severity: 'advisory' },
+  { name: 'calls-a-promotion-tool',
+    re: /\bcall\b[^.]{0,60}\b(upsell|upgrade|paywall|pricing|next[- ]steps|full[- ]version)\b/i,
+    severity: 'advisory' },
 ];
 
 /** The subset that caps a grade at F. */
 export const HARD_PATTERNS = INJECTION_PATTERNS.filter((p) => p.severity === 'hard');
 export const STEERING_PATTERNS = INJECTION_PATTERNS.filter((p) => p.severity === 'steering');
+/** Reported at the top of the report, absent from every score. */
+export const ADVISORY_PATTERNS = INJECTION_PATTERNS.filter((p) => p.severity === 'advisory');
 
 export const injectionSniff: Probe = {
   id: 'injection_sniff',
@@ -178,6 +206,7 @@ export const injectionSniff: Probe = {
 
     const hard = hits.filter((h) => h.severity === 'hard');
     const steering = hits.filter((h) => h.severity === 'steering');
+    const advisory = hits.filter((h) => h.severity === 'advisory');
 
     // Scan-only and deterministic, so a single run is the whole probe. Running
     // a regex three times to satisfy a convention would be theatre.
@@ -191,6 +220,12 @@ export const injectionSniff: Probe = {
       ...steering.map(
         (h) => 'commercial steering in ' + h.location + ' (' + h.pattern + '): "' + h.excerpt + '"',
       ),
+      // Named as advisory in the text itself, so a reader cannot mistake a
+      // reported line for one that moved the score.
+      ...advisory.map(
+        (h) => 'commercial promotion (advisory, not scored) in ' + h.location +
+               ' (' + h.pattern + '): "' + h.excerpt + '"',
+      ),
     ];
 
     // ONLY hard hits cap. A description that advertises is not a description
@@ -202,7 +237,7 @@ export const injectionSniff: Probe = {
       : undefined;
 
     rec('note', { hits: hits.length, hard: hard.length, steering: steering.length,
-                  hard_fail: hard_fail ?? null });
+                  advisory: advisory.length, hard_fail: hard_fail ?? null });
 
     return {
       probe_id: 'injection_sniff',
@@ -211,7 +246,8 @@ export const injectionSniff: Probe = {
         run_index: 0,
         score: scoreFor(hard.length, steering.length),
         signals: {
-          hits: hits.length, hard: hard.length, steering: steering.length, scan_only: true,
+          hits: hits.length, hard: hard.length, steering: steering.length,
+          advisory: advisory.length, scan_only: true,
         },
         transcript,
       }],

@@ -72,6 +72,37 @@ doorman ${VERSION} — measure a candidate, do not just read it
       grades a login page (a 401 is recorded as auth-required with no band),
       and never touches the trust list. Makes one request per server url.
 
+      CAPTURED SURFACES. A server behind a login, and every claude.ai
+      connector, cannot be connected to from here. Drop what an agent session
+      saw into .doorman/surfaces/<gate-name>.json and review scans it:
+
+        { "server": "claude.ai Notion", "gate_name": "claude_ai_Notion",
+          "captured_at": "<iso>", "provenance": "<where this came from>",
+          "instructions": "<server-level instructions, if any>",
+          "tools": [ { "name": "...", "description": "...",
+                       "inputSchema": { ... } } ] }
+
+      provenance is REQUIRED and a capture with neither tools nor instructions
+      is refused. A capture never produces a band: it is not a connection, and
+      it can be stale or incomplete in a way a fetch cannot.
+
+      CREDENTIALS. To audit a server behind a login, create
+      .doorman/tokens.json mapping each server to the NAME of an environment
+      variable holding a bearer token:
+
+          { "plugin_productivity_linear": "LINEAR_MCP_TOKEN",
+            "https://mcp.notion.com/mcp":  "NOTION_MCP_TOKEN" }
+
+      The NAME, never the token. The file lives inside your project, one
+      git add away from a public repo, and doorman passes the name down and
+      lets the OS carry the value by environment inheritance, so the secret is
+      in no command line anywhere. A gate name wins over a url. A mapped
+      variable that is not set is recorded as token-missing and that server is
+      NOT audited: an anonymous audit of a private server succeeds, grading its
+      front door and reporting a confident partial result. Rows audited with a
+      credential are marked authenticated, because that is a different surface
+      from an anonymous audit and the two scores are not comparable.
+
   doorman dashboard [path] [--review] [--no-open] [--json]
       The audit as a page. Runs the same sweep as doorman audit, grades the
       doctor half against a visible scorecard, diffs it against the last run on
@@ -122,10 +153,27 @@ doorman ${VERSION} — measure a candidate, do not just read it
       and deletes it. Nothing is announced on the first run, nothing is written
       when nothing is new, and a digest is shown exactly once.
 
-  doorman report <link> [--out DIR] [--needed-for TEXT]
+  doorman report <link> [--out DIR] [--needed-for TEXT] [--token-env NAME]
       L1. The static implementation report: protocol, schemas, annotations, and
       a scan-only pass over every description an agent would read before
       choosing a tool. Needs no model key.
+
+      --token-env NAME audits a server behind a login. NAME is the ENVIRONMENT
+      VARIABLE holding a bearer token, never the token: a value passed as an
+      argument is readable out of the OS process list by any other local user
+      and a shell may keep it in history. doorman does not read the value. It
+      passes the name down and the OS carries the value by environment
+      inheritance, so the credential is in no command line in the chain,
+      including the mcpscore one. The same credential reaches both the static
+      layer and the MCP handshake, or neither, because one grade over two
+      different surfaces is not a grade. Bearer tokens only: mcpscore 1.11.0
+      has an environment path for a bearer (MCPSCORE_TOKEN) and none for an
+      arbitrary header name, and an arbitrary-header option could only have
+      been built by putting a secret in argv.
+
+      An unset NAME is a refusal. doorman never falls back to an anonymous
+      audit, because that fallback succeeds: you get a confident grade of a
+      login page. grade.json records "authenticated" either way.
 
   doorman eval <link> --task <file> [--runs N] [--max-cost USD] [--out DIR]
       L3. Runs the task N times in two images that differ by exactly one install
@@ -408,7 +456,18 @@ async function main() {
 
   if (cmd === 'report') {
     const out = args.out || `./doorman-report-${Date.now()}`;
-    const r = await report({ link, out, neededFor: args['needed-for'], log });
+    // `--token-env` with nothing after it parses as `true`. Passing that
+    // through would be read as "no credential" and audit anonymously, which is
+    // the one outcome this flag exists to prevent.
+    if (args['token-env'] === true) {
+      console.error('--token-env needs the NAME of an environment variable, e.g. --token-env LINEAR_MCP_TOKEN');
+      process.exitCode = 2;
+      return;
+    }
+    const r = await report({
+      link, out, neededFor: args['needed-for'], log,
+      tokenEnv: typeof args['token-env'] === 'string' ? args['token-env'] : undefined,
+    });
     if (!r.ok) {
       console.error(`\nreport failed: ${r.why}`);
       if (r.hint) console.error(`\n${r.hint}`);
@@ -422,6 +481,10 @@ async function main() {
     console.log(`L1 static report for ${link}`);
     console.log(`  grade         ${g.band ?? 'n/a'} ${typeof g.score === 'number' ? `(${g.score})` : ''}`);
     console.log(`  hard fail     ${g.hard_fail ? 'YES' : 'no'}`);
+    // Which surface this grade is over. Printed on both branches: the quiet
+    // case is the misleading one, and the env var NAME is deliberately not
+    // repeated here even though it was safe to type.
+    console.log(`  surface       ${g.authenticated ? 'AUTHENTICATED (a credential was presented)' : 'public (no credential presented)'}`);
     if (g.static_partial) console.log(`  PARTIAL       ${g.static_partial.reason ?? 'only part of the server was reachable'}`);
     console.log(`  written to    ${r.out}`);
     console.log('');

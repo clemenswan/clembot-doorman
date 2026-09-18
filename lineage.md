@@ -1754,3 +1754,101 @@ project, deny-counts-as-reviewed, plugin gate scope, user registry, stdio skip, 
 diagnosis, band-on-401, escaping, connector cell. The connector-cell mutant survived
 the first pass (the row's source label satisfied the assertion), and the assertion was
 tightened until it failed.
+
+## 2026-09-17: the surface of a server we cannot connect to
+
+`doorman review` reached 22 urls on ClemVault and 21 of them answered 401. Add
+the 7 claude.ai connectors, which have no local url at all, and 28 of 41
+reachable servers were name-only: doorman could not read the one thing it exists
+to read, the descriptions an agent is handed as instructions.
+
+**A surface can now arrive as a capture.** `.doorman/surfaces/<gate-name>.json`
+carries tool descriptions, titles, schema field descriptions and, new here, the
+**server-level instructions** that reach an agent before it chooses any tool.
+`src/surface.mjs` runs the existing scanner over all of it.
+
+**The rule holding it up: a capture is not a connection.** `provenance` is
+mandatory and a capture without it is refused, not scored. A capture with
+neither tools nor instructions is refused rather than reported clean. The result
+is `status: surface-reviewed` with **no band and no score, ever**. Invariant 9
+pointed at the one input doorman does not fetch itself. Four mutants confirmed
+each rule: provenance, empty capture, schema-field scanning, and band-on-surface.
+
+**Two real captures, transcribed from a live session** (Clembot build,
+`marketing-bootstrap`): `claude_ai_Claude_Docs` (3 tools plus instructions,
+1,781 chars) and `claude_ai_Notion` (instructions only, 875 chars, zero tool
+descriptions and it says so). Both scanned clean.
+
+**The finding that matters more than the clean result.** Notion's server
+instructions tell the reading agent to call a presentation tool and then "give
+the user the relevant next-step message and destination link in the final
+response" for full-version access. That is an upsell directive, and **every
+steering pattern passed it**. The pattern list was derived from WebZum's literal
+phrasings ("always offer", "instead of telling the user", "the right closing
+line"), so a politely worded upsell is invisible to it. Detection policy is a
+human decision with real false-positive cost, so this is recorded here and
+flagged rather than changed: **the scanner's steering coverage is narrower than
+the risk it was built for.**
+
+**Also fixed by running it.** A connector row said "not reviewable here" and then
+printed a surface review two lines below. It now says it was reviewed from a
+capture, and still never claims a connection.
+
+**Proof.** doorman 575 unit, 43 CLI, 38 gate, 16 install, poller. `doorman
+review` on the Clembot build: 21 urls, 1 graded, 2 captured surfaces scanned.
+## 2026-09-17: a third severity, because the scanner missed a polite upsell
+
+Reviewing the connectors of a live build produced a finding about the scanner
+itself. Notion's server instructions tell the reading agent to call a
+presentation tool and hand the user a "destination link" for full-version
+access. **Every steering pattern passed it.** Those patterns were derived from
+one hostile server's literal phrasings ("always offer", "instead of telling the
+user", "the right closing line"), so an upsell written the way a real vendor
+writes one was invisible.
+
+**`advisory`: reported, never scored.** Two new patterns, both requiring a
+commercial noun AND a surfacing noun in the same sentence, in either order.
+`scoreFor(hard, steering)` still takes two arguments, so an advisory hit has no
+path into a grade by construction rather than by remembering. Precedent is
+invariant 11: readiness is reported and never graded, for the same reason a
+brand-new pattern class should not move anyone's grade before it has been wrong
+in public a few times.
+
+**The discrimination is the design, and it is tested against real text.** The
+benign case is verbatim from the Claude Docs connector, which tells an agent to
+hand the user a link to their own document: a surfacing noun with no commercial
+noun, and it does not fire. Measured on the two captures:
+
+| Capture | hard | steering | advisory | score |
+|---|---|---|---|---|
+| `claude_ai_Notion` (instructions) | 0 | 0 | **2** | 100 |
+| `claude_ai_Claude_Docs` (3 tools + instructions) | 0 | 0 | 0 | 100 |
+
+**Changed in the canonical source first**, per the rule in `src/injection.mjs`,
+then mirrored. The drift test earned its keep immediately: it failed with
+`16 vendored vs 18 canonical` before the mirror landed, which is exactly the
+silent-copy failure it exists to catch.
+
+**Proof.** scorecard 344 vitest (was 340), tsc clean; doorman 558 (was 552).
+Three mutants, all caught: relabelling advisory as steering (5 failures),
+dropping the advisory filter, and feeding advisory into the score.
+
+**A process note worth keeping.** Two edits to these regex files were silently
+corrupted by a heredoc collapsing `\b` into a backspace character, which is
+`lesson-heredoc-escapes-can-kill-a-regex-silently` happening again in the same
+repo. Raw strings only when patching a file that contains regexes.
+
+### Merge note, 2026-09-17: the three branches meeting
+
+`feat/doorman-surface-review` merged `main` after the advisory severity and the
+credential work landed. Three conflicts, all additive (`review.mjs`,
+`doorman.mjs` help, `lineage.md`), resolved as unions.
+
+**The merge itself surfaced a bug worth recording.** The review summary counted
+`hard || steering` per captured surface, so once `advisory` existed the Notion
+capture reported "0 with findings" while carrying two. A counter that predates a
+severity rebuilds the exact blind spot the severity was added for. `surface.mjs`
+now counts advisory, names it in the findings, and the dashboard shows it with
+**no grade colour**, because it is a note to a reader and not a mark against the
+server. Caught by running the real sweep after the merge, not by the tests: both
+sides were green on their own.

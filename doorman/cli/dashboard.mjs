@@ -32,6 +32,7 @@ import path from 'node:path';
 import { auditProject } from './audit.mjs';
 import { gradeBuild } from '../src/harness-grade.mjs';
 import { readReviews } from './review.mjs';
+import { readSurfaces, reviewSurface } from '../src/surface.mjs';
 
 const OUT_DIR = '.doorman';
 
@@ -213,20 +214,48 @@ function needsSection(res) {
 }
 
 /** What the last `doorman review` found for one server, in words a reader cannot misread as a grade. */
-function reviewCell(s, rv) {
-  if (s.transport === 'claude.ai') return '<span class="muted">not reviewable here: the url and login live with your claude.ai account</span>';
+/** A captured-surface finding, which is evidence about text but never a grade. */
+function surfaceCell(sr) {
+  if (!sr) return '';
+  if (sr.status === 'invalid') return `<div class="muted">captured surface REFUSED: ${esc(sr.why)}</div>`;
+  const head = sr.hard ? `<span class="tag g-F">SURFACE: injection-shaped text</span>`
+    : sr.steering ? `<span class="tag g-C">SURFACE: commercial steering</span>`
+    // Advisory carries no grade colour on purpose: it is a note to a reader,
+    // not a mark against the server.
+    : sr.advisory ? `<span class="tag">SURFACE: commercial promotion (advisory, not scored)</span>`
+    : `<span class="tag g-A">surface clean</span>`;
+  const modes = sr.failure_modes.slice(0, 3).map((m) => `<div class="muted">${esc(m)}</div>`).join('');
+  return `<div>${head} <span class="muted">${esc(sr.tools_scanned)} tools, ${esc(sr.scanned_chars)} chars scanned, not connected</span>${modes}</div>`;
+}
+
+function reviewCell(s, rv, hasSurface = false) {
+  if (s.transport === 'claude.ai') {
+    return hasSurface
+      ? '<span class="muted">no local url to connect to: reviewed from a captured surface</span>'
+      : '<span class="muted">not reviewable here: the url and login live with your claude.ai account</span>';
+  }
   if (!/^https?:\/\//.test(s.target || '')) return `<span class="muted">not reviewed: ${esc(s.transport || 'local')} servers are never run by review</span>`;
   if (!rv) return '<span class="muted">not reviewed yet</span>';
   if (rv.status === 'auth-required') return '<span class="tag">needs login</span> <span class="muted">tools not listed, nothing behind the login measured</span>';
   if (rv.status !== 'graded') return `<span class="tag">${esc(rv.status)}</span> <span class="muted">${esc(rv.hint || '')}</span>`;
   const p = rv.static_partial;
   const cov = p?.coverage ? `${p.coverage.ran} of ${p.coverage.ran + p.coverage.skipped} rules ran` : 'coverage unknown';
+  // WHICH SURFACE THIS GRADE IS OVER, on every graded row.
+  //
+  // An authenticated audit and an anonymous one measure different servers as
+  // far as the score is concerned, so two rows both reading "Grade A" invite a
+  // comparison that cannot be made. The env var NAME is deliberately not
+  // rendered: this page is a file on disk that people screenshot and send.
+  const surface = rv.authenticated
+    ? ' <span class="tag">authenticated</span>'
+    : ' <span class="muted">anonymous</span>';
   return `<span class="tag g-${esc(rv.band)}">Grade ${esc(rv.band)}</span> <span class="muted">${esc(rv.score)}/100 static</span>`
+    + surface
     + (p ? ` <span class="tag">PARTIAL</span> <span class="muted">${esc(cov)}</span>` : '')
     + (rv.hard_fail ? `<div class="muted">${esc(rv.hard_fail)}</div>` : '');
 }
 
-export function serversSection(res, reviews = {}) {
+export function serversSection(res, reviews = {}, surfaces = {}) {
   const servers = res.doctor?.servers || [];
   if (!servers.length) {
     return `<section><h2>MCP servers</h2><p class="muted">No MCP servers are reachable from this project.</p></section>`;
@@ -243,7 +272,7 @@ export function serversSection(res, reviews = {}) {
       <div class="muted">${esc((s.sources || [s.source]).join(', '))}</div>
       ${s.target ? `<div class="muted"><code>${esc(s.target)}</code></div>` : ''}</td>
       <td>${trust(s.gateName ?? s.name)}</td>
-      <td>${reviewCell(s, s.target ? reviews[s.target] : null)}</td></tr>`).join('');
+      <td>${reviewCell(s, s.target ? reviews[s.target] : null, Boolean(surfaces[s.gateName ?? s.name]))}${surfaceCell(surfaces[s.gateName ?? s.name])}</td></tr>`).join('');
   return `
   <section>
     <h2>MCP servers</h2>
@@ -267,7 +296,7 @@ function threatSection(res) {
       <div class="muted">${esc(x.hard_fail || 'failed the safety scan')}</div></li>`).join('')}</ul></section>`;
 }
 
-export function renderDashboardHtml(res, grade, diff, reviews = {}) {
+export function renderDashboardHtml(res, grade, diff, reviews = {}, surfaces = {}) {
   const actions = [];
   if (!res.posture?.isGateWired) actions.push('claude plugin install clembot-doorman');
   actions.push('doorman review', 'doorman allow &lt;server-name&gt;', '/vet &lt;candidate-url&gt;', 'doorman dashboard');
@@ -316,7 +345,7 @@ export function renderDashboardHtml(res, grade, diff, reviews = {}) {
 </header>
 ${gradeSection(grade)}
 ${changeSection(diff)}
-${serversSection(res, reviews)}
+${serversSection(res, reviews, surfaces)}
 ${needsSection(res)}
 ${threatSection(res)}
 <section>
@@ -359,7 +388,12 @@ export async function dashboard(targetDir = process.cwd(), opts = {}) {
   writeFileSync(runFile, JSON.stringify(snap, null, 2), 'utf8');
 
   const htmlFile = path.join(outDir, 'report.html');
-  writeFileSync(htmlFile, renderDashboardHtml(res, grade, diff, readReviews(res.root)), 'utf8');
+  const captures = readSurfaces(res.root);
+  const surfaceReviews = {};
+  for (const [gate, cap] of Object.entries(captures)) {
+    if (gate !== '__unreadable') surfaceReviews[gate] = reviewSurface(cap);
+  }
+  writeFileSync(htmlFile, renderDashboardHtml(res, grade, diff, readReviews(res.root), surfaceReviews), 'utf8');
 
   const opened = opts.open === false ? false : openInBrowser(htmlFile);
 

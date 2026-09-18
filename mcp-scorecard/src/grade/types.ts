@@ -85,6 +85,15 @@ export interface GradeInput {
   probes: ProbeResult[];
   /** Cold Open re-run WITH the drafted recipe. Null when the layer was not run. */
   guidance?: { baseline_pct: number; guided_pct: number } | null;
+  /**
+   * Whether the RUNNER presented a credential. Distinct from
+   * `static.authenticated`, which is what mcpscore reports about the headers
+   * IT sent: the runner drives two clients and knows about both, mcpscore
+   * knows only about itself. Either witness saying yes means a credential was
+   * presented, so the flag cannot read `false` on an authenticated audit just
+   * because one of them did not report.
+   */
+  authenticated?: boolean;
 }
 
 export interface LayerBreakdown {
@@ -110,4 +119,14 @@ export interface GradeResult {
   mcpscore_version: string;
   /** Set when the static layer only reached part of the server. See StaticLayer.partial. */
   static_partial: { reason: string | null; coverage: { ran: number; skipped: number } | null } | null;
+  /**
+   * Whether a credential was presented to the server.
+   *
+   * An authenticated audit and an anonymous one measure DIFFERENT SURFACES, so
+   * their scores are not comparable and a reader has to be able to tell them
+   * apart. It is a boolean and never the credential, never its env var name,
+   * and never a hint of either: the grade record travels into evidence bundles
+   * and the public feed.
+   */
+  authenticated: boolean;
 }

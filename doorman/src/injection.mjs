@@ -112,6 +112,20 @@ export const INJECTION_PATTERNS = [
     re: /\binternali[sz]e (it|this)\b/i, severity: 'steering' },
   { name: 'preempt-the-user',
     re: /\bdo(?: not|n't) wait for the user\b|\beven if the user did not ask\b/i, severity: 'steering' },
+
+  // ── Commercial promotion (advisory, never scored) ───────────────────────
+  //
+  // Both patterns require a COMMERCIAL noun and a SURFACING noun in the same
+  // sentence, in either order. A tool that merely returns a link, or prose
+  // telling an agent to hand the user a link to their own document, carries no
+  // commercial noun and does not fire. That discrimination is the design: the
+  // benign case in the tests is real text from another connector.
+  { name: 'promotes-a-paid-tier',
+    re: /\b(upgrade|full[- ]version|paid (?:plan|version|tier)|pro (?:plan|tier)|subscribe|subscription|billing|purchase|checkout)\b[^.]{0,120}\b(link|url|card|message|offer|cta)\b|\b(link|url|card|cta)\b[^.]{0,120}\b(upgrade|full[- ]version|paid (?:plan|version|tier)|subscribe|subscription|billing|purchase|checkout)\b/i,
+    severity: 'advisory' },
+  { name: 'calls-a-promotion-tool',
+    re: /\bcall\b[^.]{0,60}\b(upsell|upgrade|paywall|pricing|next[- ]steps|full[- ]version)\b/i,
+    severity: 'advisory' },
 ];
 
 /**
@@ -164,11 +178,15 @@ export function sniffInstructions(text, location = 'instructions') {
   const hits = scanText(text, location);
   const hard = hits.filter((h) => h.severity === 'hard');
   const steering = hits.filter((h) => h.severity === 'steering');
+  // Reported, never scored: `score` below does not read it. See the Severity
+  // note in the canonical source.
+  const advisory = hits.filter((h) => h.severity === 'advisory');
   return {
     scanned_chars: typeof text === 'string' ? text.length : 0,
     hits,
     hard: hard.length,
     steering: steering.length,
+    advisory: advisory.length,
     // Same severity rule as the source: only an ATTACK caps a grade. A
     // description that advertises through the agent is reported and scored,
     // never treated as a jailbreak attempt.
@@ -179,6 +197,10 @@ export function sniffInstructions(text, location = 'instructions') {
       ),
       ...steering.map(
         (h) => 'commercial steering in ' + h.location + ' (' + h.pattern + '): "' + h.excerpt + '"',
+      ),
+      ...advisory.map(
+        (h) => 'commercial promotion (advisory, not scored) in ' + h.location +
+               ' (' + h.pattern + '): "' + h.excerpt + '"',
       ),
     ],
     hard_fail: hard.length

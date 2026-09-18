@@ -16,11 +16,14 @@
  *   ANTHROPIC_API_KEY   required unless --static-only
  *   RUNNER_TOKEN        required for --poll
  *   SCORECARD_API       default API base for --poll
+ *   <your own name>     the bearer token for a server behind a login, named by
+ *                       --token-env. The VALUE never appears in argv.
  */
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { runAudit } from './audit.mjs';
+import { refusePollToken, resolveAuthToken } from './auth.mjs';
 import { chooseProvider } from './gemini.mjs';
 
 const args = parseArgs(process.argv.slice(2));
@@ -34,6 +37,15 @@ mcp-scorecard probe runner
   --poll            poll the Worker queue forever
 
   --server URL      server to grade with --once
+  --token-env NAME  audit a server behind a login. NAME is the ENVIRONMENT
+                    VARIABLE holding the bearer token, never the token itself:
+                    the value must not be an argument to this command, because
+                    a command line is readable from the OS process list and can
+                    land in shell history. The same credential goes to both the
+                    static layer and the MCP handshake, and nothing logs or
+                    writes it. A NAME that is unset is a refusal, never an
+                    anonymous audit: an anonymous audit of a private server
+                    produces a confident partial result that looks complete.
   --needed-for TXT  what you want the server for (seeds the Cold Open probe)
   --static-only     skip behavioural probes (no Anthropic key needed).
                     Works with --once and --poll.
@@ -59,6 +71,8 @@ mcp-scorecard probe runner
 
 async function once() {
   if (!args.server) fail('--once needs --server <url>');
+  const authToken = resolveAuthToken(args['token-env']);
+  if (authToken) log(`presenting a credential from $${args['token-env']} (value never printed)`);
   const pick = chooseProvider({ model: args.model });
   if (!args['static-only'] && !pick.ok) {
     fail(
@@ -85,6 +99,7 @@ async function once() {
   const result = await runAudit(job, {
     apiKey,
     log,
+    authToken,
     skipBehavioral: Boolean(args['static-only']),
     skipGuidance: Boolean(args['no-guidance']),
   });
@@ -121,6 +136,9 @@ async function once() {
 }
 
 async function pollForever() {
+  // A single credential must never be presented to a queue of servers this
+  // process did not choose. See refusePollToken.
+  refusePollToken(args['token-env']);
   const api = (args.api ?? process.env.SCORECARD_API ?? '').replace(/\/+$/, '');
   const token = process.env.RUNNER_TOKEN;
   const pick = chooseProvider({ model: args.model });

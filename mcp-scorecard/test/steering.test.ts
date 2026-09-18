@@ -48,8 +48,11 @@ describe('the severity split', () => {
   });
 
   it('every pattern declares a severity', () => {
-    expect(INJECTION_PATTERNS.every((p) => p.severity === 'hard' || p.severity === 'steering'))
-      .toBe(true);
+    // Three declared severities since 2026-09-17. `advisory` is reported and
+    // never scored, so it is listed here and deliberately absent from scoreFor.
+    const declared = ['hard', 'steering', 'advisory'];
+    expect(INJECTION_PATTERNS.every((p) => declared.includes(p.severity))).toBe(true);
+    expect(INJECTION_PATTERNS.filter((p) => p.severity === 'advisory').length).toBeGreaterThan(0);
   });
 });
 
