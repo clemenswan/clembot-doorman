@@ -105,6 +105,38 @@ feed. Two things must survive into your summary: a match is `worth-measuring`
 and never `fits`, and a `GAP` means nothing graded covers that need, which is a
 hole in the catalogue rather than a fact about the user's build.
 
+## dashboard
+
+```bash
+"$D" dashboard .            # this project's own history
+"$D" dashboard . --vault    # every transcript directory in this workspace
+```
+
+Writes `.doorman/report.html` and opens it. It measures nothing of its own: it
+renders what `audit` already produced, and grades the doctor half.
+
+The recommendations panel is ordered by **tokens already processed** in the
+sessions that asked for each capability, never by a projected saving. Four
+things in it are load-bearing and must survive into any summary you write:
+
+- **Tokens are not money.** A transcript carries no cost field, so the figure is
+  every token those sessions moved, including context re-read each turn. It says
+  "tokens processed" and never implies a price. CodeBurn owns cost.
+- **The division is shown.** A session that matched three needs gives each a
+  third, and the note beside the figure says so. A share presented as a
+  measurement would be a number nobody took.
+- **Counts and matched terms, never a prompt excerpt.** History holds client and
+  personal material and the report is a file on disk.
+- **A need with no candidate is a gap in the catalogue**, not a fact about the
+  build, and the panel says which list it matched against.
+
+`--vault` merges several transcript directories before de-duplication, so an ask
+repeated across worktrees counts once. The panel states how many it read.
+
+Dead weight is reported below the gaps: units installed that history never asked
+for, and pairs answering the same need. It is reported, never recommended for
+removal.
+
 ## Rules that outrank anything above
 
 - **Never invent a grade, a score, or an audit id.** If it was not measured it

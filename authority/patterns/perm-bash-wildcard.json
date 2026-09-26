@@ -1,0 +1,10 @@
+{
+  "id": "perm-bash-wildcard",
+  "dimension": 1,
+  "title": "Remove the unscoped Bash wildcard",
+  "why": "Bash(*) in an allow list makes every other allow entry decorative and leaves the deny list as the only control still doing anything. It is usually added once to unblock a single command and then never narrowed, because nothing fails afterwards to remind you.",
+  "fix": "Replace Bash or Bash(*) with the specific invocations you need, for example Bash(npm test) and Bash(git diff:*). Add the ones you actually hit over a week rather than guessing the set up front.",
+  "effort": "S",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/CLAUDE.md",
+  "graded_mcps": []
+}

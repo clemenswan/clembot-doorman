@@ -1,0 +1,10 @@
+{
+  "id": "perm-explicit",
+  "dimension": 1,
+  "title": "Declare permissions explicitly",
+  "why": "With no permissions block every tool runs on the harness default, which is a decision nobody made and nobody can review. An allow list without a deny list states half a policy: it says what is welcome and leaves the destructive cases to whatever the default happens to be this release.",
+  "fix": "Add a permissions block to .claude/settings.json with BOTH allow and deny. Scope allow entries to the commands you actually run rather than the tool name alone. Put the irreversible operations in deny explicitly, even where you believe nothing would reach them.",
+  "effort": "S",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/CLAUDE.md",
+  "graded_mcps": []
+}

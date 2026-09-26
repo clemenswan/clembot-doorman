@@ -27,15 +27,37 @@ PROJECT_DIR="${CLAUDE_PROJECT_DIR:-$PWD}"
 DIGEST="$PROJECT_DIR/.doorman/notify.md"
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-RESOLVE="$HERE/../../scripts/resolve-cli.sh"
+
+# THREE LAYOUTS, and the second one used to be silently broken.
+#
+#   plugin      <plugin>/.claude/hooks/ -> ../../scripts/resolve-cli.sh
+#   installed   <repo>/.claude/hooks/   -> resolve-cli.sh beside this file
+#   override    $DOORMAN_CLI, for a clone that is neither
+#
+# Installed standalone, `../../scripts/` is the REPO's scripts directory, which
+# belongs to the user and does not contain our resolver. The consume half then
+# still worked, because it falls back to cat, and the refresh half quietly never
+# ran: the digest was printed once and never regenerated. A push channel that
+# stops pushing looks exactly like a week with no news.
+resolve_cli() {
+  if [ -n "${DOORMAN_CLI:-}" ]; then printf '%s' "$DOORMAN_CLI"; return; fi
+  local r
+  for r in "$HERE/resolve-cli.sh" "$HERE/../../scripts/resolve-cli.sh"; do
+    if [ -r "$r" ]; then
+      local out
+      out="$(bash "$r" 2>/dev/null || true)"
+      if [ -n "$out" ] && [ "$out" != "NOT_FOUND" ]; then printf '%s' "$out"; return; fi
+    fi
+  done
+  printf ''
+}
 
 # 1. Say what is already known. Reading is destructive: consume-once is what
 #    stops the same three servers being announced every morning until they are
 #    furniture. `notify consume` does the delete.
 if [ -f "$DIGEST" ]; then
-  CLI=""
-  [ -x "$RESOLVE" ] && CLI="$(bash "$RESOLVE" 2>/dev/null || true)"
-  if [ -n "$CLI" ] && [ "$CLI" != "NOT_FOUND" ]; then
+  CLI="$(resolve_cli)"
+  if [ -n "$CLI" ]; then
     $CLI notify consume --digest "$DIGEST" 2>/dev/null || true
   else
     # No CLI resolved. Print it anyway and remove it by hand rather than
@@ -53,10 +75,8 @@ fi
 # fire-and-forget into the exact session-start stall this design avoids.
 if [ -z "${DOORMAN_NO_REFRESH:-}" ]; then
   CLI="${CLI:-}"
-  if [ -z "$CLI" ] && [ -x "$RESOLVE" ]; then
-    CLI="$(bash "$RESOLVE" 2>/dev/null || true)"
-  fi
-  if [ -n "$CLI" ] && [ "$CLI" != "NOT_FOUND" ]; then
+  [ -z "$CLI" ] && CLI="$(resolve_cli)"
+  if [ -n "$CLI" ]; then
     LOG="$PROJECT_DIR/.doorman/notify.log"
     mkdir -p "$PROJECT_DIR/.doorman" 2>/dev/null || true
     nohup $CLI notify refresh --root "$PROJECT_DIR" >"$LOG" 2>&1 &

@@ -1,0 +1,10 @@
+{
+  "id": "gate-write-declared",
+  "dimension": 2,
+  "title": "Declare a gate on the agents that can write",
+  "why": "A write-capable agent with no declared gate is one nobody decided to trust with a keyboard. The gate does not have to be isolation: declaring where it may write, or documenting who dispatches it and when, bounds it just as well. What fails this is an agent that has none of the three, which is an agent that can edit anything and that no document accounts for.",
+  "fix": "Give every write-capable agent one of three: isolation so it works on its own copy, allowed-paths so it can only write where you said, or an entry in a dispatch table naming who runs it. Pick per agent rather than uniformly: an agent that edits a file in place is broken by isolation, and an agent that produces a diff is the one that needs it.",
+  "effort": "M",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/CLAUDE.md",
+  "graded_mcps": []
+}

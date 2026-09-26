@@ -27,16 +27,20 @@
 import {
   handleGrade, handleGetAudit, handleGetLatest, handleTranscripts,
 } from './routes/grade.js';
+import { runnerPresence } from './runner-presence.js';
+import { spendPosture } from './spend-ceiling.js';
 import { handleAllowlist } from './routes/allowlist.js';
 import { handleBadge } from './routes/badge.js';
 import { handlePending, handleResult } from './routes/runner.js';
 import { handleLedger } from './routes/ledger.js';
 import { handleFeed } from './routes/feed.js';
+import { handlePatterns, handleProfile } from './routes/patterns.js';
 import { handleMcp } from './routes/mcp.js';
 import { publicOpenApiSpec, publicOpenApiSpec30 } from './routes/openapi.js';
 import { type PaymentEnv, handlePrice, paymentGate } from './routes/payment.js';
 import { handleLinkSubject } from './routes/popularity.js';
-import { sweepPopularity } from './popularity-sweep.js';
+import { handleSignal, handleSignals } from './routes/signal.js';
+import { describeSweep, popularityPosture, sweepPopularity } from './popularity-sweep.js';
 
 export interface Env extends PaymentEnv {
   DB: D1Database;
@@ -53,6 +57,14 @@ export interface Env extends PaymentEnv {
    * feed reports as not measured rather than as zero stars.
    */
   GITHUB_TOKEN?: string;
+  /**
+   * The OPERATOR's ceiling: paid audits dispensed to a runner per rolling 24h.
+   * Unset uses the default in `spend-ceiling.ts`. A non-numeric or negative
+   * value falls back to that default rather than being read as "no limit",
+   * because the most expensive reading of a typo should never be the one that
+   * wins.
+   */
+  PAID_AUDITS_PER_DAY?: string;
 }
 
 export const CORS = {
@@ -91,7 +103,15 @@ export default {
       if (toll) return toll;
 
       if (path === '/' || path === '/health') {
-        return json({ ok: true, service: 'mcp-scorecard', model: env.PROBE_MODEL });
+        // Presence belongs on health: an operator asking whether the service
+        // is up is asking whether a queued audit will be graded, and the
+        // Worker being up has never been the same question.
+        return json({
+          ok: true, service: 'mcp-scorecard', model: env.PROBE_MODEL,
+          runner: await runnerPresence(env),
+          spend: await spendPosture(env),
+          popularity: await popularityPosture(env),
+        });
       }
       // Free and unauthenticated on purpose: a client that cannot look up the
       // price has to assume one, and an assumed price is always zero.
@@ -115,6 +135,11 @@ export default {
       // Free, like every other read. The expensive half of a subscription is
       // the audit, and that has already been paid for by whoever asked first.
       if (path === '/feed' && req.method === 'GET') return handleFeed(url, env);
+      // The authority. Public reads, same footing as /feed.
+      if (path === '/patterns' && req.method === 'GET') return handlePatterns(url, env);
+      if (path.startsWith('/profiles/') && req.method === 'GET') {
+        return handleProfile(decodeURIComponent(path.slice('/profiles/'.length)), env);
+      }
 
       if (path === '/grade' && req.method === 'POST') return handleGrade(req, env);
       if (path === '/grade' && req.method === 'GET') return handleGetLatest(url, env);
@@ -151,6 +176,11 @@ export default {
         return handleLinkSubject(req, env);
       }
 
+      // What installs needed and could not find. Open and anonymous like
+      // POST /grade, counts only, and nothing recorded here reaches a grade.
+      if (path === '/signal' && req.method === 'POST') return handleSignal(req, env);
+      if (path === '/signals' && req.method === 'GET') return handleSignals(env);
+
       return err('not found: ' + path, 404);
     } catch (e) {
       // Never leak a stack trace to a caller. The message is enough to act on.
@@ -173,9 +203,7 @@ export default {
     ctx.waitUntil((async () => {
       try {
         const r = await sweepPopularity(env);
-        const detail = r.observed + ' observed, ' +
-          (Object.keys(r.failed).length ? JSON.stringify(r.failed) + ' failed, ' : '') +
-          r.pruned + ' pruned';
+        const detail = describeSweep(r);
         console.log('popularity sweep: ' + detail);
         await env.DB.prepare(
           'INSERT INTO ledger (id, audit_id, event, detail, amount_usd, created_at) ' +

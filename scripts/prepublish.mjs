@@ -20,11 +20,14 @@ import { tmpdir } from 'node:os';
 const VAULT = execFileSync('git', ['rev-parse', '--show-toplevel'], { encoding: 'utf8' }).trim();
 const HELD_BACK = ['clembot-doorman-project.md'];
 
-let pass = 0; let fail = 0; const notes = [];
+let pass = 0; let fail = 0; let skipped = 0; const notes = [];
 const ok = (cond, name, detail) => {
   if (cond) { pass++; console.log(`  PASS  ${name}`); }
   else { fail++; console.log(`  FAIL  ${name}${detail ? `\n        ${detail}` : ''}`); }
 };
+// A check that could not run is not a check that passed. Invariant 37: a skip that
+// lands in the pass column is how blindness reads as an A.
+const skip = (name, why) => { skipped++; console.log(`  SKIP  ${name}\n        ${why}`); };
 const sh = (cmd, opts = {}) => {
   try {
     return { out: execSync(cmd, { encoding: 'utf8', stdio: 'pipe', ...opts }), code: 0 };
@@ -48,7 +51,9 @@ console.log(`        HEAD ${head}`);
 for (const f of HELD_BACK) {
   const there = existsSync(join(ROOT, f));
   if (there) rmSync(join(ROOT, f));
-  ok(true, `held back: ${f}${there ? ' (removed from the snapshot)' : ' (already absent)'}`);
+  ok(!existsSync(join(ROOT, f)),
+    `held back: ${f}${there ? ' (removed from the snapshot)' : ' (already absent)'}`,
+    `${f} is still in the snapshot after removal was attempted`);
 }
 
 const all = [];
@@ -63,7 +68,14 @@ console.log(`        ${all.length} files`);
 
 // ── 2. Nothing that must never be published ─────────────────────────────────
 console.log('\n-- nothing secret, nothing enormous --');
-const SECRET = /sk-ant-[A-Za-z0-9]|AIzaSy[A-Za-z0-9]|-----BEGIN (RSA|OPENSSH|PRIVATE)/;
+// Length is part of the shape, on purpose. A real key is long (`sk-ant-api03-` plus
+// ~95 chars, `AIzaSy` plus 33); the prefix alone also matched three of this project's
+// own fixtures, two of which exist to PROVE a token is never echoed. The PEM branch
+// requires a base64 body line for the same reason: a bare header is a test string, a
+// header followed by body is a key. Do not shorten these bounds to "catch more" —
+// what it caught was our own tests, and a gate that cries wolf gets run with --keep
+// and ignored, which is strictly worse than a narrower one that is trusted.
+const SECRET = /sk-ant-[A-Za-z0-9_-]{24,}|AIzaSy[A-Za-z0-9_-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----\s*\r?\n[A-Za-z0-9+/]{40}/;
 const leaks = [];
 const big = [];
 for (const p of all) {
@@ -85,6 +97,37 @@ const nonExec = modes.filter((l) => !l.startsWith('100755'));
 ok(modes.length > 0 && nonExec.length === 0,
   `all ${modes.length} .sh files are 100755 in the index`,
   nonExec.join('\n        '));
+
+// ── 3b. The published repo, the only place the held-back list actually matters ───
+// Sanitising the temp snapshot above proves nothing about what is live, because the
+// publish step is a manual copy. Found 2026-09-25: clembot-doorman-project.md was
+// public and byte-identical to local, while this script reported held-back PASS on
+// every run since the repo went public. The check that strips a file cannot also be
+// the check that verifies it is gone.
+console.log('\n-- the published repo, which the snapshot check cannot see --');
+const PUBLIC_REPO = 'clemenswan/clembot-doorman';
+// The repo has to resolve before a 404 on a FILE means anything. `gh api` answers 404
+// for a missing repo exactly as it does for a missing path, so a renamed repo or a typo
+// here would otherwise report every held-back file as safely absent. Caught by
+// mutation-checking this section rather than by reading it.
+const repoOk = sh(`gh api repos/${PUBLIC_REPO} --jq .full_name`);
+if (repoOk.code !== 0 || repoOk.out.trim() !== PUBLIC_REPO) {
+  skip(`the published repo ${PUBLIC_REPO}`,
+    `did not resolve, so nothing below could be checked: ${repoOk.out.trim().split('\n')[0] || 'no output'}`);
+} else for (const f of HELD_BACK) {
+  const r = sh(`gh api repos/${PUBLIC_REPO}/contents/${encodeURIComponent(f)} --jq .name`);
+  const absent = /HTTP 404|Not Found/i.test(r.out);
+  if (r.code === 0) {
+    ok(false, `held back on ${PUBLIC_REPO}: ${f} is not published`,
+      `${f} IS LIVE at github.com/${PUBLIC_REPO} — delete it there, this snapshot cannot`);
+  } else if (absent) {
+    ok(true, `held back on ${PUBLIC_REPO}: ${f} is not published`);
+  } else {
+    // Any other failure (no gh, no auth, no network) means the question was not
+    // answered. Reporting that as absent is the false pass this section exists for.
+    skip(`held back on ${PUBLIC_REPO}: ${f}`, `could not read the published repo: ${r.out.trim().split('\n')[0] || 'no output'}`);
+  }
+}
 
 // ── 4. The plugin, as it would be consumed ──────────────────────────────────
 console.log('\n-- the plugin a user would install --');
@@ -211,8 +254,10 @@ if (priorSource && existsSync(priorSource)) {
 // ── report ──────────────────────────────────────────────────────────────────
 console.log('\n-- notes --');
 for (const n of notes) console.log(`  ${n}`);
-console.log(`\n  ${pass} passed, ${fail} failed`);
+console.log(`\n  ${pass} passed, ${fail} failed${skipped ? `, ${skipped} NOT CHECKED` : ''}`);
 if (!process.argv.includes('--keep')) {
   console.log(`\n  snapshot kept at: ${stage}`);
 }
-process.exitCode = fail ? 1 : 0;
+// 3 for "gaps found", per .claude/rules/agent-cli-conventions.md #6. A skipped check
+// must not exit 0: green then means verified, and it did not verify.
+process.exitCode = fail ? 1 : skipped ? 3 : 0;

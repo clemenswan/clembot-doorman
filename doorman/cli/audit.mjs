@@ -42,6 +42,10 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
       historyDir: opts.historyDir,
       candidateFile: opts.candidateFile,
       api: opts.api,
+      // Widens the history read to every transcript directory in this
+      // project's workspace. Off by default: per-project stays the default
+      // shape and nothing about it changes.
+      vault: Boolean(opts.vault),
     });
   } catch {
     needsResult = null;
@@ -78,12 +82,25 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
     why: n.why,
     promptsCount: n.hits,
     sessions: n.sessions,
+    // The matched terms travel; the excerpts do not get rendered. `examples`
+    // stays in the shape because the terminal report prints it and a person
+    // reading their own machine may want it, but the HTML renderer skips it
+    // deliberately: history holds client and personal material.
+    terms: n.terms || [],
     examples: n.examples || [],
+    spendTokens: n.spendTokens ?? null,
+    spendNote: n.spendNote ?? 'tokens not attributed',
     isGap: Boolean(n.gap),
     coveredBy: n.covered_by || null,
     topCandidates: (n.candidates || []).slice(0, 2),
   });
-  const gaps = rawNeeds.filter((n) => !n.covered).map(shape);
+  // Ranked by tokens already processed, descending, with unattributable needs
+  // last rather than treated as zero. Where nothing is attributable at all the
+  // comparison is a no-op and prompt count carries the order, which is the
+  // pre-existing behaviour rather than a fallback invented here.
+  const bySpend = (a, b) => (b.spendTokens ?? -1) - (a.spendTokens ?? -1)
+    || (b.promptsCount ?? 0) - (a.promptsCount ?? 0);
+  const gaps = rawNeeds.filter((n) => !n.covered).map(shape).sort(bySpend);
   const covered = rawNeeds.filter((n) => n.covered).map(shape);
 
   const candidates = watchResult?.candidates || [];
@@ -115,6 +132,10 @@ export async function auditProject(targetDir = process.cwd(), opts = {}) {
       totalPrompts: needsResult?.prompts_read ?? 0,
       gaps,
       covered,
+      deadWeight: needsResult?.dead_weight ?? { unused: [], overlapping: [], unitsChecked: 0 },
+      vaultWide: Boolean(needsResult?.vault_wide),
+      historyDirs: needsResult?.history_dirs ?? [],
+      taxonomySize: (needsResult?.taxonomy ?? []).length,
     },
     recommendations: recommended,
     threats: blockedThreats,

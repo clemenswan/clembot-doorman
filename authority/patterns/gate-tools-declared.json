@@ -1,0 +1,10 @@
+{
+  "id": "gate-tools-declared",
+  "dimension": 2,
+  "title": "Every agent declares its tools",
+  "why": "An agent with no tools field inherits whatever the parent session holds, so what it can reach depends on where it was called from rather than on what it is for. Doorman resolves an undeclared tool set to approval-gated because the unsafe reading is the only safe default, and that means an undeclared agent scores as though it could do anything.",
+  "fix": "Add a tools field to every agent frontmatter, listing the minimum that agent needs. A reviewer needs Read, Grep and Glob; it does not need Write. Isolation is enforced at runtime from this field, so narrowing it is a real control and not documentation.",
+  "effort": "S",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/doorman/agents/doorman.md",
+  "graded_mcps": []
+}

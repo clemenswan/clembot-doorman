@@ -94,9 +94,15 @@ export function classify(candidate, keys) {
 export function readState(file) {
   try {
     const raw = JSON.parse(readFileSync(file, 'utf8'));
-    return { since: typeof raw.since === 'string' ? raw.since : null, seen: raw.seen ?? 0 };
+    return {
+      since: typeof raw.since === 'string' ? raw.since : null,
+      seen: raw.seen ?? 0,
+      // The harness delta's cursor. Read here so an unknown field is not
+      // silently dropped on the next write, which would reset it every run.
+      delta: typeof raw.delta === 'string' ? raw.delta : null,
+    };
   } catch {
-    return { since: null, seen: 0 };
+    return { since: null, seen: 0, delta: null };
   }
 }
 

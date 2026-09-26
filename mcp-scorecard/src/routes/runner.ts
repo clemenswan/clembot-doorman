@@ -11,6 +11,8 @@
  */
 
 import { type Env, err, json } from '../index.js';
+import { recordRunnerSeen } from '../runner-presence.js';
+import { ceilingFor, decideDispense, paidDispensedSince } from '../spend-ceiling.js';
 
 /** A claim older than this is assumed dead and the row is offered again. */
 export const CLAIM_TIMEOUT_MINUTES = 15;
@@ -39,6 +41,11 @@ export async function handlePending(req: Request, url: URL, env: Env): Promise<R
 
   const limit = Math.min(Number(url.searchParams.get('limit') ?? '1') || 1, 5);
   const runnerId = (url.searchParams.get('runner') ?? 'unknown').slice(0, 80);
+
+  // The poll IS the heartbeat. A runner polling an empty queue claims
+  // nothing, so claims cannot tell a quiet day from an absent runner.
+  // Recorded after auth, so an unauthenticated caller cannot fake presence.
+  await recordRunnerSeen(env, runnerId);
   const now = new Date();
   const cutoff = new Date(now.getTime() - CLAIM_TIMEOUT_MINUTES * 60_000).toISOString();
 
@@ -48,6 +55,14 @@ export async function handlePending(req: Request, url: URL, env: Env): Promise<R
     'WHERE (claimed_at IS NULL OR claimed_at < ?) AND attempts < ? ' +
     'ORDER BY created_at LIMIT ?',
   ).bind(cutoff, MAX_ATTEMPTS, limit).all();
+
+  // The operator's ceiling, read once per poll. Every other spend guard in this
+  // project protects the caller; this one protects the person paying the model
+  // bill. Read here rather than per row so one poll cannot race itself, and
+  // counted forward in the loop so a batch of five cannot all pass a check that
+  // only saw the position before any of them.
+  const cap = ceilingFor(env);
+  let dispensed = await paidDispensedSince(env, now.getTime());
 
   const claimed: unknown[] = [];
   for (const row of rows.results ?? []) {
@@ -63,6 +78,21 @@ export async function handlePending(req: Request, url: URL, env: Env): Promise<R
     if (res.meta.changes === 1) {
       await env.DB.prepare("UPDATE audits SET status = 'running' WHERE id = ?").bind(id).run();
       await logLedger(env, id, 'claimed', runnerId);
+
+      // The operator ceiling can only ever REMOVE the behavioural layer, never
+      // add one (invariant 25), so a downgrade cannot spend and a cap cannot be
+      // gamed into paying. Never silent: the ledger records which it was.
+      const verdict = decideDispense({
+        paidAllowed: Number((row as Record<string, unknown>).paid_allowed ?? 0),
+        dispensed, cap,
+      });
+      if (verdict.downgraded) {
+        await logLedger(env, id, 'spend_capped', verdict.reason ?? 'dispensed static-only');
+      } else if (verdict.paidAllowed === 1) {
+        await logLedger(env, id, 'dispensed_paid', runnerId);
+        if (dispensed !== null) dispensed++;
+      }
+
       claimed.push({
         audit_id: id,
         server_url: (row as Record<string, unknown>).server_url,
@@ -70,10 +100,11 @@ export async function handlePending(req: Request, url: URL, env: Env): Promise<R
         model: env.PROBE_MODEL,
         temperature: Number(env.PROBE_TEMPERATURE ?? '0'),
         runs: Number(env.PROBE_RUNS ?? '3'),
-        // The inbound spend permit. 0 means this audit was queued without a
-        // credential, so the runner must not spend a model token on it. The
-        // runner enforces it; this is the field it enforces from.
-        paid_allowed: Number((row as Record<string, unknown>).paid_allowed ?? 0),
+        // The inbound spend permit, after the operator's own ceiling. 0 means
+        // the runner must not spend a model token on it. The runner enforces
+        // it; this is the field it enforces from.
+        paid_allowed: verdict.paidAllowed,
+        ...(verdict.downgraded ? { downgraded_reason: verdict.reason } : {}),
       });
     }
   }

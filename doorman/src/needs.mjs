@@ -212,6 +212,12 @@ export function historyDirFor(root, { home = homedir() } = {}) {
 const NOISE = [
   '<system-reminder>', '<local-command-stdout>', '<command-name>',
   'Caveat: The messages below', 'tool_use_id',
+  // The harness writes this into a `user` record when somebody presses stop.
+  // It passes every structural filter above because it IS a real user record:
+  // not meta, no toolUseResult, no promptSource. Only the content gives it
+  // away, which is what this list is for. 6 of 663 prompts on this vault, and
+  // they clustered as a repeated "procedure" before being filtered.
+  '[Request interrupted by user',
 ];
 
 /**
@@ -241,6 +247,26 @@ export function isRealPrompt(rec) {
   if (rec.type !== 'user' || rec.isSidechain) return false;
   if (rec.toolUseResult !== undefined) return false;
   if (rec.isMeta || rec.isCompactSummary || rec.isVisibleInTranscriptOnly) return false;
+  // A SECOND CLASS OF THING NOBODY TYPED, found 2026-09-21.
+  //
+  // The filters above were written against the transcript shape of the time and
+  // still hold. Since then the harness gained background tasks, and a task
+  // notification arrives as an ordinary `user` record: no toolUseResult, not
+  // meta, not a compact summary. Its CONTENT is harness text, so nothing above
+  // sees it.
+  //
+  // Measured across this vault's eleven transcript directories: 244 of 874
+  // surviving prompts, 27.9%, were task notifications. They inflated needs the
+  // same way tool results once did, worst where the corpus is thinnest:
+  // payments 8 to 2, observability 3 to 1, browser-automation 25 to 11.
+  //
+  // `promptSource` is the structural discriminator, which is why this belongs
+  // here rather than in the textual NOISE list below. A notification is
+  // 'system'; a person's prompt is 'typed', 'suggestion_accepted' or 'queued'.
+  // Absent means an older record from before the field existed, and those are
+  // KEPT: rejecting them would throw away the whole historical corpus to catch
+  // a class that did not exist when they were written.
+  if (rec.promptSource === 'system') return false;
   return true;
 }
 
@@ -252,7 +278,21 @@ export function isRealPrompt(rec) {
  * resume, and the busiest needs are simply the ones from the most-resumed
  * session.
  */
-export function readPrompts(dir, { limit = 4000, minChars = 12, fs = { readdirSync, readFileSync, statSync } } = {}) {
+/**
+ * `dedupe` defaults to true because `needs` is counting WHICH capabilities a
+ * build asks for, and the same request pasted twice is not two wants.
+ *
+ * `repeats` passes false because it is measuring how often the same procedure
+ * is retyped, and a collapsed duplicate is a deleted observation.
+ *
+ * Measured before relying on it, and the number is small: across 12 transcript
+ * directories this option changes 657 prompts to 663. Six. People do not
+ * retype a prompt verbatim, they retype the same PROCEDURE in different words,
+ * which is why `repeats` cannot lean on exact matching and has to cluster.
+ * The option is still correct (a collapsed repeat is a lost observation, and a
+ * copy-paste heavy corpus would show more) but it is not where the signal is.
+ */
+export function readPrompts(dir, { limit = 4000, minChars = 12, dedupe = true, fs = { readdirSync, readFileSync, statSync } } = {}) {
   const files = fs.readdirSync(dir)
     .filter((f) => f.endsWith('.jsonl'))
     .map((f) => join(dir, f));
@@ -278,7 +318,7 @@ export function readPrompts(dir, { limit = 4000, minChars = 12, fs = { readdirSy
       if (text.trimStart().startsWith('# /')) continue;
       if (NOISE.some((n) => text.includes(n))) continue;
       const key = text.trim().slice(0, 400);
-      if (seen.has(key)) continue;
+      if (dedupe && seen.has(key)) continue;
       seen.add(key);
       out.push({ text, session: rec.sessionId ?? null });
       if (out.length >= limit) return out;
@@ -309,9 +349,89 @@ export function signalsFrom(prompts) {
   }
 
   return rows
-    .map((r) => ({ ...r, sessions: r.sessions.size, terms: [...r.terms] }))
+    // `sessions` stays a COUNT because renderNeeds and every existing caller
+    // read it as one. `sessionIds` is added alongside rather than replacing it,
+    // because attribution needs to know WHICH sessions a need appeared in and
+    // that information was being thrown away here.
+    .map((r) => ({ ...r, sessions: r.sessions.size, sessionIds: [...r.sessions], terms: [...r.terms] }))
     .filter((r) => r.hits > 0)
     .sort((a, b) => b.hits - a.hits || a.id.localeCompare(b.id));
+}
+
+/**
+ * Tokens already processed, divided evenly between the needs that shared a session.
+ *
+ * WHAT THIS NUMBER IS, stated exactly, because the label is the only thing
+ * standing between it and a claim nobody measured:
+ *
+ * It is every token the session moved. Input, output, cache creation and cache
+ * read, summed. In this vault that total is 98.1% cache reads, which are the
+ * cheap part, so this tracks how much context a session carried rather than
+ * what it cost. It is called "tokens processed" everywhere it surfaces and it
+ * is never called spend.
+ *
+ * IT IS NOT MONEY and this file must never turn it into money. The transcripts
+ * carry no cost field at all, so dollars would need a price table, and CodeBurn
+ * already owns that math against these same files. A second price table here
+ * would drift from that one the first time a rate changed, which is the failure
+ * invariant 2 forbids for grade math, pointed at a different number.
+ * `cost_usd` therefore exists in the shape and is permanently null.
+ *
+ * THE DIVISION IS SHOWN, NEVER HIDDEN. A session that matched three needs gives
+ * each a third, and `spendNote` says so in words. An even split is defensible
+ * only while it is legible: the same figure printed bare would be claiming a
+ * measurement of one need that was never taken.
+ *
+ * Invariant 28 is what makes the denominator trustworthy. The session ids come
+ * from prompts `isRealPrompt()` already filtered, so tool results, hook
+ * attachments and expanded slash-command bodies are not in the count. Were they,
+ * every need would inflate roughly threefold and so would its share.
+ */
+export function attributeSpend(needs, sessionCosts) {
+  // How many needs each session is split between. Computed across the whole
+  // set, not per need, because the denominator is a property of the session.
+  const perSession = new Map();
+  for (const n of needs) {
+    for (const s of n.sessionIds ?? []) perSession.set(s, (perSession.get(s) ?? 0) + 1);
+  }
+
+  return needs.map((n) => {
+    const ids = n.sessionIds ?? [];
+    if (!sessionCosts || !ids.length) {
+      return { ...n, spendTokens: null, spendNote: 'tokens not attributed' };
+    }
+
+    let total = 0;
+    let attributed = 0;
+    let denomSum = 0;
+    let unknown = false;
+    for (const id of ids) {
+      const k = perSession.get(id) || 1;
+      denomSum += k;
+      const rec = sessionCosts.get(id);
+      // A MISSING ENTRY IS NULL, A ZERO ENTRY IS ZERO. A session the cost map
+      // never saw is unknown; a session it saw and measured at zero is a
+      // discovered zero. Collapsing the two would let an unreadable transcript
+      // quietly read as a free one.
+      if (rec == null || typeof rec.tokens !== 'number') { unknown = true; continue; }
+      total += rec.tokens / k;
+      attributed += 1;
+    }
+
+    if (unknown) {
+      // One unattributable session poisons the total rather than being skipped.
+      // A sum over the sessions that happened to be readable is a smaller number
+      // presented as a complete one.
+      return { ...n, spendTokens: null, spendNote: 'tokens not attributed' };
+    }
+
+    const avgDenom = ids.length ? Math.round((denomSum / ids.length) * 10) / 10 : 1;
+    return {
+      ...n,
+      spendTokens: Math.round(total),
+      spendNote: `tokens shared across ${avgDenom} matched needs in ${attributed} sessions`,
+    };
+  });
 }
 
 /** A window around the matched term, so the reader can judge the match. */
@@ -416,13 +536,119 @@ export function rankCandidates(need, candidates, installed = new Set()) {
   return out.sort((a, b) => rank[a.verdict] - rank[b.verdict] || (b.score ?? -1) - (a.score ?? -1));
 }
 
+/** Kinds that are scaffolding: the part of a harness that can be handed over. */
+const TRAVELS = new Set(['agent', 'command', 'skill', 'routine', 'persona']);
+
+/** Paths that hold accumulation, whatever kind the thing in them claims to be. */
+const STAYS_PATH = /(^|[\\/])(memory|lessons|evidence|clients)([\\/]|$)/i;
+
+/**
+ * Does this unit travel into someone else's build, or stay here?
+ *
+ * The cut is `positioning.md`, "engine and skills travel, lessons and data
+ * never". Scaffolding is what a client can be handed. The accumulation, the
+ * lesson corpus, the memory, the evidence bundles and anything under a client
+ * directory, is the part that cannot leave without taking somebody's IP with it.
+ *
+ * FAIL CLOSED, and this is the first commit of the function rather than a
+ * fallback bolted on later. Anything unrecognised STAYS. The reasoning is
+ * invariant 27's: a plugin update replaces the plugin directory wholesale, so
+ * the safe default has to be the one where a thing nobody classified is left
+ * behind. The failure mode of the safe default is a missing capability. The
+ * failure mode of the unsafe one is a leak, and only one of those is noticed.
+ *
+ * PATH BEATS KIND, deliberately. A skill sitting in `clients/laguna/` is client
+ * material that happens to be shaped like a skill. Trusting the declared kind
+ * over its location is how accumulation gets reclassified as scaffolding by
+ * whoever files it in the wrong place.
+ *
+ * No cache, no stored state. It reads its two arguments and nothing else, so a
+ * unit that moves cannot keep an old verdict.
+ */
+export function classifyUnit(kind, filePath) {
+  if (STAYS_PATH.test(String(filePath ?? ''))) return 'stays';
+  return TRAVELS.has(String(kind ?? '').toLowerCase()) ? 'travels' : 'stays';
+}
+
+/**
+ * What is installed that this build's own history never asked for.
+ *
+ * `doctor` reads what a build HAS and `needs` reads what it KEEPS ASKING FOR.
+ * The gap between them runs both ways, and only one direction was reported. A
+ * server nobody has needed in four thousand prompts costs context on every turn
+ * it is listed, and two servers answering the same need cost it twice.
+ *
+ * REPORTS, NEVER RECOMMENDS REMOVAL. This is invariant 29's restraint pointed at
+ * the other end of the telescope: a unit that matched nothing may be the one
+ * that quietly does the thing nobody has had to ask about. The output names what
+ * is unmatched and leaves the conclusion to a person.
+ *
+ * Pure. Units are passed in, so there is no filesystem read here and no way for
+ * this to see anything the caller did not hand it.
+ */
+export function deadWeightIn(inventory, signals) {
+  const units = [
+    ...(inventory?.mcpServers ?? []).map((s) => ({ ...s, kind: s.kind ?? 'mcp-server' })),
+    ...(inventory?.allowlisted ?? []).map((a) => ({ ...a, kind: a.kind ?? 'allowlisted' })),
+  ];
+  // Only needs this build actually asked for. Matching against the whole
+  // taxonomy would call a server "used" for a capability nobody ever wanted.
+  const active = NEEDS.filter((n) => (signals ?? []).some((s) => s.id === n.id));
+
+  const unused = [];
+  const byNeed = new Map();
+  for (const u of units) {
+    const text = candidateText(u);
+    let matchedAny = false;
+    for (const need of active) {
+      if (!termHit(text, [...need.terms, ...(need.catalog ?? [])])) continue;
+      matchedAny = true;
+      if (!byNeed.has(need.id)) byNeed.set(need.id, []);
+      byNeed.get(need.id).push(u.name ?? u.url ?? u.id ?? '(unnamed)');
+    }
+    if (!matchedAny) {
+      unused.push({
+        name: u.name ?? u.url ?? u.id ?? '(unnamed)',
+        kind: u.kind,
+        classifiedAs: classifyUnit(u.kind, u.url ?? u.path ?? ''),
+      });
+    }
+  }
+
+  // One row per pair, not per shared need. Two servers that overlap on three
+  // needs are one duplication to resolve, not three findings to read.
+  const seen = new Set();
+  const overlapping = [];
+  for (const [needId, names] of byNeed) {
+    for (let i = 0; i < names.length; i++) {
+      for (let j = i + 1; j < names.length; j++) {
+        const key = [names[i], names[j]].sort().join(' ');
+        if (seen.has(key)) continue;
+        seen.add(key);
+        overlapping.push({ needId, names: [names[i], names[j]] });
+      }
+    }
+  }
+
+  // `unitsChecked` exists so a surface can tell two very different facts apart:
+  // everything installed is being asked for, and nothing is installed at all.
+  // Both produce an empty `unused` list, and only one of them is good news.
+  // The vault this was built against reports zero configured MCP servers with
+  // coverage "read", which is the second case wearing the first one's output.
+  return { unused, overlapping, unitsChecked: units.length };
+}
+
 /**
  * The whole report. Pure: every input is passed in, so this is testable with no
  * network, no filesystem and no model.
  */
-export function suggest({ prompts, inventory, candidates = [], installed = new Set() }) {
-  const signals = signalsFrom(prompts);
+export function suggest({ prompts, inventory, candidates = [], installed = new Set(), sessionCosts = null }) {
+  const raw = signalsFrom(prompts);
   const covered = coveredBy(inventory ?? {});
+  // Attribution runs on the whole signal set before anything is filtered, so a
+  // session's denominator counts every need it matched rather than only the
+  // ones that survived to the end of this function.
+  const signals = attributeSpend(raw, sessionCosts);
 
   const needs = signals.map((s) => {
     const cover = covered.get(s.id) ?? null;
@@ -444,6 +670,10 @@ export function suggest({ prompts, inventory, candidates = [], installed = new S
     needs,
     unmet: needs.filter((n) => !n.covered).length,
     gaps: needs.filter((n) => n.gap).length,
+    dead_weight: deadWeightIn(inventory ?? {}, raw),
+    // Declared absent rather than omitted. A reader who goes looking for money
+    // should find the answer "not derived here", not silence. See attributeSpend.
+    cost_usd: null,
   };
 }
 

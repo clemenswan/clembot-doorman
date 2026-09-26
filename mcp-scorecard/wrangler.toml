@@ -42,6 +42,11 @@ migrations_dir = "migrations"
 PROBE_MODEL = "claude-sonnet-5"
 PROBE_TEMPERATURE = "0"
 PROBE_RUNS = "3"
+# The OPERATOR ceiling: paid audits dispensed to a runner per rolling 24h.
+# Every other spend guard in this project protects the caller; this one
+# protects whoever pays the model bill. Over the ceiling an audit is still
+# dispensed, static-only, and the downgrade is written to the ledger.
+PAID_AUDITS_PER_DAY = "25"
 
 # ── x402 ─────────────────────────────────────────────────────────────────
 #

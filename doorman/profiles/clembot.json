@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "kind": "harness-profile",
+  "slug": "clembot",
+  "generated_at": "2026-09-22T19:41:16.530Z",
+  "letter": "F",
+  "average_letter": "B",
+  "pct": 88,
+  "counts": {
+    "agents": 36,
+    "commands": 51,
+    "rules": 20,
+    "hooks": 16,
+    "skills": 62
+  },
+  "problem_count": 0,
+  "dimensions": [
+    {
+      "id": 1,
+      "key": "permission-hygiene",
+      "letter": "A",
+      "pct": 100,
+      "earned": 7,
+      "possible": 7,
+      "measured": 2,
+      "checks": [
+        {
+          "id": "perm-explicit",
+          "state": "pass",
+          "points": 4,
+          "max": 4,
+          "receipt": ".claude/settings.json:2"
+        },
+        {
+          "id": "perm-bash-wildcard",
+          "state": "pass",
+          "points": 3,
+          "max": 3,
+          "receipt": ".claude/settings.json:3"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "key": "human-gates",
+      "letter": "A",
+      "pct": 100,
+      "earned": 8,
+      "possible": 8,
+      "measured": 2,
+      "checks": [
+        {
+          "id": "gate-tools-declared",
+          "state": "pass",
+          "points": 4,
+          "max": 4,
+          "receipt": ".claude/agents/brand-designer.md"
+        },
+        {
+          "id": "gate-write-declared",
+          "state": "pass",
+          "points": 4,
+          "max": 4,
+          "receipt": ".claude/agents/brand-designer.md"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "key": "evidence",
+      "letter": "A",
+      "pct": 100,
+      "earned": 5,
+      "possible": 5,
+      "measured": 1,
+      "checks": [
+        {
+          "id": "evidence-convention",
+          "state": "pass",
+          "points": 5,
+          "max": 5,
+          "receipt": ".claude/commands/session-end.md:1"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "key": "tool-vetting",
+      "letter": "A",
+      "pct": 100,
+      "earned": 3,
+      "possible": 3,
+      "measured": 1,
+      "checks": [
+        {
+          "id": "vet-registry",
+          "state": "n/a",
+          "points": null,
+          "max": null,
+          "receipt": null
+        },
+        {
+          "id": "vet-declined-ledger",
+          "state": "pass",
+          "points": 3,
+          "max": 3,
+          "receipt": ".claude/skills/INSTALLED.md:55"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "key": "parallelism",
+      "letter": "F",
+      "pct": 0,
+      "earned": 0,
+      "possible": 4,
+      "measured": 1,
+      "checks": [
+        {
+          "id": "par-shared-writer",
+          "state": "fail",
+          "points": 0,
+          "max": 4,
+          "receipt": ".claude/agents/brand-designer.md"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "key": "memory-handoff",
+      "letter": "A",
+      "pct": 100,
+      "earned": 4,
+      "possible": 4,
+      "measured": 1,
+      "checks": [
+        {
+          "id": "mem-handoff",
+          "state": "pass",
+          "points": 4,
+          "max": 4,
+          "receipt": "CLAUDE.md:54"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "key": "registry-hygiene",
+      "letter": "A",
+      "pct": 100,
+      "earned": 3,
+      "possible": 3,
+      "measured": 1,
+      "checks": [
+        {
+          "id": "reg-drift",
+          "state": "pass",
+          "points": 3,
+          "max": 3,
+          "receipt": ".claude/skills/INSTALLED.md"
+        }
+      ]
+    }
+  ],
+  "redacted_count": 0,
+  "redacted_rules": [],
+  "complete": true
+}

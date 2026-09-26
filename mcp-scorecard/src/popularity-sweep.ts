@@ -37,6 +37,69 @@ export interface SweepResult {
   /** Per source, how many lookups failed. Reported, never silently dropped. */
   failed: Record<string, number>;
   pruned: number;
+  /**
+   * How many mappings the sweep had to work from.
+   *
+   * Added 2026-09-21 because the production ledger read `0 observed, 0
+   * pruned` for seven straight days and there was no way to tell, from
+   * that line, whether every lookup failed or whether there was nothing
+   * to look up. It was the second: `popularity_subject` is empty, the
+   * mappings in `popularity-subjects.json` were never loaded through
+   * `runner/link.mjs`, and the sweep was working perfectly on no input.
+   *
+   * Invariant 3 again: an unmeasured axis is not a measured zero. The
+   * count is what tells the two apart from the outside.
+   */
+  subjects: number;
+}
+
+/**
+ * The one line an operator reads in the ledger.
+ *
+ * `0 observed, 0 pruned` is true whether the sweep looked at nothing or
+ * looked at forty subjects and every source refused. Those need different
+ * actions (load the mappings, versus go and look at the sources), so the
+ * line has to tell them apart.
+ */
+export function describeSweep(r: SweepResult): string {
+  if (r.subjects === 0) {
+    return 'no subjects mapped, so nothing was measured. Load them with ' +
+      'runner/link.mjs --file popularity-subjects.json';
+  }
+  const failedTotal = Object.values(r.failed).reduce((n, x) => n + x, 0);
+  return r.subjects + ' subjects, ' + r.observed + ' observed, ' +
+    (failedTotal ? JSON.stringify(r.failed) + ' failed, ' : '') +
+    r.pruned + ' pruned';
+}
+
+/**
+ * What an operator needs to know without reading the ledger by hand.
+ *
+ * `subjects_mapped: 0` is the actionable fact behind seven days of
+ * `0 observed`: the sweep is healthy and has nothing to sweep.
+ */
+export async function popularityPosture(
+  env: Env,
+): Promise<{ subjects_mapped: number | null; last_sweep: string | null; last_detail: string | null; note: string | null }> {
+  try {
+    const n = await env.DB.prepare('SELECT COUNT(*) AS n FROM popularity_subject').first<{ n: number }>();
+    const last = await env.DB.prepare(
+      "SELECT detail, created_at FROM ledger WHERE event = 'popularity' ORDER BY created_at DESC LIMIT 1",
+    ).first<{ detail: string; created_at: string }>();
+    const mapped = Number(n?.n);
+    const subjects_mapped = Number.isFinite(mapped) ? mapped : null;
+    return {
+      subjects_mapped,
+      last_sweep: last?.created_at ?? null,
+      last_detail: last?.detail ?? null,
+      note: subjects_mapped === 0
+        ? 'nothing is mapped, so popularity is UNMEASURED rather than zero. ' +
+          'Load the mappings with runner/link.mjs --file popularity-subjects.json'
+        : null,
+    };
+  } catch {
+    return { subjects_mapped: null, last_sweep: null, last_detail: null, note: null };
+  }
 }
 
 /** Weekly downloads. No auth, no key, generous limits. */
@@ -157,5 +220,6 @@ export async function sweepPopularity(env: Env, f: typeof fetch = fetch): Promis
     observed: writes.length,
     failed,
     pruned: prune.meta?.changes ?? 0,
+    subjects: subjects.length,
   };
 }

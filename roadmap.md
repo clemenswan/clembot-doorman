@@ -434,6 +434,109 @@ field instead of the column is what produced both false findings.
 - [ ] **Recurring settlement.** The rail is live and priced. The meter has
       never turned.
 
+## Shipped 2026-09-17: doorman reviews the build it runs in
+
+All merged to vault `main` and pushed to the public mirror (`9036ba59`).
+
+- **PR #118** `doctor` reads the servers that live outside the project: claude.ai
+  connectors, synced plugins, user-scope `~/.claude.json`, installed plugins. It
+  reported 0 of 41 on ClemVault before this. Trust list now resolves in the gate's own
+  order, which found a user-level `~/.doorman/registry` allowing 11 servers.
+  `doorman review` + `dashboard --review` + the MCP servers table. Partial mcpscore
+  scans stopped reading as clean static scores.
+- **PR #122** credentials by env-var NAME (`--token-env`, `.doorman/tokens.json`).
+  No secret in any argv; mcpscore reads `MCPSCORE_TOKEN` from the environment. An unset
+  mapped variable is a refusal, never an anonymous audit. Invariant 30.
+- **PR #120** captured surfaces for the 28 servers that cannot be connected to,
+  including server-level instructions. `provenance` mandatory, never a band.
+- **PR #123** `advisory` severity: reported, never scored. `scoreFor` still takes
+  (hard, steering) so the class cannot move a grade.
+- **PR #119** gate wired in the vault. **PR #121** egress observation scoped, not built.
+- Worker redeployed: version `7a3c0665`, feed count unchanged at 26.
+
+Measured on ClemVault: 41 reachable servers, 6 allowed at the time, 22 urls reviewed,
+21 answered 401, BigQuery graded A 89.74 static. Suites: 367 scorecard vitest, 647
+doorman, 48 CLI, 38 gate, 16 install, poller, tsc clean.
+
+**Item 1 below is unchanged: still no `ANTHROPIC_API_KEY`, so the behavioural half
+remains unexercised end to end.** Nothing this session touched that.
+
+## Shipped 2026-09-21: the launch audit, and the Worker blockers it found
+
+`/go-live` on all three surfaces: **NO-GO**, `launch-readiness.md`. PR #125 closes
+the three server-side blockers; everything in `site/` is untouched because the live
+site is not reproducible from this repo (see `lineage.md`).
+
+- Rate limit on the anonymous write path, charged in items, fails closed (inv 31)
+- Runner presence on `POST /grade`, the MCP tool and `/health` (inv 32)
+- `PAID_AUDITS_PER_DAY`, an operator ceiling at the dispense point (inv 33)
+- Popularity: `0 observed` now says WHICH zero it is (inv 34)
+
+**Open, and each one needs a human rather than a commit:**
+1. Reconcile the live site with `feat/doorman-adoption`; two pages match nothing.
+2. Load the popularity mappings: `RUNNER_TOKEN=... node runner/link.mjs --file popularity-subjects.json`
+3. Apply migrations 0004 and 0005 before the next Worker deploy.
+4. Decide the public hostile fixture (leave / gate / retire).
+5. Host the runner, or accept that queued audits wait for a laptop.
+6. ToS, privacy, a real 404, two contrast values, HTML edge-caching: all in `site/`.
+
+## Shipped 2026-09-22: the write half of the subscription
+
+`POST /signal`, `GET /signals`, migration 0006, `doorman contribute`. An install
+can now report what it needed and could not find. Brief: `community-signal.md`,
+invariants 35 and 36.
+
+- Counts over a closed vocabulary. No prompts, no urls, no identity, ever.
+- Anonymous permanently: there is no contributor column to add one to later.
+- Demand rides beside the grade and never inside it, like popularity.
+- Nothing is sent without `--send`; the default prints the payload and stops.
+- The gate was not modified: the inventory already had the same set.
+
+**Open, and each needs a human:**
+1. Apply migrations 0004, 0005 and 0006, then deploy the Worker.
+2. Load the popularity mappings (`runner/link.mjs --file popularity-subjects.json`).
+3. Reconcile the live site with `feat/doorman-adoption`; two pages match nothing.
+4. Decide whether `/signals` gets a surface on the site once it has rows.
+5. Four pre-existing typecheck errors from a newer `@types/node`.
+
+## Shipped 2026-09-23: in production, and the checkout that was lying
+
+Worker `6503772f`, migrations 0004-0006 applied and verified in `sqlite_master`.
+
+- End-to-end chain closed on the free path: audit `301db912`, `complete F`,
+  static 91.78 and still F because the injection sniff capped it.
+- Runner presence live for the first time (`runner-4156`).
+- Popularity measured: 3 subjects, `note: null`. `withastro/docs` declined.
+- `.mcp.json` written. The doorman subagent's one tool had resolved to nothing.
+- Invariant 37: a skipped check can no longer raise a grade in silence.
+
+**Open, each needs a human:**
+1. Restart Claude Code so `mcp__scorecard__grade` resolves.
+2. Reconcile `registry/allowlist.json` against the 2026-09-23 local backup.
+3. Decide whether `doorman contribute --send` runs against Clembot.
+4. Four `@types/node` typecheck errors in test files.
+5. `site/` is still not reproducible from this repo.
+
+## Shipped 2026-09-24: a fixer that refuses nine of the ten
+
+PR #153, `3e3ba377`, released as 0.3.0.
+
+- [x] **`doorman fix [check-id]`**: closes one open `profile` check, or names the decision only
+      a human can make and refuses. One `generate` class (`reg-drift`), nine worklists.
+      Invariant 38: a fix may change the property, never only the text that proves it.
+- [x] **`--write` path allowlist as data**, in `writable()`. Refuses settings, `.mcp.json`,
+      `registry/`, `.claude/agents/`, and any file with no `doorman:generated` marker.
+- [x] **`.doorman/` leak warning**: both cli headers claimed it was gitignored, which was true
+      of this repo only. Measured against `marketing-bootstrap`, where it held 21 third-party
+      audits with transcripts, untracked and unignored.
+- [x] **`gate-write-declared` excludes generated docs.** Found by running the loop on a fresh
+      build: the reg-drift patch was flipping a review check as a side effect.
+- [x] **0.3.0 in all four declarations**, so a reinstall is verifiable. Invariant 37.
+
+Open in PR #155, not merged: `agent-write-scope.mjs` makes `allowed-paths` enforceable from
+the PreToolUse payload, and `doc-writer` gains `isolation: worktree`. Waits on a decision to
+wire the hook into `settings.json`.
+
 ## Next, in order
 
 ### Immediately (needs a secret, and only a secret)

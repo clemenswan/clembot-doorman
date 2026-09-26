@@ -1,0 +1,10 @@
+{
+  "id": "mem-handoff",
+  "dimension": 6,
+  "title": "Carry state across sessions",
+  "why": "Context does not survive a session boundary, so without a state file every session starts by rediscovering where the work stood. The expensive version is not the lost time, it is re-litigating a decision that was already settled because nothing recorded that it was.",
+  "fix": "Keep one handoff file with a single owner, name it in CLAUDE.md as the first thing to read, and have a command rewrite it at session end. Give it a last-updated stamp so a stale one is visibly stale rather than quietly wrong.",
+  "effort": "M",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/RUNBOOK.md",
+  "graded_mcps": []
+}

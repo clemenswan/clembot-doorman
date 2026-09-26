@@ -38,28 +38,61 @@
       "value_at_check": 22961
     }
   ],
-  "_needs_a_human_call": [
+  "_declined": [
     {
       "server_url": "https://mcp.docs.astro.build/mcp",
       "source": "github",
       "subject": "withastro/docs",
       "value_at_check": 1688,
-      "why_not_applied": [
-        "It PASSES the evidence standard: the repo record names the host. It is",
-        "still probably the wrong subject, because the stars measure the Astro",
-        "DOCS PROJECT and not the MCP server that happens to be served from it.",
-        "An evidenced mapping can still count the wrong population, which is a",
-        "failure the host check cannot see. Apply it only if you want the docs",
-        "project's popularity standing in for the server's."
+      "decided_on": "2026-09-22",
+      "decided_by": "Clemens",
+      "passed_evidence_standard": true,
+      "why_declined": [
+        "It passes the host check: the withastro/docs repo record names",
+        "mcp.docs.astro.build. It was still declined, because those stars",
+        "measure the Astro DOCS PROJECT and not the MCP server served from",
+        "it. An evidenced mapping can still count the wrong population, and",
+        "that is a failure the host check is structurally unable to see.",
+        "",
+        "One wrong number carrying a confident trend costs the feed more",
+        "credibility than three right ones buy it.",
+        "",
+        "DO NOT re-propose this without new evidence that separates the",
+        "server's own popularity from the docs project's. Re-raising it on",
+        "the same evidence is re-litigating a settled decision."
       ]
     }
   ],
   "_rejected": [
-    { "server_url": "https://docs.mcp.cloudflare.com/mcp", "tried": "github cloudflare/mcp-server-cloudflare", "why": "repo exists, has no homepage field and its record never names the host" },
-    { "server_url": "https://knowledge-mcp.global.api.aws", "tried": "github awslabs/mcp", "why": "repo homepage is awslabs.github.io/mcp, never names knowledge-mcp.global.api.aws" },
-    { "server_url": "https://hf.co/mcp", "tried": "github huggingface/hf-mcp-server, npm @huggingface/mcp-client", "why": "repo homepage is huggingface.co/mcp; hf.co/mcp serves 200 with NO redirect, so the two could not be evidenced as the same endpoint" },
-    { "server_url": "https://mcp.exa.ai/mcp", "tried": "npm exa-mcp-server", "why": "package exists, its metadata never names mcp.exa.ai" },
-    { "server_url": "https://mcp.openzeppelin.com/contracts/solidity/mcp", "tried": "github OpenZeppelin/contracts-mcp", "why": "404, the repo does not exist under that name" },
-    { "server_url": "8 others", "tried": "smithery search by name, with backoff after an initial 429", "why": "searched, no registry entry whose homepage host matches. Rechecked rather than left at 429: a rate limit is NOT MEASURED, and recording it as no-match would shrink the candidate set on the strength of a throttle" }
+    {
+      "server_url": "https://docs.mcp.cloudflare.com/mcp",
+      "tried": "github cloudflare/mcp-server-cloudflare",
+      "why": "repo exists, has no homepage field and its record never names the host"
+    },
+    {
+      "server_url": "https://knowledge-mcp.global.api.aws",
+      "tried": "github awslabs/mcp",
+      "why": "repo homepage is awslabs.github.io/mcp, never names knowledge-mcp.global.api.aws"
+    },
+    {
+      "server_url": "https://hf.co/mcp",
+      "tried": "github huggingface/hf-mcp-server, npm @huggingface/mcp-client",
+      "why": "repo homepage is huggingface.co/mcp; hf.co/mcp serves 200 with NO redirect, so the two could not be evidenced as the same endpoint"
+    },
+    {
+      "server_url": "https://mcp.exa.ai/mcp",
+      "tried": "npm exa-mcp-server",
+      "why": "package exists, its metadata never names mcp.exa.ai"
+    },
+    {
+      "server_url": "https://mcp.openzeppelin.com/contracts/solidity/mcp",
+      "tried": "github OpenZeppelin/contracts-mcp",
+      "why": "404, the repo does not exist under that name"
+    },
+    {
+      "server_url": "8 others",
+      "tried": "smithery search by name, with backoff after an initial 429",
+      "why": "searched, no registry entry whose homepage host matches. Rechecked rather than left at 429: a rate limit is NOT MEASURED, and recording it as no-match would shrink the candidate set on the strength of a throttle"
+    }
   ]
 }

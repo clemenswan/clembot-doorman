@@ -1,0 +1,10 @@
+{
+  "id": "vet-declined-ledger",
+  "dimension": 4,
+  "title": "Record what you turned down",
+  "why": "A registry of what was adopted answers half the question. Without a record of what was rejected and why, the same candidate gets re-proposed every few months and re-evaluated from scratch, and the reasoning that killed it the first time is gone.",
+  "fix": "Add a Declined section to the same rules file, with the tool, the date and one sentence on what disqualified it. A permanent refusal should be as easy to look up as an approval.",
+  "effort": "S",
+  "evidence_url": "https://clembot-doorman.wanessalabs.com",
+  "graded_mcps": []
+}

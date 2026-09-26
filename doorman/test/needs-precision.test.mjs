@@ -87,6 +87,28 @@ check('an ordinary typed message IS a prompt',
 check('an assistant turn is never a prompt',
   !isRealPrompt({ type: 'assistant', message: { content: 'ok' } }));
 
+// The second class of thing nobody typed, found 2026-09-21. A task
+// notification is an ordinary user record whose CONTENT is harness text: no
+// toolUseResult, not meta, not a compaction summary, so every filter above
+// lets it through. 244 of 874 surviving prompts in this vault were these.
+check('a background-task notification is not a prompt',
+  !isRealPrompt({
+    type: 'user',
+    promptSource: 'system',
+    message: { content: '<task-notification>Background command "Start dev server" was stopped</task-notification>' },
+  }));
+check('a typed prompt survives the promptSource filter',
+  isRealPrompt({ type: 'user', promptSource: 'typed', message: { content: 'deploy it' } }));
+check('an accepted suggestion is still the operator asking',
+  isRealPrompt({ type: 'user', promptSource: 'suggestion_accepted', message: { content: 'deploy it' } }));
+check('a queued prompt is still the operator asking',
+  isRealPrompt({ type: 'user', promptSource: 'queued', message: { content: 'deploy it' } }));
+// Older transcripts predate the field. Rejecting them would throw away the
+// whole historical corpus to catch a class that did not exist when they were
+// written, so an absent promptSource is kept.
+check('a record from before promptSource existed is still a prompt',
+  isRealPrompt({ type: 'user', message: { content: 'deploy it' } }));
+
 describe('needs precision: false positives, hand-checked 2026-09-10');
 
 // Count the trips and assert the COUNT, the same ratchet discover-precision

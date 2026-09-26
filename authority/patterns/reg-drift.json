@@ -1,0 +1,10 @@
+{
+  "id": "reg-drift",
+  "dimension": 7,
+  "title": "Keep the registry level with the disk",
+  "why": "Once a setup passes a handful of units, the written list and the directory drift in both directions: units nobody documented, and documented units that were deleted. An agent reading the list then reasons about a setup that does not exist, and the mismatch is invisible until something is dispatched to a name that is gone.",
+  "fix": "List every agent and command in one place, and check both directions rather than only that the doc names real files. A generated table beats a hand-kept one because it cannot drift.",
+  "effort": "S",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/README.md",
+  "graded_mcps": []
+}

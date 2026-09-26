@@ -1,0 +1,10 @@
+{
+  "id": "evidence-convention",
+  "dimension": 3,
+  "title": "Leave an auditable trail",
+  "why": "Without a checkpoint convention each session ends wherever it ended, and the next one re-derives decisions that were already made. The failure is quiet: nothing breaks, the work is just done twice and the second answer sometimes differs from the first.",
+  "fix": "Add a session-end or checkpoint command that appends to a single append-only log, and name that log in CLAUDE.md so an agent knows to read and write it. One file, one owner, appended never rewritten.",
+  "effort": "M",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/RUNBOOK.md",
+  "graded_mcps": []
+}

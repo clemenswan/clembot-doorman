@@ -1,0 +1,13 @@
+{
+  "id": "vet-registry",
+  "dimension": 4,
+  "title": "Register every MCP server you declare",
+  "why": "A server in .mcp.json with no entry anywhere is a tool your agents can reach that nobody recorded a decision about. Doorman grades servers precisely so this entry can cite a measurement instead of a memory, and an ungraded server is not an unsafe one, it is an unknown one.",
+  "fix": "Add a registry table to .claude/rules/ listing every server in .mcp.json with a status and a date. Run doorman report <url>, which is free and needs no key, and put the grade in the row.",
+  "effort": "S",
+  "evidence_url": "https://clembot-doorman.wanessalabs.com",
+  "graded_mcps": [
+    "https://mcp.deepwiki.com/mcp",
+    "https://mcp.exa.ai/mcp"
+  ]
+}

@@ -9,6 +9,9 @@
 import { type Env, err, json } from '../index.js';
 import { paidAllowed, secretStrength, spendPermit } from './spend.js';
 import { forwardedHeaderNames, gatewaySettlement } from './payment.js';
+import { admitRequest, refusalMessage } from '../rate-limit.js';
+import { runnerPresence } from '../runner-presence.js';
+import type { Admission } from '../rate-limit.js';
 import type { GatewaySettlement } from './payment.js';
 
 export interface GradeRequestItem {
@@ -65,12 +68,33 @@ export async function handleGrade(req: Request, env: Env): Promise<Response> {
   const now = new Date().toISOString();
   const queued: Array<Record<string, unknown>> = [];
 
+  // The quota, charged once for the whole batch before anything is written.
+  // Anonymous access to this endpoint is deliberate (invariant 25); unbounded
+  // anonymous access to it was an oversight, found by the 2026-09-19 launch
+  // audit.
+  const admitted = await admitRequest(env, req, {
+    cost: items.value.length,
+    authed: paid === 1,
+  });
+  if (!admitted.ok) {
+    return new Response(
+      JSON.stringify({ error: refusalMessage(admitted.decision), queued: [] }, null, 2),
+      {
+        status: admitted.decision.refusedBy === 'unreadable' ? 503 : 429,
+        headers: {
+          'content-type': 'application/json',
+          'retry-after': String(admitted.decision.retryAfterSec),
+        },
+      },
+    );
+  }
+
   for (const item of items.value) {
     const { id } = await enqueueAudit(env, {
       url: item.url, name: item.name, needed_for: item.needed_for,
       requestedBy: owner, paidAllowed: paid,
       settlement, unaccounted,
-    });
+    }, admitted.admission);
 
     queued.push({
       audit_id: id, server_url: item.url, status: 'queued', poll: '/grade/' + id,
@@ -79,14 +103,21 @@ export async function handleGrade(req: Request, env: Env): Promise<Response> {
     });
   }
 
+  // Whether anything is listening, said on the way out rather than left in
+  // /health. A caller told `queued` reasonably reads that as "and it will be
+  // graded", and on 2026-09-19 that had not been true for six days.
+  const runner = await runnerPresence(env);
+
   return json(
     {
       status: 'queued',
       count: queued.length,
       audits: queued,
+      runner,
       note:
         'Grading runs on a probe runner, not in the Worker: the static layer ' +
-        'shells out to mcpscore (Python). Poll the per-audit URL.',
+        'shells out to mcpscore (Python). Poll the per-audit URL.' +
+        (runner.note ? ' ' + runner.note : ''),
     },
     202,
   );
@@ -293,7 +324,14 @@ export async function enqueueAudit(
     settlement?: GatewaySettlement | null;
     unaccounted?: string[] | null;
   },
+  /**
+   * Proof the request passed the quota. Required, not optional: see the note
+   * on `Admission`. Unused inside this function on purpose. Its value is that
+   * a new caller cannot reach the queue without first obtaining one.
+   */
+  admission: Admission,
 ): Promise<{ id: string; now: string }> {
+  void admission;
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
   await env.DB.batch([

@@ -39,7 +39,7 @@
 
 ![Clembot Doorman live interactive flow and tool governance demo](media/doorman-demo.gif)
 
-*A real run against a real server. The grade, the hard fail, and the arithmetic are live values, not a mockup: `webzum.com/api/mcp` scores **89.9% on configuration** and still fails, because one tool description injects **6,290 characters of unprompted upsell and competitor steering** directly into your agent's context window. One cent through the Bazantic gateway answered a question that would have cost $54.47 to measure in an unguided LLM loop. [Run it live in the simulator](https://clembot-doorman.wanessalabs.com/#flow).*
+*A real run against a real server. The grade, the hard fail, and the arithmetic are live values, not a mockup: `webzum.com/api/mcp` scores **89.86% on configuration** and still grades **F**, because somewhere inside one **6,290-character** tool description it stops describing the tool and starts addressing the agent reading it. That is the hard fail and it is the only thing that caps the grade. The same description also carries a sales script, unprompted upsell and competitor steering, which scores and is reported at the top of the report but is deliberately not allowed to cap: a description that advertises is not a description that attacks, and giving both the same verdict would empty the F of meaning. One cent through the Bazantic gateway answered a question that would have cost $54.47 to measure in an unguided LLM loop. [Run it live in the simulator](https://clembot-doorman.wanessalabs.com/#flow).*
 
 ---
 

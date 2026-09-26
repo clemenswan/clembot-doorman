@@ -1,0 +1,17 @@
+# clembot-doorman.wanessalabs.com
+#
+# Clembot Doorman is an AI ops tool: it reads a build's own prompt history, says
+# what that build keeps reaching for and does not have, grades an MCP server
+# before it is installed, and refuses one that has not been graded.
+#
+# AI crawlers are welcome, deliberately. This is documentation for a free tool
+# whose users work through agents, so a crawler reading it is the distribution
+# channel rather than a leak of it.
+#
+# /clembot and /wanessa-labs are 301s to the sites that own those subjects. See
+# site/_redirects and archive/site-pages/README.md.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://clembot-doorman.wanessalabs.com/sitemap.xml

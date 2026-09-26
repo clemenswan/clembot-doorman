@@ -1,0 +1,20 @@
+# This site is the Doorman product. Two pages here were about the harness it
+# guards and the studio that built it, which are each their own site, so they
+# were duplicating content that lives somewhere it can be kept current. The
+# pages moved to ../archive/site-pages/ rather than staying here unlinked,
+# because a static file at the same path would shadow these rules.
+#
+# Both the extensionless and .html forms are listed: Pages serves /clembot for
+# clembot.html, so anything already linking either form keeps working.
+
+/clembot            https://clembot.wanessalabs.com/         301
+/clembot.html       https://clembot.wanessalabs.com/         301
+/clembot/           https://clembot.wanessalabs.com/         301
+
+# The one deep link that existed pointed at the agent roster. It is rewritten in
+# the pages themselves to https://clembot.wanessalabs.com/system/ and cannot be
+# handled here: a fragment never reaches the server, so no rule can match one.
+
+/wanessa-labs       https://wanessalabs.com/                 301
+/wanessa-labs.html  https://wanessalabs.com/                 301
+/wanessa-labs/      https://wanessalabs.com/                 301

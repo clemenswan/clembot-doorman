@@ -1,6 +1,6 @@
 {
   "name": "clembot-doorman",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Vets MCP servers, skills and repos before an agent gets them. Fit review first, paid grade second.",

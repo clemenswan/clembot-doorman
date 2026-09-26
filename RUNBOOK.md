@@ -148,15 +148,27 @@ different claims and the report keeps them different.
 **Free. No key, no money.** This is the hop that is currently broken, so this is
 the test that matters most.
 
-There is already a real audit waiting in the production queue, enqueued
-2026-09-08 to make this test concrete:
+**Queue one yourself first.** The audit this section used to name
+(`1fa627e1`, enqueued 2026-09-08) was drained long ago, and on 2026-09-23 the
+queue measured `queued: 0`. A standing audit id in a runbook ages into a test
+that silently passes against nothing.
 
+`POST /grade` takes the array as the body, NOT `{"servers": [...]}`. The
+wrapped form returns `each item needs a url`, which reads like a field-name
+problem and is a shape problem:
+
+```bash
+node -e "fetch('https://scorecard.wanessalabs.com/grade',{method:'POST',
+  headers:{'content-type':'application/json'},
+  body:JSON.stringify([{url:'https://planted-bad-mcp.wanessalabs-042.workers.dev/mcp',
+                        needed_for:'end-to-end runner test'}])})
+  .then(r=>r.json()).then(j=>console.log(JSON.stringify(j,null,2)))"
 ```
-audit_id      1fa627e1-b0f3-40c5-b2d8-52b7d83b730c
-server        https://mcp.deepwiki.com/mcp
-depth         static-only
-paid_allowed  false
-```
+
+The 202 now carries `runner.online` and says in as many words that a queued
+audit will wait when nothing is listening (invariant 32). The hostile fixture is
+a good subject: it hard-fails on injection, so a completed run proves the
+refusal path rather than just the happy one.
 
 ### 2a. Confirm the queue state before you start
 
@@ -407,6 +419,45 @@ open https://basescan.org/tx/<transaction>
 ---
 
 ## Hazards
+
+**TWO COPIES OF DOORMAN REPORT THE SAME VERSION AND DIFFERENT GRADES, AND THE
+STALE ONE GRADES HIGHER.** Measured 2026-09-23 against
+`marketing-bootstrap`, the same target in the same minute:
+
+| Copy of doorman | Grade | What it saw |
+|---|---|---|
+| ClemVault main checkout, 29 commits behind | **A 14/15** | `no MCP servers declared, so there is nothing to review` |
+| `origin/main` | **C 15/20** | `35 of 42 not on the trust list` |
+
+Both print `doorman 0.2.1`. **The version string does not move**, so nothing on
+screen distinguishes them.
+
+The mechanism is worse than a wrong number. The older copy cannot detect
+`claude.ai` connectors or plugin-synced servers at all, so it does not fail the
+"declared servers reviewed" check, it **skips** it. A skipped check leaves the
+denominator (20 becomes 15) rather than scoring zero, which is the correct rule
+for a build that genuinely has no subagents and the wrong outcome here: the
+check being skipped is the one the build was failing, so blindness reads as an
+A.
+
+`no MCP servers declared` is a positive claim, and it was false. That is
+invariant 3 in a place the invariant was not looking: an unmeasured thing
+reported as a measured absence, by a checker that did not know it could not
+look.
+
+**Run doorman from a tree you have just checked against `origin/main`.** A
+shared checkout drifts, and this one was both 29 behind and 4 ahead with another
+session's commits, so `git pull` was not available either. Verify before
+trusting a grade:
+
+```bash
+git -C <tree> fetch origin main -q
+git -C <tree> diff --stat origin/main -- clembot-doorman/doorman/ | tail -1
+```
+
+Empty output means the tree matches. Anything else means the grade is that
+copy's opinion rather than the product's.
+
 
 **THE MONEY SETTLES BEFORE THE WORK, AND NOBODY CAN TELL.** Proven with real
 funds on Base, 2026-09-13, at a cost of one cent. `POST /grade` answers **202 at

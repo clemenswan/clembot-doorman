@@ -24,6 +24,8 @@
 
 import { type Env, CORS, json } from '../index.js';
 import { CACHE_TTL_DAYS, enqueueAudit, isStale } from './grade.js';
+import { admitRequest, refusalMessage } from '../rate-limit.js';
+import { runnerPresence } from '../runner-presence.js';
 import { paidAllowed, secretStrength, spendPermit, type SpendVerdict } from './spend.js';
 
 const PROTOCOL_VERSION = '2025-06-18';
@@ -132,7 +134,7 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
     // Read the spend permit ONCE, here, because this is the last frame that
     // still has the Request. A wrong token is refused before any tool runs:
     // the MCP path must not be the soft way in to the thing /grade refuses.
-    const reply = await handleMessage(msg, env, permit);
+    const reply = await handleMessage(msg, env, permit, req);
     if (reply) replies.push(reply);
   }
 
@@ -142,7 +144,7 @@ export async function handleMcp(req: Request, env: Env): Promise<Response> {
   return json(Array.isArray(body) ? replies : replies[0]);
 }
 
-async function handleMessage(msg: unknown, env: Env, permit: SpendVerdict): Promise<unknown> {
+async function handleMessage(msg: unknown, env: Env, permit: SpendVerdict, req: Request): Promise<unknown> {
   const m = (msg ?? {}) as { id?: unknown; method?: string; params?: unknown };
   const id = m.id;
   const isNotification = id === undefined || id === null;
@@ -191,7 +193,7 @@ async function handleMessage(msg: unknown, env: Env, permit: SpendVerdict): Prom
     }
 
     case 'tools/call':
-      return ok(id, await callTool(m.params, env, permit));
+      return ok(id, await callTool(m.params, env, permit, req));
 
     default:
       if (isNotification) return null;
@@ -199,7 +201,7 @@ async function handleMessage(msg: unknown, env: Env, permit: SpendVerdict): Prom
   }
 }
 
-async function callTool(params: unknown, env: Env, permit: SpendVerdict): Promise<unknown> {
+async function callTool(params: unknown, env: Env, permit: SpendVerdict, req: Request): Promise<unknown> {
   const p = (params ?? {}) as { name?: string; arguments?: Record<string, unknown> };
   if (p.name !== GRADE_TOOL.name) {
     return toolError(
@@ -262,14 +264,30 @@ async function callTool(params: unknown, env: Env, permit: SpendVerdict): Promis
 
   // No usable cache. Queue, and say plainly that there is no grade yet. The
   // one thing this must never do is return a number that looks like a grade.
+  // The same quota the REST path pays. An MCP tool that queued freely while
+  // POST /grade was limited would be the limit wearing a different hat, and
+  // this codebase has already shipped one queue writer that missed a gate.
+  const admitted = await admitRequest(env, req, {
+    cost: 1,
+    authed: paidAllowed(permit) === 1,
+  });
+  if (!admitted.ok) return toolError(refusalMessage(admitted.decision));
+
   const { id } = await enqueueAudit(env, {
     url: parsed.toString(), needed_for, requestedBy: 'mcp',
     paidAllowed: paidAllowed(permit),
-  });
+  }, admitted.admission);
+
+  // The agent reading this is deciding whether to wait. "queued" alone lets it
+  // wait on something nobody is listening for, which on 2026-09-19 had been
+  // true for six days.
+  const runner = await runnerPresence(env);
 
   return toolResult({
     graded: false,
     reason: cached ? 'cached grade is older than ' + CACHE_TTL_DAYS + ' days' : 'never graded',
+    runner_online: runner.online,
+    ...(runner.note ? { runner_note: runner.note } : {}),
     server_url: parsed.toString(),
     audit_id: id,
     status: 'queued',

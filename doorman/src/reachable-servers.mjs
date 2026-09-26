@@ -36,6 +36,22 @@ const dirs = (dir) => {
   try { return readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name); } catch { return []; }
 };
 
+/**
+ * Every place `userScopeServers` looks, as labels a human can read.
+ *
+ * Exported so `doctor` can state what it searched when it finds nothing. A
+ * checker that reports "no servers declared" without saying where it looked is
+ * indistinguishable from one that cannot read the format, and on 2026-09-23
+ * that difference was an A instead of a C. Keep this beside the lookups below:
+ * a label list that drifts from the code it describes is worse than none.
+ */
+export const USER_SCOPE_SOURCES = [
+  '~/.claude.json (user)',
+  '~/.claude.json (local)',
+  'claude.ai account',
+  '~/.claude/plugins (enabled)',
+];
+
 export function userScopeServers(root, { home } = {}) {
   if (!home || !existsSync(home)) return [];
   const out = new Map();

@@ -197,6 +197,52 @@ failed, whatever the service says.
 
 The gate reads the file you accepted. That is the point of it being a file.
 
+## How good is my setup?
+
+The gate answers "may my agent call this". `needs` answers "what should I add".
+Neither answers the one somebody asks before either, which is whether the setup
+they already have is any good.
+
+```bash
+doorman profile .
+```
+
+Seven dimensions, ten checks, a receipt for every one: a file and a line, or
+the word `absent`. It reads the harness surface only, never source, never
+`.env`, never anything outside the repo, and a symlink pointing out of the tree
+is refused rather than followed.
+
+```
+  Harness profile: repo-9f3c1a20
+  F  24/34 (71%), average band C
+
+  A    Permission hygiene           7/7
+  F    Human gates                  4/8
+       FAIL  gate-write-isolation   .claude/agents/migrator.md
+  D    Registry hygiene             2/3
+       WARN  reg-drift              CLAUDE.md
+```
+
+The letter is the **worst dimension**, not the average: a harness is as mature
+as its weakest gate. Both numbers are shown so the rule is visible rather than
+surprising.
+
+Fail closed throughout. A `settings.json` that will not parse scores zero on
+permission hygiene rather than reading as "nothing dangerous found", which is
+the sentence a clean one produces.
+
+```bash
+doorman profile . --export   # structure-only profile, redaction scanner over it
+doorman profile . --sow      # one work package per open check
+```
+
+An export carries counts, states, scores and repo-relative receipts. Never the
+absolute root, never prose, and the repo name is hashed unless you pass
+`--name`. Anything tripping the scanner is dropped and counted, so a redacted
+profile is visibly not a full one.
+
+Full contract, rubric and assumptions: [`docs/harness-report.md`](../docs/harness-report.md).
+
 ## What should I install in the first place?
 
 The gate answers "may my agent call this". It does not answer the question you

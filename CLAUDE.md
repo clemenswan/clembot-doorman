@@ -1,7 +1,12 @@
 # Clembot Doorman
 
-ETHOnline 2026 build. Deadline **Sunday 13 September 2026, 12:00 EDT**.
-Source of truth for scope: `clembot-doorman-project.md`. Current state: `roadmap.md`.
+An AI ops tool. It reads a build's own prompt history, says what that build is
+missing, and refuses tools that should not be installed. **Started during
+ETHOnline 2026 and outgrew it**; the submission is closed and the deadline is
+history, not scope.
+
+Source of truth for scope: `clembot-doorman-project.md`. Direction and open
+product decisions: `positioning.md`. Current state: `roadmap.md`.
 
 ## Layout
 
@@ -211,6 +216,206 @@ These are not preferences. Breaking one silently makes the product dishonest.
     was passed, so a token typed where a name belongs does not land in a log.
     `--poll` refuses the flag outright: the queue is open, so one token would
     be presented to every url anyone queued.
+
+31. **The open endpoint has a ceiling, and it is charged in items.** Invariant
+    25 opens `POST /grade` to anonymous callers on purpose; the 2026-09-19
+    launch audit found nothing limiting how often. One request carries up to 20
+    servers and each writes 3 to 5 D1 rows, so the exposure was quota, queue
+    growth, and being an amplifier against a third party. The quota counts
+    ITEMS, because "10 requests an hour" is 200 servers an hour through a batch.
+    It **fails closed**: if the counter cannot be read or written the request is
+    refused, since the resource being protected is the database the check just
+    failed to reach. It is charged only on an allowed decision, so retrying does
+    not push a caller's own window out. `enqueueAudit` REQUIRES an `Admission`,
+    which is invariant 19's reasoning pointed at quota rather than money, and
+    the identity comes from `CF-Connecting-IP`, never `X-Forwarded-For`, which a
+    client can set. **Two mutants survived the first pass**: the REST route
+    ignoring its own refusal, and the MCP tool calling the limiter and
+    discarding the answer. Both passed a test that grepped for the call site, so
+    both paths are now driven rather than grepped.
+
+32. **The queue says whether anything is listening.** The probe runner is a
+    laptop process. When it is not running, `POST /grade` still answered 202
+    with a poll url and the audit sat in `pending` forever: on 2026-09-19 the
+    last claim was six days old and the endpoint was still accepting work.
+    Nothing fabricated a grade; the service fabricated the EXPECTATION of one,
+    which is invariant 9 pointed at availability. `POST /grade`, the MCP tool
+    and `/health` now carry runner presence, and the note is folded into the
+    reply rather than left in a status endpoint nobody polls.
+
+    **The heartbeat is the POLL, never the CLAIM.** A runner polling an empty
+    queue claims nothing and writes no ledger row, so claims cannot tell a quiet
+    day from an absent runner, and that false negative would announce "nobody is
+    listening" at the moment the service was working. It is recorded AFTER auth,
+    so an anonymous caller cannot fake presence, and throttled to one write a
+    minute, because a write per poll is ~17k D1 writes a day on the same quota
+    invariant 31 exists to protect.
+
+    **Unknown is `null`, never `false`.** An unreadable table means the question
+    could not be answered, and reporting that as offline would put a false alarm
+    in front of every caller. Invariant 3, applied to a status. The heartbeat
+    itself fails OPEN, the opposite of the rate limiter and deliberately so: it
+    only describes the world, it does not guard anything.
+
+33. **The operator has a ceiling of their own.** Every other spend guard here
+    protects the CALLER: `scorecardClient` refuses a missing budget, `enqueue()`
+    refuses a missing permit, invariant 20 refuses an unknown price. None of
+    them stop somebody else's audits spending Clemens's money, and `CLAUDE.md`
+    already warned that the first key turns an open endpoint into an open
+    wallet. `PAID_AUDITS_PER_DAY` caps paid dispenses per rolling 24h, and it
+    was built BEFORE `ANTHROPIC_API_KEY` exists rather than after an invoice.
+
+    **It sits at the DISPENSE point, not the queue.** `paid_allowed` travels to
+    the runner and the runner holds the model key, so that is where money is
+    committed. Over the ceiling an audit is still handed out, with
+    `paid_allowed = 0`: structurally safe by invariant 25, because the permit
+    can only ever REMOVE the behavioural layer. It is **never silent** (a
+    `spend_capped` ledger row, a `downgraded_reason` on the work, and the
+    posture on `/health`), and it **counts forward inside one poll**, so a batch
+    of five cannot all pass a check that only saw the position before any of
+    them.
+
+    **An unknown position is not a licence to spend.** An unreadable counter
+    dispenses static-only, which is invariant 20's "an unknown price is not a
+    free one" pointed at a counter. An EMPTY `PAID_AUDITS_PER_DAY` is unset, not
+    zero: `Number('')` is 0, and reading a blank config value as "pay for
+    nothing" would silently stop the expensive half of the service. A typo or a
+    negative falls back to the default, because the most expensive reading of a
+    mistake must never be the one that wins.
+
+34. **`0 observed` has two meanings and the ledger printed both the same way.**
+    Production logged `0 observed, 0 pruned` on seven consecutive days. That
+    line is what the sweep writes when every source refused AND when there was
+    nothing to ask about, and the two need opposite responses. It was the
+    second: `popularity_subject` is empty, `popularity-subjects.json` was never
+    pushed through `runner/link.mjs`, and the sweep has been working perfectly
+    on no input since it shipped. The tell was in the line's own grammar, since
+    the failure segment is omitted when nothing failed, so `0 observed` with no
+    `failed` block means nothing was attempted.
+
+    `SweepResult` now carries `subjects`, `describeSweep()` says "no subjects
+    mapped" and names the command that fixes it, and `/health` carries the
+    posture. Invariant 3 pointed at an axis instead of a layer: unmeasured is
+    not a measured zero, and a number that cannot say which one it is will be
+    read as the flattering one.
+
+    **A count is only proven by a case where the right answer is not zero.** A
+    mutant that hardcoded `subjects: 0` passed every test, because every test
+    swept an empty table. The fix was a sweep with two mappings, not a better
+    assertion about none.
+
+35. **A contribution carries a count, never a sentence.** `doorman contribute`
+    is the first command in the giveaway that SENDS anything derived from the
+    user's machine, and `needs.mjs` promises in its own header that the prompts
+    never leave it. `buildPayload` therefore reads the `id` off a need and
+    nothing else, so `matched`, `label`, `hits` and every prompt fragment are
+    dropped BY CONSTRUCTION rather than by a filter someone has to remember to
+    maintain. Invariant 28 is why that matters: most `user` records in a
+    transcript directory are tool results and expanded skill bodies, so a
+    free-text field here would ship the contributor's own files under a feature
+    described as telling us what they were missing. A server NAME is allowed
+    because it is all the gate can ever see. The Worker owns the vocabulary and
+    NAMES every term it drops, rather than both halves shipping the list and
+    trusting the copies to agree, which is invariant 2's reasoning applied to a
+    word list instead of to grade math.
+
+    **Nothing is sent without `--send`.** The default prints the exact JSON and
+    stops. A claim about what a tool transmits is worth less than a command
+    that shows you, and every other guarantee here would otherwise rest on the
+    reader having taken this file's word for it.
+
+    **The gate was not touched.** The obvious source for the blocked list is
+    the gate's own refusals, and it records none. Invariant 7 keeps
+    `mcp-gate.sh` offline and dependency-free, and adding a write path to the
+    one security control in the product to feed a telemetry feature is a bad
+    trade. The inventory already knows which declared servers are missing from
+    the allowlist, which is the same set computed without going near it. An
+    unreadable allowlist reports NOTHING rather than reporting every server as
+    unreviewed, which is invariant 3 pointed at somebody else's configuration.
+
+36. **Demand rides along and never mixes in.** `GET /signals` counts what
+    builds asked for and could not find. It is not evidence about quality, and
+    no grade, band, weight or hard-fail reads it. This is the same shelf
+    `feed.ts` already puts popularity on, for the same reason: the grade is
+    what happened when an agent drove the server, and a popular F is the most
+    useful row the feed can carry. Holding that line is what keeps the PRD's
+    non-goal ("not a universal trust authority", no central verdict) true while
+    a community contributes, and it is what bounds gaming, since an inflated
+    count can only ever reorder the queue of what to grade next.
+
+    The field is `reports`, never `builds`. Nothing here knows who is asking,
+    so nothing here can count builds, and one build reporting the same gap on
+    thirty days is thirty reports. Contributions are anonymous permanently:
+    there is no contributor column in `signal_count`, which rules out
+    reputation rather than merely not building it yet.
+
+37. **A skipped check must not be able to raise a grade in silence.** Measured
+    2026-09-23 against `marketing-bootstrap`, the same target in the same
+    minute, by two copies of doorman **both printing `0.2.1`**: the one 29
+    commits behind reported **A 14/15** and `no MCP servers declared, so there
+    is nothing to review`, while `origin/main` reported **C 15/20** and `35 of
+    42 not on the trust list`.
+
+    The older copy cannot read `claude.ai` connectors or plugin-synced servers,
+    so it did not FAIL the servers-reviewed check, it **skipped** it. A skip
+    leaves the denominator (20 becomes 15) rather than scoring zero, which is
+    the right rule for a build that genuinely has no subagents and the wrong
+    outcome here: the check it skipped was the one the build was failing.
+    Blindness read as an A, on the check this project exists for.
+
+    `no MCP servers declared` is a POSITIVE CLAIM and it was false. That is
+    invariant 3 somewhere it was not looking: an unmeasured thing reported as a
+    measured absence, by a checker that did not know it could not look.
+
+    **Code written now cannot make an older copy honest.** What it can do is
+    make the two distinguishable, so `doctor` returns `searchedSources` and the
+    skip names it: `no MCP servers found, searched 9: .mcp.json, ..., claude.ai
+    account, ~/.claude/plugins (enabled)`. A run that searched five paths and
+    one that also searched the user scope now differ on screen, on exactly the
+    axis that was invisible. A build too old to report the list says so rather
+    than inventing one.
+
+    `USER_SCOPE_SOURCES` lives beside the lookups it describes, in
+    `reachable-servers.mjs`, for invariant 2's reason: a label list that drifts
+    from the code it names is worse than no list. And every test but one hands
+    `searchedSources` to `gradeBuild` directly, so one test **drives `doctor`**
+    instead, because all of the others would pass while the caller quietly
+    stopped supplying it. That is invariant 26's shape, caught before it shipped
+    rather than after. Five mutants, five caught.
+
+38. **A fix may change the property. It may never change only the text that
+    proves the property.** `doorman fix` closes one open profile check, and the
+    tempting version of it is a scaffolder: eight of the ten checks pass on a
+    regex over a doc, so writing `## Declined` into a rules file moves the
+    tool-vetting dimension without recording a single declined tool, and naming
+    a handoff file in CLAUDE.md passes `mem-handoff` with no state behind it.
+    Every one of those would raise a grade and leave the harness identical.
+
+    So exactly ONE check is in the `generate` class, and it is `reg-drift`,
+    whose correct content is the list of agents and commands on disk. That one
+    cannot be gamed: the content IS what the check looks for. The other nine
+    measure a human decision (which tools does this agent need, which commands
+    do you actually run, what did you reject and why) and a decision is not
+    derivable from a repo that does not contain it, so each returns a worklist
+    naming the files and the refusal. `vet-registry` routes to `doorman allow`,
+    which already exists to record that decision one reviewed entry at a time.
+
+    The ratio is the finding, not a gap in the command. `MUST_STAY_WORKLIST`
+    pins all nine by name, and promoting one is an argument to be made there.
+
+    **Two asymmetries carry the safety.** It may propose a DENY and never an
+    allow, because a deny can only remove capability while an allow grants it on
+    a guess. And `--write` refuses `.claude/settings.json`, `.mcp.json`,
+    anything under `registry/` (invariant 24: the gate reads it) and anything
+    under `.claude/agents/` (a `tools` line is a security control, and a guessed
+    control is worse than a visibly missing one), plus any existing file with no
+    `doorman:generated` marker. That list is data in `writable()`, so "could
+    this overwrite my config" is read rather than traced.
+
+    Seven mutants, seven caught. Three killed nothing at first, because the
+    refusal tests looped over the implementation's own lists and a shorter list
+    simply meant fewer assertions. The literals in `profile-fix.test.mjs` are
+    there for that reason.
 
 ## Testing
 

@@ -32,6 +32,10 @@
 import { readFileSync, writeFileSync, unlinkSync, existsSync, mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { watch, readState, writeState, DEFAULT_API, DEFAULT_STATE } from './watch.mjs';
+import { readSurface } from '../src/profile/surface.mjs';
+import { gradeHarness } from '../src/profile/rubric.mjs';
+import { buildReport } from '../src/profile/report.mjs';
+import { reportDir, previousReport, diffReports, renderDelta, deltaSignature } from '../src/profile/delta.mjs';
 
 export const DEFAULT_DIGEST = join('.doorman', 'notify.md');
 
@@ -110,19 +114,60 @@ export async function refreshNotify({
   const prior = readState(state);
   const firstRun = !prior.since;
 
+  // THE HARNESS DELTA COMES FIRST, and it is the half most builds can use.
+  // The feed half announces newly graded MCP servers, which is worth nothing
+  // to a build with none, and that is the shape of most builds. This one is
+  // about the operator's own repo, and it is computed from files already on
+  // disk, so it costs no network and cannot make a session start slow.
+  //
+  // It fails to null rather than throwing, for the reason this whole module
+  // gives: a notification that can break a session start is worse than none.
+  let deltaText = null;
+  let deltaSig = null;
+  try {
+    const surface = readSurface(root);
+    const cur = buildReport(surface, gradeHarness(surface), { root });
+    const today = cur.generated_at.slice(0, 10);
+    const prev = previousReport(reportDir(root, cur.slug), today);
+    const diff = diffReports(prev, cur);
+    deltaSig = deltaSignature(diff);
+    // ANNOUNCE ONCE. The digest is consumed on read and rebuilt from the same
+    // two reports on disk, so without this cursor an unchanged pair re-reports
+    // an identical "fixed" line at every single session start.
+    deltaText = deltaSig && deltaSig === prior.delta ? null : renderDelta(diff);
+  } catch {
+    deltaText = null;
+    deltaSig = null;
+  }
+
   const result = await watch({ root, api, since: prior.since, limit, fetchImpl });
-  const text = renderNotify(result, { firstRun });
+  const feedText = renderNotify(result, { firstRun });
+
+  // Rule 1 applied across both halves: nothing is written when nothing moved.
+  const text = [deltaText, feedText].filter(Boolean).join('\n\n---\n\n') || null;
 
   if (text) {
     mkdirSync(dirname(digest), { recursive: true });
     writeFileSync(digest, text + '\n', 'utf8');
   }
 
-  if (result.next_since) {
-    writeState(state, { since: result.next_since, seen: (prior.seen ?? 0) + result.candidates.length });
+  // Persist BOTH cursors, and persist them even when the feed returned nothing.
+  // Gating this on `result.next_since` would mean the delta cursor is never
+  // saved on a machine that is offline or has no servers, which is exactly the
+  // build the delta was added for: it would repeat itself forever.
+  const nextDelta = deltaText ? deltaSig : (prior.delta ?? null);
+  if (result.next_since || nextDelta !== (prior.delta ?? null)) {
+    writeState(state, {
+      since: result.next_since ?? prior.since ?? null,
+      seen: (prior.seen ?? 0) + result.candidates.length,
+      delta: nextDelta,
+    });
   }
 
-  return { wrote: Boolean(text), firstRun, digest, candidates: result.candidates.length };
+  return {
+    wrote: Boolean(text), firstRun, digest, candidates: result.candidates.length,
+    delta: Boolean(deltaText), feed: Boolean(feedText),
+  };
 }
 
 /**

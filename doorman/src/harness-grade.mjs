@@ -45,12 +45,12 @@ export function letterFor(pct) {
  * score should not be perfect. Full marks now require a clean check, and
  * everything short of that caps one below.
  */
-function partial(ratio, max, clean) {
+export function partial(ratio, max, clean) {
   if (clean) return max;
   return Math.max(0, Math.min(Math.round(ratio * max), max - 1));
 }
 
-function stateFor(points, max, clean) {
+export function stateFor(points, max, clean) {
   if (clean) return 'pass';
   return points === 0 ? 'fail' : 'warn';
 }
@@ -69,12 +69,46 @@ function na(id, label, why) {
   return { id, label, state: 'n/a', points: null, max: null, evidence: null, note: why };
 }
 
+/** Sub-totals over one group, renormalised the same way the whole grade is. */
+function tally(checks) {
+  const scored = checks.filter((c) => c.state !== 'n/a');
+  const earned = scored.reduce((n, c) => n + c.points, 0);
+  const possible = scored.reduce((n, c) => n + c.max, 0);
+  const pct = possible ? Math.round((earned / possible) * 100) : null;
+  return { earned, possible, pct, letter: letterFor(pct), measured: scored.length };
+}
+
 /**
  * @param {object} d - a `doctor()` result (ok:true).
- * @returns {{checks: Array, earned: number, possible: number, pct: number|null, letter: string|null}}
+ * @param {object|null} p - `practiceFacts()` from src/units.mjs, or null.
+ *
+ * TWO HALVES, REPORTED SEPARATELY.
+ *
+ * `posture` is whether this build is gated: the five checks this project was
+ * originally built around. `practice` is whether it is a worked setup or a bare
+ * one. They are different questions and a single letter hides that, so both
+ * sub-totals are returned alongside the combined one. Same instinct as
+ * invariant 17: a layer measured separately does not get folded back in and
+ * quietly paid for twice.
+ *
+ * The combined letter is still the headline, because a report needs one, and it
+ * renormalises over measured checks exactly as before.
+ *
+ * WHEN `p` IS NULL the practice checks are `n/a`, not zero. That is invariant 3
+ * and it is also what keeps `doctor` honest: doctor promises offline and under
+ * five milliseconds, clustering a few hundred prompts is neither, so doctor
+ * passes nothing and the checks say they were not measured rather than failed.
+ *
+ * @returns {{checks: Array, earned: number, possible: number, pct: number|null,
+ *            letter: string|null, posture: object, practice: object}}
  */
-export function gradeBuild(d) {
-  if (!d || !d.ok) return { checks: [], earned: 0, possible: 0, pct: null, letter: null };
+export function gradeBuild(d, p = null) {
+  if (!d || !d.ok) {
+    return {
+      checks: [], earned: 0, possible: 0, pct: null, letter: null,
+      posture: tally([]), practice: tally([]),
+    };
+  }
 
   const checks = [];
 
@@ -115,8 +149,25 @@ export function gradeBuild(d) {
   const decided = new Set([...(g.allowed || []), ...(g.denied || [])]);
   const key = (s) => s.gateName ?? s.name;
   if (!servers.length) {
+    // "No servers declared" is a POSITIVE CLAIM, and a checker that cannot read
+    // a config format it has never heard of will make it confidently. On
+    // 2026-09-23 two copies of doorman both printing 0.2.1 graded the same
+    // build A 14/15 and C 15/20, because the older one could not see claude.ai
+    // connectors or plugin-synced servers and so SKIPPED the check it was
+    // failing. A skip leaves the denominator, so blindness read as an A.
+    //
+    // Code written now cannot make an older copy honest. It can make the two
+    // distinguishable, by saying where it looked. A reader comparing a run that
+    // searched two paths against one that also searched the user scope can see
+    // which is blind. Invariant 3: unmeasured is not a measured zero.
+    const searched = Array.isArray(d.searchedSources) ? d.searchedSources : null;
     checks.push(na('servers-reviewed', 'Declared servers reviewed',
-      'no MCP servers declared, so there is nothing to review'));
+      searched
+        ? `no MCP servers found, searched ${searched.length}: ${searched.join(', ')}. `
+          + 'Zero here means none were declared in those places, not that none exist'
+        : 'no MCP servers found, and this build of doorman did not report which '
+          + 'places it searched, so blindness and an empty build are '
+          + 'indistinguishable from this line'));
   } else if (!g.allowed) {
     checks.push(na('servers-reviewed', 'Declared servers reviewed',
       'trust list unreadable, so review status is unknown rather than failed'));
@@ -150,10 +201,72 @@ export function gradeBuild(d) {
       `${exposed} of ${agents.count} subagent(s) reference an MCP tool by name`));
   }
 
+  // Everything above is POSTURE: is this build gated. Everything below is
+  // PRACTICE: is it a worked setup or a bare one. Marked before the practice
+  // checks are pushed so the split cannot drift as checks are added.
+  for (const c of checks) c.group = 'posture';
+
+  // ── 6. Are repeated procedures scaffolded? ─────────────────────────────────
+  //
+  // The one check that measures ops maturity rather than counting artifacts.
+  // "Do you have commands" rewards accumulating them; this asks whether the
+  // procedures you actually repeat have one, which cannot be gamed by adding
+  // units nobody runs.
+  const s = p && p.scaffolded;
+  if (!s) {
+    checks.push(na('scaffolded', 'Repeated work is scaffolded',
+      'not measured here: it reads prompt history, which doctor deliberately does not. Run doorman dashboard.'));
+  } else if (s.total === 0) {
+    checks.push(na('scaffolded', 'Repeated work is scaffolded',
+      s.prompts
+        ? `no procedure repeated across sessions in ${s.prompts} prompts, so there is nothing to scaffold`
+        : 'no readable prompt history, so repetition could not be measured'));
+  } else {
+    const ratio = s.covered / s.total;
+    const clean = s.covered === s.total;
+    const points = partial(ratio, 5, clean);
+    checks.push(check('scaffolded', 'Repeated work is scaffolded',
+      stateFor(points, 5, clean), points, 5, 'prompt history',
+      `${s.covered} of ${s.total} procedure(s) that repeat across sessions have a command, skill or agent`));
+  }
+
+  // ── 7. Is there reusable structure at all? ─────────────────────────────────
+  //
+  // Full marks need MORE THAN ONE KIND, not more units. A build with fifty
+  // commands and no subagents has not discovered subagents, and a build with
+  // three hundred of anything is not thereby mature. Counting units would make
+  // this a bloat score, which is the opposite of what it is for.
+  const units = (p && p.units) || null;
+  if (!units) {
+    checks.push(na('reuse', 'Reusable units exist',
+      'not measured here. Run doorman dashboard.'));
+  } else if (!units.length) {
+    checks.push(check('reuse', 'Reusable units exist', 'fail', 0, 3, null,
+      'no commands, agents or skills: every procedure is retyped from scratch'));
+  } else {
+    const kinds = (p.kinds && p.kinds.length) || 0;
+    const clean = kinds >= 2;
+    const points = partial(kinds / 2, 3, clean);
+    checks.push(check('reuse', 'Reusable units exist',
+      stateFor(points, 3, clean), points, 3,
+      [...new Set(units.map((u) => u.source.split('/').slice(0, -1).join('/')))].slice(0, 3).join(', '),
+      `${units.length} unit(s) across ${kinds} kind(s): ${(p.kinds || []).join(', ')}`));
+  }
+
+  for (const c of checks) if (!c.group) c.group = 'practice';
+
   const scored = checks.filter((c) => c.state !== 'n/a');
   const earned = scored.reduce((n, c) => n + c.points, 0);
   const possible = scored.reduce((n, c) => n + c.max, 0);
   const pct = possible ? Math.round((earned / possible) * 100) : null;
 
-  return { checks, earned, possible, pct, letter: letterFor(pct) };
+  return {
+    checks,
+    earned,
+    possible,
+    pct,
+    letter: letterFor(pct),
+    posture: tally(checks.filter((c) => c.group === 'posture')),
+    practice: tally(checks.filter((c) => c.group === 'practice')),
+  };
 }

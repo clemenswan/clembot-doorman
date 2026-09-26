@@ -16,6 +16,14 @@
       body: 'Inspects your active build\'s prompt history (~/.claude/projects/) to identify what tools your agent repeatedly reaches for, grouping requests into 12 capability taxonomies to recommend pre-vetted MCP servers.',
       usage: 'doorman needs .'
     },
+    'doorman-dashboard': {
+      title: 'doorman dashboard',
+      isCode: true,
+      cat: 'CLI Command',
+      meta: 'Local · Free · No Server',
+      body: 'The audit as a page. Runs the full sweep (doctor, prompt-history needs, feed), grades the build on a visible five-check scorecard, diffs against previous runs, and writes one self-contained HTML file to .doorman/report.html.',
+      usage: 'doorman dashboard [path]'
+    },
     'doorman-doctor': {
       title: 'doorman doctor',
       isCode: true,

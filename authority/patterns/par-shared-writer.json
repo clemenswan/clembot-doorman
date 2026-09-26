@@ -1,0 +1,10 @@
+{
+  "id": "par-shared-writer",
+  "dimension": 5,
+  "title": "Isolate concurrent writers",
+  "why": "Two write-capable agents sharing one working tree will eventually interleave on the same file, and the result passes every test because each edit is individually valid. This is the failure that is hardest to reproduce afterwards, because it depends on timing nobody recorded.",
+  "fix": "Give every write-capable agent its own worktree via isolation, or serialise them behind a single lock file that each one takes before writing. Pick one and apply it to all of them: a mix is the case where the isolated agents look fine and the unisolated ones collide.",
+  "effort": "M",
+  "evidence_url": "https://github.com/clemenswan/clembot-doorman/blob/main/CLAUDE.md",
+  "graded_mcps": []
+}

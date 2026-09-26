@@ -31,6 +31,15 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync, existsSync } from 
 import path from 'node:path';
 import { auditProject } from './audit.mjs';
 import { gradeBuild } from '../src/harness-grade.mjs';
+import { practiceFacts } from '../src/units.mjs';
+import { profileSection, PROFILE_CSS } from '../src/profile/views.mjs';
+import { readSurface } from '../src/profile/surface.mjs';
+import { gradeHarness } from '../src/profile/rubric.mjs';
+import { buildReport } from '../src/profile/report.mjs';
+import { rankGaps } from '../src/profile/sow.mjs';
+import { bundledCards, referenceProfile } from './profile.mjs';
+import { repeats as readRepeats } from './repeats.mjs';
+import { classifyUnit } from '../src/needs.mjs';
 import { readReviews } from './review.mjs';
 import { readSurfaces, reviewSurface } from '../src/surface.mjs';
 
@@ -122,20 +131,44 @@ function gradeSection(g) {
   if (g.letter === null) {
     return `<section><h2>Grade</h2><p class="muted">Not graded: nothing here could be measured.</p></section>`;
   }
-  const rows = g.checks.map((c) => `
+  // Two halves, labelled. A single flat table let a gated build with no
+  // structure and a worked build with no gate print the same letter with no
+  // way to tell them apart, which is the thing the split exists to fix.
+  const groupRow = (title, t, why) => `
+    <tr class="grp"><td colspan="4"><strong>${esc(title)}</strong>
+      ${t.pct === null ? '<span class="muted">not measured</span>'
+        : `<span class="muted">${t.earned}/${t.possible} (${t.pct}%) &middot; ${esc(t.letter)}</span>`}
+      <div class="muted">${esc(why)}</div></td></tr>`;
+
+  const rowFor = (c) => `
     <tr class="s-${c.state === 'n/a' ? 'na' : c.state}">
       <td class="mark">${esc({ pass: '✓', warn: '△', fail: '✗', 'n/a': '–' }[c.state])}</td>
       <td>${esc(c.label)}${c.note ? `<div class="muted">${esc(c.note)}</div>` : ''}</td>
       <td class="num">${c.state === 'n/a' ? '<span class="muted">skipped</span>' : `${c.points}/${c.max}`}</td>
       <td class="ev">${c.evidence ? `<code>${esc(c.evidence)}</code>` : ''}</td>
-    </tr>`).join('');
+    </tr>`;
+
+  // A grade from a caller that predates the split has no `group` on its checks
+  // and no sub-tallies. Render it as one table rather than throwing: a page
+  // that will not build is a worse failure than a page without a subheading.
+  const grouped = g.posture && g.practice && g.checks.some((c) => c.group);
+  const rows = grouped
+    ? [
+      groupRow('Posture', g.posture, 'Is this build gated.'),
+      ...g.checks.filter((c) => c.group === 'posture').map(rowFor),
+      groupRow('Practice', g.practice, 'Is it a worked setup or a bare one.'),
+      ...g.checks.filter((c) => c.group === 'practice').map(rowFor),
+    ].join('')
+    : g.checks.map(rowFor).join('');
   return `
   <section>
     <h2>Grade</h2>
     <div class="grade"><span class="letter g-${esc(g.letter)}">${esc(g.letter)}</span>
       <span class="score">${g.earned} / ${g.possible} <span class="muted">(${g.pct}%)</span></span></div>
     <table class="checks"><tbody>${rows}</tbody></table>
-    <p class="fine">Skipped checks are left out of the denominator rather than scored zero. A build
+    <p class="fine">The two halves are scored separately and never blended into one another:
+    a gated build with no structure and a worked build with no gate are different problems and
+    a single letter hides which one you have. Skipped checks are left out of the denominator rather than scored zero. A build
     with no subagents has no exposure to measure, and scoring that zero would rank it below a build
     whose agents are wired badly. Capability gaps below are <strong>not</strong> in this grade: a
     missing tool is a recommendation about what you do not have, not a defect in what you do.</p>
@@ -172,10 +205,39 @@ function changeSection(diff) {
   </section>`;
 }
 
+/** 2.9 billion is unreadable. 2.9B is a number a person can weigh. */
+function compactTokens(n) {
+  if (typeof n !== 'number') return null;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
+  if (n >= 1e3) return `${(n / 1e3).toFixed(1)}k`;
+  return String(n);
+}
+
 function needsSection(res) {
   const gaps = res.needs?.gaps || [];
   const recs = res.recommendations || [];
+  const dead = res.needs?.deadWeight || { unused: [], overlapping: [], unitsChecked: 0 };
   const parts = [`<h2>Recommendations</h2>`];
+
+  // WHERE THE HISTORY CAME FROM. Vault-wide and per-project produce different
+  // numbers from the same build, so a reader who cannot tell which one they are
+  // looking at cannot use either.
+  if (res.needs?.vaultWide) {
+    parts.push(`<p class="muted">Read across <strong>${res.needs.historyDirs.length}</strong>
+      transcript directories in this workspace, merged and de-duplicated.</p>`);
+  } else if (res.needs?.historyDirs?.length === 1) {
+    parts.push(`<p class="muted">Read from this project's own history only:
+      <code>${esc(res.needs.historyDirs[0])}</code></p>`);
+  }
+
+  // THE TAXONOMY NOTICE. Without it a short list reads as "your build is fine"
+  // when it may only mean "doorman does not know how to look for that".
+  parts.push(`<p class="fine">This panel matches a known list of
+    ${res.needs?.taxonomySize ?? 0} capability terms, not an open-ended reading of your history.
+    A need with no candidate means nothing in the catalogue covers it, which is information
+    about the catalogue rather than about your build.</p>`);
+
   if (!res.needs?.totalPrompts) {
     parts.push(`<p class="muted">No local prompt history was read, so there is nothing to recommend
       from. This is "not measured", not "no gaps".</p>`);
@@ -185,17 +247,79 @@ function needsSection(res) {
   } else {
     parts.push(`<p>${res.needs.totalPrompts} prompt(s) read. ${gaps.length}
       ${gaps.length === 1 ? 'capability' : 'capabilities'} the build keeps reaching for and cannot
-      currently do:</p><ul class="gaps">`);
+      currently do, ordered by tokens already processed in the sessions that asked:</p><ul class="gaps">`);
     for (const g of gaps) {
-      const cands = (g.topCandidates || []).slice(0, 2).map((c) =>
-        `<div class="cand"><span class="tag">worth measuring</span> <strong>${esc(c.name || c.url)}</strong>
+      // TRAVELS OR STAYS, on every candidate, from the first commit of this
+      // renderer. The classification is what a boundary is built on later, and
+      // retrofitting one into a tool that assumed a single machine is the
+      // expensive version of this work.
+      const cands = (g.topCandidates || []).slice(0, 2).map((c) => {
+        // A lesson-derived recommendation always classifies as "stays", but it
+        // gets the plainer word. It is the case with actual IP consequences, so
+        // the tag says what it means rather than making a reader map vocabulary.
+        const fromLesson = c.kind === 'lesson' || /lesson/i.test(String(c.source ?? ''));
+        const where = fromLesson ? 'non-travelling' : classifyUnit(c.kind ?? 'mcp-server', c.url ?? '');
+        // Invariant 29: the verdict word is "worth measuring" and never "fits".
+        return `<div class="cand"><span class="tag">worth measuring</span> <strong>${esc(c.name || c.url)}</strong>
+         <span class="tag">${esc(where)}</span>
          ${c.grade ? `<span class="tag g-${esc(c.grade)}">Grade ${esc(c.grade)}</span>` : ''}
-         ${c.url ? `<div><code>${esc(c.url)}</code></div>` : ''}</div>`).join('');
+         ${c.url ? `<div><code>${esc(c.url)}</code></div>` : ''}</div>`;
+      }).join('');
+
+      // The spend figure NEVER appears without the division that produced it.
+      // An even split is defensible only while it is legible; the same number
+      // bare would claim a measurement of one need that nobody took. The count
+      // itself is trustworthy because isRealPrompt filtered tool results and
+      // task notifications before these session ids were collected (invariant 28).
+      const tok = compactTokens(g.spendTokens);
+      const spend = tok
+        ? `<span class="muted">${tok} tokens processed</span>
+           <span class="fine">${esc(g.spendNote)}</span>`
+        : `<span class="muted">cost not attributed</span>`;
+
+      // MATCHED TERMS, NEVER EXCERPTS. g.examples holds the operator's own
+      // sentences and is deliberately not rendered: history carries client and
+      // personal material, and this file is written to disk.
+      const terms = (g.terms || []).map((t) => `<code>${esc(t)}</code>`).join(' ');
+
       parts.push(`<li><strong>${esc(g.title || g.id)}</strong>
-        <span class="muted">${g.promptsCount ?? 0} prompt(s)</span>
+        <span class="muted">${g.promptsCount ?? 0} prompt(s) across ${g.sessions ?? 0} session(s)</span>
+        ${spend}
+        ${terms ? `<div class="fine">matched ${terms}</div>` : ''}
         ${cands || '<div class="muted">No graded candidate in the catalogue. That is a gap in our list, not proof none exists.</div>'}</li>`);
     }
     parts.push('</ul>');
+  }
+
+  // DEAD WEIGHT. "Nothing unused" and "nothing installed at all" both produce
+  // an empty list and only one of them is good news, so unitsChecked decides
+  // which sentence is true.
+  parts.push('<h3>Dead weight</h3>');
+  if (!dead.unitsChecked) {
+    parts.push(`<p class="muted">No MCP server was readable here, so there is nothing to call
+      unused. That is "not measured", not "nothing installed".</p>`);
+  } else if (!dead.unused.length && !dead.overlapping.length) {
+    parts.push(`<p class="muted">Nothing installed that history never asked for, across
+      ${dead.unitsChecked} unit(s).</p>`);
+  } else {
+    if (dead.unused.length) {
+      parts.push(`<p>Installed, and nothing in your history asked for it:</p><ul class="gaps">`);
+      for (const u of dead.unused) {
+        parts.push(`<li><strong>${esc(u.name)}</strong> <span class="tag">${esc(u.classifiedAs)}</span>
+          <span class="muted">${esc(u.kind)}</span></li>`);
+      }
+      parts.push('</ul>');
+    }
+    if (dead.overlapping.length) {
+      parts.push(`<p>Two servers answering the same need:</p><ul class="gaps">`);
+      for (const o of dead.overlapping) {
+        parts.push(`<li><strong>${esc(o.names.join(' and '))}</strong>
+          <span class="muted">both match ${esc(o.needId)}</span></li>`);
+      }
+      parts.push('</ul>');
+    }
+    parts.push(`<p class="fine">Reported, not recommended for removal. A unit nothing asked for
+      may be the one quietly doing the job nobody has had to ask about.</p>`);
   }
   if (recs.length) {
     parts.push(`<h3>Newly graded, not yet reviewed by you</h3><ul class="gaps">`);
@@ -296,7 +420,7 @@ function threatSection(res) {
       <div class="muted">${esc(x.hard_fail || 'failed the safety scan')}</div></li>`).join('')}</ul></section>`;
 }
 
-export function renderDashboardHtml(res, grade, diff, reviews = {}, surfaces = {}) {
+export function renderDashboardHtml(res, grade, diff, reviews = {}, surfaces = {}, profileHtml = '') {
   const actions = [];
   if (!res.posture?.isGateWired) actions.push('claude plugin install clembot-doorman');
   actions.push('doorman review', 'doorman allow &lt;server-name&gt;', '/vet &lt;candidate-url&gt;', 'doorman dashboard');
@@ -324,7 +448,8 @@ export function renderDashboardHtml(res, grade, diff, reviews = {}, surfaces = {
   .score{font-size:17px}
   .g-A{color:var(--green)}.g-B{color:var(--green)}.g-C{color:var(--warn)}.g-D{color:var(--warn)}.g-F{color:var(--fail)}
   table.checks{width:100%;border-collapse:collapse;margin-bottom:6px}
-  table.checks td{padding:9px 8px;border-top:1px solid var(--line);vertical-align:top}
+  table.checks tr.grp td{padding-top:18px;border-bottom:1px solid var(--line)}
+.checks td{padding:9px 8px;border-top:1px solid var(--line);vertical-align:top}
   td.mark{width:20px;font-weight:700}
   tr.s-pass td.mark{color:var(--green)}tr.s-warn td.mark{color:var(--warn)}tr.s-fail td.mark{color:var(--fail)}tr.s-na td.mark{color:var(--muted)}
   td.num{width:64px;text-align:right;white-space:nowrap}
@@ -336,6 +461,7 @@ export function renderDashboardHtml(res, grade, diff, reviews = {}, surfaces = {
   .actions li{margin-bottom:7px}
   footer{margin-top:36px;color:var(--muted);font-size:13px}
   @media (max-width:560px){td.ev{display:none}.letter{font-size:44px}}
+${PROFILE_CSS}
 </style></head>
 <body><div class="wrap">
 <header>
@@ -344,6 +470,7 @@ export function renderDashboardHtml(res, grade, diff, reviews = {}, surfaces = {
   <div class="muted">${esc(res.timestamp)} &middot; read-only, nothing here was executed or billed</div>
 </header>
 ${gradeSection(grade)}
+${profileHtml}
 ${changeSection(diff)}
 ${serversSection(res, reviews, surfaces)}
 ${needsSection(res)}
@@ -375,7 +502,18 @@ export async function dashboard(targetDir = process.cwd(), opts = {}) {
   const res = await auditProject(targetDir, opts);
   if (!res.ok) return { ok: false, why: res.why };
 
-  const grade = gradeBuild(res.doctor);
+  // The practice half needs prompt history, which doctor deliberately does not
+  // read. A failure here degrades the two practice checks to n/a rather than
+  // failing the run: a page that will not render because clustering threw is a
+  // worse outcome than a page with two skipped rows.
+  let practice = null;
+  try {
+    const rp = readRepeats({ root: res.root, vault: Boolean(opts.vault) });
+    practice = practiceFacts(res.root, { repeatResult: rp });
+  } catch {
+    practice = null;
+  }
+  const grade = gradeBuild(res.doctor, practice);
   const outDir = path.join(res.root, OUT_DIR);
   const runsDir = path.join(outDir, 'runs');
   mkdirSync(runsDir, { recursive: true });
@@ -388,12 +526,33 @@ export async function dashboard(targetDir = process.cwd(), opts = {}) {
   writeFileSync(runFile, JSON.stringify(snap, null, 2), 'utf8');
 
   const htmlFile = path.join(outDir, 'report.html');
+  // The harness profile. File reads only, so it costs nothing next to the
+  // audit that already ran. A failure degrades to an absent section rather
+  // than a failed page: the rest of the report is still worth reading.
+  let profileHtml = '';
+  try {
+    const surface = readSurface(res.root);
+    const pReport = buildReport(surface, gradeHarness(surface), { root: res.root });
+    const cards = bundledCards();
+    const ref = referenceProfile(typeof opts.reference === 'string' ? opts.reference : 'clembot');
+    profileHtml = profileSection(pReport, {
+      reference: ref,
+      cards,
+      gaps: rankGaps(pReport, cards, ref),
+      source: 'bundled',
+      note: null,
+    });
+  } catch {
+    profileHtml = '';
+  }
+
   const captures = readSurfaces(res.root);
   const surfaceReviews = {};
   for (const [gate, cap] of Object.entries(captures)) {
     if (gate !== '__unreadable') surfaceReviews[gate] = reviewSurface(cap);
   }
-  writeFileSync(htmlFile, renderDashboardHtml(res, grade, diff, readReviews(res.root), surfaceReviews), 'utf8');
+
+  writeFileSync(htmlFile, renderDashboardHtml(res, grade, diff, readReviews(res.root), surfaceReviews, profileHtml), 'utf8');
 
   const opened = opts.open === false ? false : openInBrowser(htmlFile);
 

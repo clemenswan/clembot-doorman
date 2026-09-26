@@ -173,6 +173,11 @@ describe('handleGrade consults the permit', () => {
       sql,
       args: [] as unknown[],
       bind(...args: unknown[]) { this.args = args; return this; },
+      // The rate limiter reads a counter before anything is written. Null is a
+      // fresh window, which is what starting from an empty DB means. Without
+      // this the limiter cannot read its own counter and fails CLOSED, which is
+      // correct behaviour failing these tests in the wrong place.
+      async first() { return null; },
     });
     return {
       batches,
@@ -411,6 +416,10 @@ describe('handleGrade answers 503 for a weak secret, and queues nothing', () => 
     const stmt = (sql: string) => ({
       sql, args: [] as unknown[],
       bind(...args: unknown[]) { this.args = args; return this; },
+      // A fresh rate-limit window. Without it the limiter cannot read its own
+      // counter and fails closed, which would answer 503 here for a reason that
+      // has nothing to do with the weak secret this block is about.
+      async first() { return null; },
     });
     return { batches, binding: {
       prepare: (sql: string) => stmt(sql),

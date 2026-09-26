@@ -8,10 +8,14 @@
  */
 
 import { check, describe } from './harness.mjs';
-import { mkdtempSync, writeFileSync, existsSync, readFileSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, existsSync, readFileSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { renderNotify, consumeDigest, refreshNotify, MAX_LISTED } from '../cli/notify.mjs';
+import { readSurface } from '../src/profile/surface.mjs';
+import { gradeHarness } from '../src/profile/rubric.mjs';
+import { buildReport } from '../src/profile/report.mjs';
+import { reportDir } from '../src/profile/delta.mjs';
 
 function row(over = {}) {
   return {
@@ -135,3 +139,79 @@ const r2 = await refreshNotify({
 check('writes a digest on a later run with something new',
   r2.firstRun === false && r2.wrote === true &&
   /new\.example\.com/.test(readFileSync(digest3, 'utf8')));
+
+describe('notify: the harness delta announces once');
+
+// THE BUG THIS PINS. The digest is consumed on read, and the next refresh
+// rebuilds it from the same two reports still sitting on disk. Without a
+// cursor the delta is therefore regenerated identically at every session
+// start, so one fix is re-announced as news every morning until another
+// report replaces it. That is worse than a daily "no change", because it
+// reads as something having happened.
+const dir4 = mkdtempSync(join(tmpdir(), 'doorman-delta-'));
+writeFileSync(join(dir4, 'CLAUDE.md'), '# a harness\n', 'utf8');
+mkdirSync(join(dir4, '.claude'), { recursive: true });
+writeFileSync(join(dir4, '.claude', 'settings.json'),
+  JSON.stringify({ permissions: { allow: ['Read'], deny: ['Bash(rm:*)'] } }), 'utf8');
+
+// Learn the slug the same way the code does, then plant a WORSE yesterday so
+// today reads as a real improvement.
+const surface4 = readSurface(dir4);
+const cur4 = buildReport(surface4, gradeHarness(surface4), { root: dir4 });
+const prevDir = join(reportDir(dir4, cur4.slug), '2026-01-01');
+mkdirSync(prevDir, { recursive: true });
+const worse = JSON.parse(JSON.stringify(cur4));
+worse.generated_at = '2026-01-01T00:00:00.000Z';
+worse.letter = 'F';
+for (const d of worse.dimensions ?? []) {
+  for (const c of d.checks ?? []) { c.state = 'fail'; c.points = 0; }
+}
+writeFileSync(join(prevDir, 'report.json'), JSON.stringify(worse), 'utf8');
+
+const digest4 = join(dir4, 'notify.md');
+const state4 = join(dir4, 'watch.json');
+// Feed returns nothing, so this is the delta half on its own. That is also the
+// shape of a real build with no MCP servers, which is the case the delta exists
+// for and the one where a never-saved cursor would repeat forever.
+const emptyFeed = async () => ({
+  ok: true, status: 200,
+  json: async () => ({ items: [], next_since: null }),
+});
+
+const d1 = await refreshNotify({
+  root: dir4, digestFile: digest4, stateFile: state4, fetchImpl: emptyFeed,
+});
+check('announces the harness delta the first time it sees it',
+  d1.delta === true && existsSync(digest4) === true);
+
+const announced = readFileSync(digest4, 'utf8');
+consumeDigest(digest4);
+
+const d2 = await refreshNotify({
+  root: dir4, digestFile: digest4, stateFile: state4, fetchImpl: emptyFeed,
+});
+check('does NOT re-announce the same delta on the next session',
+  d2.delta === false && existsSync(digest4) === false,
+  'an unchanged pair of reports is not news twice');
+
+check('the delta cursor survives a feed that returned nothing',
+  /"delta":\s*"/.test(readFileSync(state4, 'utf8')),
+  'gating the write on the feed cursor would repeat forever on a build with no servers');
+
+// And it must still speak when something actually moves again.
+const prevDir2 = join(reportDir(dir4, cur4.slug), '2026-01-02');
+mkdirSync(prevDir2, { recursive: true });
+const middling = JSON.parse(JSON.stringify(worse));
+middling.generated_at = '2026-01-02T00:00:00.000Z';
+const firstCheck = middling.dimensions?.[0]?.checks?.[0];
+if (firstCheck) { firstCheck.state = 'pass'; firstCheck.points = firstCheck.max; }
+writeFileSync(join(prevDir2, 'report.json'), JSON.stringify(middling), 'utf8');
+
+const d3 = await refreshNotify({
+  root: dir4, digestFile: digest4, stateFile: state4, fetchImpl: emptyFeed,
+});
+check('announces again once the comparison actually changes',
+  d3.delta === true && existsSync(digest4) === true,
+  'suppression must be per-delta, never a permanent mute');
+check('the new announcement is not byte-identical to the muted one',
+  readFileSync(digest4, 'utf8') !== announced);

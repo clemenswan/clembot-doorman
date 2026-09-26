@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "ledger-db": {
+      "type": "http",
+      "url": "https://example.invalid/ledger"
+    },
+    "docs-mirror": {
+      "type": "http",
+      "url": "https://example.invalid/docs"
+    }
+  }
+}

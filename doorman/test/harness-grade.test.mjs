@@ -154,6 +154,143 @@ describe('harness-grade: rounding cannot buy full marks');
   check('zero exposed scores the max', ex.points === ex.max && ex.state === 'pass');
 }
 
+/* ── The practice half ─────────────────────────────────────────────────────── */
+
+/** Facts as `practiceFacts()` returns them. */
+function facts(over = {}) {
+  return {
+    units: [
+      { kind: 'command', name: 'deploy', description: '', source: '.claude/commands/deploy.md' },
+      { kind: 'skill', name: 'humanize', description: '', source: '.claude/skills/humanize/SKILL.md' },
+    ],
+    kinds: ['command', 'skill'],
+    scaffolded: { total: 4, covered: 4, prompts: 657 },
+    ...over,
+  };
+}
+
+describe('harness-grade: practice is n/a when nothing measured it');
+{
+  const g = gradeBuild(perfect());
+  const s = g.checks.find((c) => c.id === 'scaffolded');
+  const r = g.checks.find((c) => c.id === 'reuse');
+  check('both practice checks exist', Boolean(s && r));
+  check('and both are n/a', s.state === 'n/a' && r.state === 'n/a');
+  check('n/a carries no points and no max', s.points === null && s.max === null);
+  check('the note says where to get it measured', /dashboard/i.test(s.note));
+  // The whole reason practice is optional: doctor must stay fast and its
+  // numbers must not move because a new check was added elsewhere.
+  check('the posture score is untouched by their presence',
+    g.posture.earned === g.earned && g.posture.possible === g.possible,
+    'doctor grades exactly what it did before');
+  check('practice tallies to nothing measurable', g.practice.pct === null);
+}
+
+describe('harness-grade: repeated work is scaffolded');
+{
+  const clean = gradeBuild(perfect(), facts()).checks.find((c) => c.id === 'scaffolded');
+  check('all covered is full marks', clean.points === 5 && clean.state === 'pass');
+
+  const half = gradeBuild(perfect(), facts({ scaffolded: { total: 4, covered: 2, prompts: 657 } }))
+    .checks.find((c) => c.id === 'scaffolded');
+  check('half covered scores partially', half.points > 0 && half.points < 5);
+  check('and is a warning, not a failure', half.state === 'warn');
+
+  const none = gradeBuild(perfect(), facts({ scaffolded: { total: 4, covered: 0, prompts: 657 } }))
+    .checks.find((c) => c.id === 'scaffolded');
+  check('none covered scores zero', none.points === 0 && none.state === 'fail');
+
+  // Rounding must never reach full marks while something is still uncovered.
+  const nearly = gradeBuild(perfect(), facts({ scaffolded: { total: 40, covered: 39, prompts: 657 } }))
+    .checks.find((c) => c.id === 'scaffolded');
+  check('39 of 40 does not round up to a clean pass', nearly.points < 5);
+
+  const quiet = gradeBuild(perfect(), facts({ scaffolded: { total: 0, covered: 0, prompts: 657 } }))
+    .checks.find((c) => c.id === 'scaffolded');
+  check('nothing repeating is n/a, not a zero', quiet.state === 'n/a');
+  check('and the note says how much was read', /657/.test(quiet.note));
+
+  const blind = gradeBuild(perfect(), facts({ scaffolded: { total: 0, covered: 0, prompts: null } }))
+    .checks.find((c) => c.id === 'scaffolded');
+  check('no history reads differently from no repeats',
+    /no readable prompt history/i.test(blind.note),
+    'a build nobody could measure is not a build with nothing to fix');
+}
+
+describe('harness-grade: reusable units exist');
+{
+  const two = gradeBuild(perfect(), facts()).checks.find((c) => c.id === 'reuse');
+  check('two kinds is full marks', two.points === 3 && two.state === 'pass');
+
+  const one = gradeBuild(perfect(), facts({
+    units: [{ kind: 'command', name: 'a', description: '', source: '.claude/commands/a.md' }],
+    kinds: ['command'],
+  })).checks.find((c) => c.id === 'reuse');
+  check('one kind is capped below full marks', one.points < 3 && one.points > 0);
+
+  const none = gradeBuild(perfect(), facts({ units: [], kinds: [] }))
+    .checks.find((c) => c.id === 'reuse');
+  check('no units at all is a fail', none.points === 0 && none.state === 'fail');
+  check('and says what that means', /retyped/i.test(none.note));
+
+  // The check must not become a bloat score: more units of the same kind is
+  // not more maturity.
+  const many = gradeBuild(perfect(), facts({
+    units: Array.from({ length: 300 }, (_, i) => ({
+      kind: 'command', name: `c${i}`, description: '', source: '.claude/commands/c.md',
+    })),
+    kinds: ['command'],
+  })).checks.find((c) => c.id === 'reuse');
+  check('300 units of ONE kind still scores below two kinds',
+    many.points < two.points,
+    'counting units would reward accumulating them');
+}
+
+describe('harness-grade: the two halves');
+{
+  const g = gradeBuild(perfect(), facts());
+  check('every check declares its group', g.checks.every((c) => c.group === 'posture' || c.group === 'practice'));
+  check('the groups partition the checks',
+    g.checks.filter((c) => c.group === 'posture').length
+    + g.checks.filter((c) => c.group === 'practice').length === g.checks.length);
+  check('posture and practice sum to the combined total',
+    g.posture.earned + g.practice.earned === g.earned
+    && g.posture.possible + g.practice.possible === g.possible);
+  check('each half carries its own letter',
+    g.posture.letter !== null && g.practice.letter !== null);
+  check('a half can differ from the combined letter, which is the point', (() => {
+    const split = gradeBuild(
+      perfect({ gate: { installed: false, wired: false, registry: false, allowed: null, verdict: 'not installed' } }),
+      facts(),
+    );
+    return split.practice.letter === 'A' && split.posture.letter === 'F';
+  })(), 'a worked setup with no gate, and a gated setup with no structure, are different builds');
+  check('a failed doctor still returns both halves', (() => {
+    const g2 = gradeBuild({ ok: false });
+    return g2.posture.pct === null && g2.practice.pct === null && g2.letter === null;
+  })());
+}
+
+describe('harness-grade: a sub-tally counts what it measured');
+{
+  // `servers: []` makes ONE posture check n/a. The points and max of an n/a
+  // check are null, so a tally that adds them with `?? 0` reaches the same
+  // total either way: `measured` is the only field that can tell an excluded
+  // check from a zero one, which is why it is asserted rather than returned
+  // and forgotten.
+  const g = gradeBuild(perfect({ servers: [] }), facts());
+  const posture = g.checks.filter((c) => c.group === 'posture');
+  const na = posture.filter((c) => c.state === 'n/a');
+
+  check('the fixture really does produce an n/a posture check', na.length === 1);
+  check('measured counts only the scored checks',
+    g.posture.measured === posture.length - 1);
+  check('and the practice half counts its own', g.practice.measured === 2);
+  check('an n/a check contributes nothing to the possible total',
+    g.posture.possible === posture.filter((c) => c.state !== 'n/a')
+      .reduce((n, c) => n + c.max, 0));
+}
+
 describe('harness-grade: servers are keyed as the gate sees them');
 {
   const g = gradeBuild(perfect({

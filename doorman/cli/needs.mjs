@@ -8,7 +8,9 @@
  * the product is the shared grade and the cheap half is the private fit.
  */
 
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { join, basename } from 'node:path';
+import { homedir } from 'node:os';
 import { inventoryFor } from '../src/inventory.mjs';
 import { installedKeys, serverKey } from './watch.mjs';
 import {
@@ -16,6 +18,82 @@ import {
 } from '../src/needs.mjs';
 
 export const DEFAULT_API = 'https://scorecard.wanessalabs.com';
+
+/**
+ * Every transcript directory belonging to this project's wider workspace.
+ *
+ * A vault is rarely one directory. This one has ten: the root plus nine
+ * worktrees, each with its own slug under ~/.claude/projects, and a need that
+ * shows up once in each reads as nine small asks instead of one large one.
+ *
+ * THE MATCH IS DERIVED FROM THE ROOT, never hardcoded. Claude Code slugs a path
+ * by replacing every non-alphanumeric character with a dash, so a worktree of
+ * `.../ClemVault/x` slugs to something containing `ClemVault`. Taking the root's
+ * own directory name as the needle makes `--vault` mean the same thing for a
+ * build this tool has never seen, which is the only version worth shipping in
+ * something other people install.
+ *
+ * It is a substring match on a dashed slug, so it is deliberately generous:
+ * a directory named `vault` would sweep in anything with `vault` in its path.
+ * The report says which directories it read for exactly that reason.
+ */
+export function vaultHistoryDirs(root, { home = homedir() } = {}) {
+  const needle = basename(String(root ?? '')).replace(/[^A-Za-z0-9]/g, '-').toLowerCase();
+  if (needle.length < 3) return [];
+  const base = join(home, '.claude', 'projects');
+  if (!existsSync(base)) return [];
+  return readdirSync(base)
+    .filter((d) => d.toLowerCase().includes(needle))
+    .map((d) => join(base, d))
+    .filter((d) => { try { return statSync(d).isDirectory(); } catch { return false; } })
+    .sort();
+}
+
+/**
+ * Tokens processed per session, read from the transcripts Claude Code wrote.
+ *
+ * WHAT IS AND IS NOT IN THESE FILES. There is no cost field anywhere in a
+ * transcript. What exists is `message.usage`, with input, output, cache
+ * creation and cache read counts. So this returns tokens and a permanently null
+ * `cost_usd`: turning tokens into money needs a price table, CodeBurn already
+ * owns that math against these same files, and a second one here would drift
+ * from it the first time a rate moved.
+ *
+ * All four counts are summed. In this vault that total is 98.1% cache reads, so
+ * it measures context carried rather than money spent, and every surface that
+ * shows it says "tokens processed" rather than anything about cost.
+ *
+ * Keyed on `sessionId`, which is what `readPrompts` attaches to a prompt.
+ * Transcripts also carry a `session_id`, and the two are not always both
+ * present on a record; `sessionId` was on 100% of 30,801 user records across
+ * this vault's ten directories, and `session_id` alone on none, so keying on
+ * the other one would silently attribute nothing.
+ */
+export function readSessionTokens(dirs, { fs = { readdirSync, readFileSync } } = {}) {
+  const map = new Map();
+  for (const dir of [].concat(dirs).filter(Boolean)) {
+    let files;
+    try { files = fs.readdirSync(dir).filter((f) => f.endsWith('.jsonl')); } catch { continue; }
+    for (const file of files) {
+      let body;
+      try { body = fs.readFileSync(join(dir, file), 'utf8'); } catch { continue; }
+      for (const line of body.split('\n')) {
+        if (!line.startsWith('{')) continue;
+        let rec;
+        try { rec = JSON.parse(line); } catch { continue; }
+        const u = rec?.message?.usage;
+        const id = rec?.sessionId;
+        if (!id || !u || typeof u !== 'object') continue;
+        const t = (u.input_tokens ?? 0) + (u.output_tokens ?? 0)
+          + (u.cache_creation_input_tokens ?? 0) + (u.cache_read_input_tokens ?? 0);
+        const prev = map.get(id);
+        if (prev) prev.tokens += t;
+        else map.set(id, { tokens: t, cost_usd: null });
+      }
+    }
+  }
+  return map;
+}
 
 /**
  * Candidates from a local `doorman discover` sweep, if one has been run.
@@ -38,21 +116,47 @@ export function readCandidateFile(file) {
 
 export async function needs({
   root, api, historyDir, candidateFile, limit = 200, fetchImpl = fetch,
+  vault = false, historyDirs = null,
 } = {}) {
   const inv = inventoryFor(root);
   const installed = installedKeys(inv);
 
-  const dir = historyDir ?? historyDirFor(root);
+  // Per-project is unchanged and still the default: one root, one directory.
+  // `--vault` widens to the whole workspace, and an explicit historyDirs wins
+  // over both so a caller can say exactly what to read.
+  const dirs = historyDirs
+    ?? (vault ? vaultHistoryDirs(root) : [historyDir ?? historyDirFor(root)].filter(Boolean));
+
   let prompts = [];
   let historyNote;
-  if (!dir) {
+  if (!dirs.length) {
     historyNote = 'No readable prompt history for this path. Claude Code keeps it under ' +
       '~/.claude/projects/<path-with-dashes>; other harnesses keep none that doorman can read. ' +
       'Pass --history DIR if yours lives elsewhere.';
+  } else if (dirs.length === 1) {
+    prompts = readPrompts(dirs[0]);
+    historyNote = `history: ${dirs[0]}`;
   } else {
-    prompts = readPrompts(dir);
-    historyNote = `history: ${dir}`;
+    // Merged before deduplication on purpose. readPrompts already drops a
+    // repeated sentence by text prefix, and a resumed session copies its whole
+    // prior transcript into a new file, so the same ask lands in several of
+    // these directories. Deduplicating per directory and summing afterwards
+    // would count it once per worktree.
+    const seen = new Set();
+    for (const d of dirs) {
+      for (const p of readPrompts(d)) {
+        const key = p.text.trim().slice(0, 400);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        prompts.push(p);
+      }
+    }
+    historyNote = `history: ${dirs.length} directories under ~/.claude/projects`;
   }
+
+  // Tokens come from the same files the prompts did, so a session that has
+  // prompts always has a cost entry unless its usage records are unreadable.
+  const sessionCosts = dirs.length ? readSessionTokens(dirs) : null;
 
   // The feed is free and anonymous. A failure here is "could not measure",
   // never a reason to invent a suggestion, so an empty candidate list flows
@@ -80,6 +184,7 @@ export async function needs({
     prompts,
     inventory: inv,
     candidates,
+    sessionCosts,
     // rankCandidates compares against whatever url a candidate carries, so the
     // installed set has to be keyed the same way the inventory was.
     installed: new Set([...candidates.map((c) => c.server_url).filter(Boolean)]
@@ -89,7 +194,10 @@ export async function needs({
   return {
     ...report,
     api,
-    history_dir: dir,
+    history_dir: dirs[0] ?? null,
+    history_dirs: dirs,
+    vault_wide: dirs.length > 1,
+    sessions_priced: sessionCosts ? sessionCosts.size : 0,
     history_note: historyNote,
     feed_note: feedNote,
     feed_rows: feed.length,

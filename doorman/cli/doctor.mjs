@@ -19,7 +19,7 @@ import { readFile, readdir, stat } from 'node:fs/promises';
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { gradeBuild } from '../src/harness-grade.mjs';
-import { toolPrefix, userScopeServers } from '../src/reachable-servers.mjs';
+import { toolPrefix, userScopeServers, USER_SCOPE_SOURCES } from '../src/reachable-servers.mjs';
 
 const read = async (p) => {
   try { return await readFile(p, 'utf8'); } catch { return null; }
@@ -59,16 +59,18 @@ async function detectHarness(root) {
 }
 
 /** Every MCP server this project can reach, and where that was declared. */
+/** The per-project files that can declare an MCP server. */
+const MCP_FILE_SOURCES = [
+  '.mcp.json',
+  '.claude/settings.json',
+  '.claude/settings.local.json',
+  '.cursor/mcp.json',
+  '.vscode/mcp.json',
+];
+
 async function detectMcpServers(root) {
   const servers = [];
-  const sources = [
-    '.mcp.json',
-    '.claude/settings.json',
-    '.claude/settings.local.json',
-    '.cursor/mcp.json',
-    '.vscode/mcp.json',
-  ];
-  for (const rel of sources) {
+  for (const rel of MCP_FILE_SOURCES) {
     const j = await readJson(path.join(root, rel));
     if (!j) continue;
     if (j.__unparseable) {
@@ -233,7 +235,11 @@ export async function doctor(root, opts = {}) {
   for (const s of userScopeServers(abs, { home: env.HOME || env.USERPROFILE })) {
     if (!seen.has(s.gateName)) servers.push(s);
   }
-  return { ok: true, root: abs, harnesses, servers, agents, gate, runners };
+  // What was SEARCHED, not what was found. When `servers` is empty this is the
+  // only thing separating "this build declares none" from "this build of
+  // doorman cannot read the format they are declared in".
+  const searchedSources = [...MCP_FILE_SOURCES, ...USER_SCOPE_SOURCES];
+  return { ok: true, root: abs, harnesses, servers, agents, gate, runners, searchedSources };
 }
 
 export function renderDoctor(d) {

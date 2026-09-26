@@ -28,6 +28,10 @@ import { doctor, renderDoctor } from './doctor.mjs';
 import { watch, renderWatch, readState, writeState, DEFAULT_API, DEFAULT_STATE } from './watch.mjs';
 import { discover, renderDiscover, writeCandidates } from './discover.mjs';
 import { needs as readNeeds, render as renderNeedsCli } from './needs.mjs';
+import { leaks, renderLeaks } from './leaks.mjs';
+import { repeats, renderRepeats } from './repeats.mjs';
+import { profile, renderProfile } from './profile.mjs';
+import { fix, renderFix } from './fix.mjs';
 import { install, renderInstall } from './install.mjs';
 import { allow, renderAllow, SCOPES } from './allow.mjs';
 import { refreshNotify, consumeDigest, DEFAULT_DIGEST } from './notify.mjs';
@@ -35,12 +39,13 @@ import { auditProject, renderAudit } from './audit.mjs';
 import { dashboard, renderDashboard } from './dashboard.mjs';
 import { review, renderReview } from './review.mjs';
 import { schedule as scheduleReport, renderSchedule } from './schedule.mjs';
+import { buildPayload, renderContribute, sendPayload } from './contribute.mjs';
 import { join } from 'node:path';
 
 // Pinned to every other declaration by version.test.mjs. There are FOUR of
 // them (root package.json, doorman/package.json, plugin.json, this) and this
 // one silently reported 0.1.0 out of a 0.2.0 tarball.
-const VERSION = '0.2.1';
+const VERSION = '0.3.0';
 
 const QUICKSTART = `
 doorman ${VERSION} — Security gate & tool package manager for AI agents
@@ -55,7 +60,12 @@ COMMON COMMANDS:
   doorman schedule        Configure recurring automated reports (cron, GitHub Actions)
   doorman doctor [path]   L0 build & gate inspection (free, offline, <5ms)
   doorman needs [path]    L0.5 scan prompt history for missing capabilities
+  doorman leaks [path]    What outbound tool calls have disclosed (offline)
+  doorman repeats [path]  Procedures retyped often enough to deserve a command
+  doorman profile [path]  Grade this repo's Claude Code harness (7 dimensions)
+  doorman fix [check-id]  Close one open profile check, or say why only you can
   doorman watch [path]    Check public feed for newly graded tools
+  doorman contribute      Report this build's gaps to the shared feed (dry run)
   doorman allow <server>  Trust an MCP server by name on your local allowlist
   doorman install [path]  Install the gate & hooks into this project
 
@@ -103,7 +113,7 @@ doorman ${VERSION} — measure a candidate, do not just read it
       credential are marked authenticated, because that is a different surface
       from an anonymous audit and the two scores are not comparable.
 
-  doorman dashboard [path] [--review] [--no-open] [--json]
+  doorman dashboard [path] [--review] [--vault] [--no-open] [--json]
       The audit as a page. Runs the same sweep as doorman audit, grades the
       doctor half against a visible scorecard, diffs it against the last run on
       a different day, and writes one self-contained HTML file to
@@ -146,6 +156,118 @@ doorman ${VERSION} — measure a candidate, do not just read it
       A need nothing graded covers is printed as a GAP rather than dropped, and
       a match is only ever worth-measuring. Nothing here drove anything, so
       nothing here claims a server will work. Only eval answers that.
+
+  doorman leaks [path] [--vault] [--evidence] [--json]
+      What this build has already sent off the machine. Reads the TOOL CALLS in
+      its own transcripts, not the prompts: a budget someone typed leaked
+      nothing if no request carried it.
+
+      Offline, keyless, makes no network call of its own. Local file tools are
+      never scanned, both because they disclose to nobody and because scanning
+      file bodies would flag this tool's own pattern source.
+
+      Each hit is tagged with what it would COST to stop sending it: local
+      redaction, a relay identity, or nothing short of not asking. That split
+      is the point, because it prices the fix before anything is built.
+
+      The pattern table is NOT validated against a real commerce corpus. Rows
+      that never fire are reported as silent rather than hidden, and a zero is
+      a real answer: on this vault it is 0 hits across 786 outbound calls,
+      which says this build does not shop, not that shopping is safe.
+
+      Excerpts are withheld unless --evidence, because an excerpt here is the
+      disclosed content itself.
+
+  doorman repeats [path] [--vault] [--evidence] [--threshold N] [--json]
+      Procedures this build keeps retyping by hand.
+
+      'needs' asks what CAPABILITY is missing and answers with servers from the
+      feed. This asks what PROCEDURE has been run often enough to be worth a
+      command, and needs no catalogue, no feed, no model and no network to
+      answer it. That matters: the most developed build we can inspect has 220
+      scaffold units and zero MCP servers, so 'needs' has nothing to say to it.
+
+      Arguments are stripped before comparing, because "fix the test in a.mjs"
+      and "fix the test in b.mjs" are one procedure run twice. Common words are
+      dropped by measuring the corpus rather than from a word list, so it
+      travels to a build whose vocabulary is nothing like this one.
+
+      Repetition ACROSS sessions and WITHIN one session are reported separately
+      and never summed: the second is usually a retry loop, which is a
+      debugging story rather than a missing command.
+
+      Every cluster is checked against the agents, skills and commands you
+      already have. A repeated procedure that already HAS a command is reported
+      as a discoverability problem, not a gap, and that check is also the
+      falsification test: if everything is already covered, repetition is not
+      evidence of missing scaffolding.
+
+      Nothing is generated or installed. A cluster is evidence a procedure was
+      retyped, never proof that a command is the right answer to it.
+
+  doorman fix [check-id] [--root PATH] [--write] [--online] [--json]
+      Close one open check from \`doorman profile\`, or say why only you can.
+
+      With no check id it lists all ten with their class and where they stand
+      here. With one it writes either a patch or a checklist under
+      \`.doorman/fix/\`, and prints the command to apply it.
+
+      TWO CLASSES, and the ratio is the point:
+
+        generate   The correct content is a pure function of the repo, so it
+                   cannot be wrong and cannot be gamed. Exactly ONE check
+                   qualifies: \`reg-drift\`, whose fix is the list of agents and
+                   commands that are on disk.
+        worklist   The other nine. Each names the files and the decision and
+                   REFUSES to guess, because each measures a human judgement:
+                   which tools an agent needs, which commands you actually run,
+                   what you rejected and why.
+
+      That refusal is deliberate and is invariant 38. Eight of the ten checks
+      pass on a regex over a doc, so a scaffolder could raise your grade by
+      writing the word "declined" into a rules file while your harness stayed
+      identical. A fix may change the property, never only the text that proves
+      it.
+
+      \`--write\` applies the generate class only. It refuses .claude/settings.json,
+      .mcp.json, anything under registry/ or .claude/agents/, and any existing
+      file with no \`doorman:generated\` marker. Without it nothing outside
+      \`.doorman/\` is touched and you apply the patch yourself with \`git apply\`.
+
+      Verify by re-running \`doorman profile\`. That is the acceptance criterion
+      for every fix here: the check stops reporting, or the fix did not work.
+
+  doorman profile [path] [--export] [--sow] [--reference NAME] [--name NAME]
+                         [--online] [--json]
+      Grade a Claude Code harness the way the scorecard grades an MCP server.
+      Seven dimensions, ten checks, each with a receipt: a file and a line, or
+      the word absent.
+
+      It reads the HARNESS SURFACE ONLY: settings, agents, commands, skills,
+      rules, hook names, CLAUDE.md and .mcp.json. Never source, never .env,
+      never anything outside the repo, and a symlink pointing out of the tree
+      is refused rather than followed.
+
+      Fail closed. A file that exists and will not parse counts AGAINST the
+      dimension it belongs to, because a malformed settings file otherwise
+      reads exactly like a clean one.
+
+      The overall band is the WORST dimension, not the average: a harness is
+      as mature as its weakest gate. The average is printed beside it so the
+      rule is visible rather than surprising.
+
+      Writes .doorman/profile/<slug>/<date>/report.{json,md}. Local only.
+
+      --export   also writes profile.json: counts, states, scores and
+                 repo-relative receipts, with the redaction scanner over it.
+                 Anything that trips is DROPPED and counted, so a redacted
+                 profile is visibly not a full one.
+      --sow      also writes sow.md, one work package per failed check, each
+                 with its acceptance criterion being that the check turns
+                 green on re-run. Commercial terms are left as {{slots}}.
+      --online   fetch pattern cards from the authority. Off by default, and
+                 it falls back to the bundled snapshot rather than failing,
+                 because a demo can be in a room with no egress.
 
   doorman notify refresh [--root DIR]   |   doorman notify consume [--digest FILE]
       The push half, and the SessionStart hook is what calls it. refresh polls
@@ -264,6 +386,9 @@ async function main() {
       open: !args['no-open'],
       api: typeof args.api === 'string' ? args.api : undefined,
       historyDir: typeof args.history === 'string' ? args.history : undefined,
+      // Widens the history read to every transcript directory in this
+      // project's workspace. Off by default: one project stays the default.
+      vault: Boolean(args.vault),
     });
     if (!r.ok) { console.error(`dashboard: ${r.why}`); process.exitCode = 1; return; }
     if (args.json) { console.log(JSON.stringify(r, null, 2)); return; }
@@ -350,6 +475,129 @@ async function main() {
     }
     if (args.json) console.log(JSON.stringify(r, null, 2));
     else console.log(renderNeedsCli(r));
+    return;
+  }
+
+  if (cmd === 'leaks') {
+    // Offline and read-only. It reads transcripts already on disk and makes no
+    // network call, so there is nothing to inject and no key to need.
+    let r;
+    try {
+      r = leaks({
+        root: args._[1] || process.cwd(),
+        vault: Boolean(args.vault),
+        evidence: Boolean(args.evidence),
+      });
+    } catch (e) {
+      console.error(`leaks: ${e.message}`);
+      process.exitCode = 1;
+      return;
+    }
+    if (args.json) console.log(JSON.stringify(r, null, 2));
+    else console.log(renderLeaks(r));
+    if (!r.ok) process.exitCode = 1;
+    return;
+  }
+
+  if (cmd === 'repeats') {
+    // Offline and read-only. Reads transcripts already on disk, no network.
+    let r;
+    try {
+      r = repeats({
+        root: args._[1] || process.cwd(),
+        vault: Boolean(args.vault),
+        evidence: Boolean(args.evidence),
+        threshold: Number(args.threshold) > 0 ? Number(args.threshold) : undefined,
+      });
+    } catch (e) {
+      console.error(`repeats: ${e.message}`);
+      process.exitCode = 1;
+      return;
+    }
+    if (args.json) console.log(JSON.stringify(r, null, 2));
+    else console.log(renderRepeats(r));
+    if (!r.ok) process.exitCode = 1;
+    return;
+  }
+
+  if (cmd === 'fix') {
+    let r;
+    try {
+      r = await fix({
+        root: typeof args.root === 'string' ? args.root : process.cwd(),
+        id: args._[1] ?? null,
+        write: Boolean(args.write),
+        online: Boolean(args.online),
+        api: (args.api || DEFAULT_API).replace(/\/+$/, ''),
+      });
+    } catch (e) {
+      console.error(`fix: ${e.message}`);
+      process.exitCode = 1;
+      return;
+    }
+    if (args.json) console.log(JSON.stringify(r, null, 2));
+    else console.log(renderFix(r));
+    // A refused --write is not a crash, but it did not do what was asked.
+    if (!r.ok || r.applied?.ok === false) process.exitCode = 1;
+    return;
+  }
+
+  if (cmd === 'profile') {
+    let r;
+    try {
+      r = await profile({
+        root: args._[1] || process.cwd(),
+        name: typeof args.name === 'string' ? args.name : null,
+        exportProfile: Boolean(args.export),
+        sow: Boolean(args.sow),
+        reference: typeof args.reference === 'string' ? args.reference : null,
+        online: Boolean(args.online),
+        api: (args.api || DEFAULT_API).replace(/\/+$/, ''),
+      });
+    } catch (e) {
+      console.error(`profile: ${e.message}`);
+      process.exitCode = 1;
+      return;
+    }
+    if (args.json) console.log(JSON.stringify(r.ok ? r.report : r, null, 2));
+    else console.log(renderProfile(r));
+    if (!r.ok) process.exitCode = 1;
+    return;
+  }
+
+  if (cmd === 'contribute') {
+    const root = args._[1] || process.cwd();
+    const api = (args.api || DEFAULT_API).replace(/\/+$/, '');
+    let built;
+    try {
+      const d = await doctor(root, {});
+      if (!d.ok) throw Object.assign(new Error(d.why), { code: 3 });
+      // `needs` reads the prompt history. Only the `gap` flag and the `id`
+      // survive into the payload; see the header of contribute.mjs.
+      const n = await readNeeds({
+        root,
+        api,
+        historyDir: typeof args.history === 'string' ? args.history : undefined,
+        candidateFile: typeof args.candidates === 'string' ? args.candidates : 'candidates/smithery.json',
+      });
+      built = buildPayload({
+        needs: n,
+        inventory: { mcpServers: (d.servers ?? []).map((s) => ({ name: s.gateName })) },
+        gate: d.gate,
+        version: VERSION,
+      });
+    } catch (e) {
+      console.error(`contribute: ${e.message}`);
+      process.exitCode = e.code === 3 ? 3 : 1;
+      return;
+    }
+
+    if (args.json) { console.log(JSON.stringify(built.payload, null, 2)); return; }
+
+    // The default prints and stops. Sending is an explicit act.
+    const result = args.send ? await sendPayload(built.payload, { api }) : null;
+    console.log(renderContribute(built, { sent: Boolean(args.send), api, result }));
+    if (result && !result.ok) process.exitCode = 3;
     return;
   }
 
